@@ -1,0 +1,30 @@
+specVersion: 0.0.2
+description: GYSR is a generalized, configurable, and 100% decentralized platform for yield farming
+repository: https://github.com/gysr-io/gysr-subgraph
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: GeyserFactory
+    network: mainnet
+    source:
+      address: "0xCAda3423d33259A94C1ED1A7AEEcb73B87D0B684"
+      abi: GeyserFactory
+      startBlock: 11143895
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Geyser
+      abis:
+        - name: GeyserFactory
+          file: ./abis/GeyserFactory.json
+        - name: Geyser
+          file: ./abis/Geyser.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: GeyserCreated(indexed address,address)
+          handler: handleGeyserCreated
+      file: ./src/mappings/factory.ts
