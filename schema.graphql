@@ -23,4 +23,18 @@ type Geyser @entity {
 
   createdTimestamp: BigInt!
   createdBlock: BigInt!
+
+  # stats
+  users: BigInt!
+
+  staked: BigDecimal!
+  rewards: BigDecimal!
+  funded: BigDecimal!
+  distributed: BigDecimal!
+  gysrSpent: BigDecimal!
+
+  stakedUSD: BigDecimal!
+  rewardsUSD: BigDecimal!
+  tvl: BigDecimal!
+  apy: BigDecimal!
 }

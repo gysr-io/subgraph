@@ -28,3 +28,34 @@ dataSources:
         - event: GeyserCreated(indexed address,address)
           handler: handleGeyserCreated
       file: ./src/mappings/factory.ts
+templates:
+  - kind: ethereum/contract
+    name: Geyser
+    network: mainnet
+    source:
+      abi: Geyser
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Geyser
+      abis:
+        - name: Geyser
+          file: ./abis/Geyser.json
+      eventHandlers:
+        - event: Staked(indexed address,uint256,uint256,bytes)
+          handler: handleStaked
+        - event: Unstaked(indexed address,uint256,uint256,bytes)
+          handler: handleUnstaked
+        - event: RewardsFunded(uint256,uint256,uint256,uint256)
+          handler: handleRewardsFunded
+        - event: RewardsDistributed(indexed address,uint256)
+          handler: handleRewardsDistributed
+        - event: RewardsUnlocked(uint256,uint256)
+          handler: handleRewardsUnlocked
+        - event: RewardsExpired(uint256,uint256,uint256)
+          handler: handleRewardsExpired
+        - event: GysrSpent(indexed address,uint256)
+          handler: handleGysrSpent
+      file: ./src/mappings/geyser.ts
