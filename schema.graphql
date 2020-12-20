@@ -26,6 +26,7 @@ type Geyser @entity {
 
   # stats
   users: BigInt!
+  operations: BigInt!
 
   staked: BigDecimal!
   rewards: BigDecimal!
@@ -37,4 +38,40 @@ type Geyser @entity {
   rewardsUSD: BigDecimal!
   tvl: BigDecimal!
   apy: BigDecimal!
+  sharesPerToken: BigDecimal!
+}
+
+type User @entity {
+  # user address
+  id: ID!
+
+  # global stats
+  operations: BigInt!
+  earned: BigDecimal!
+
+  # global positions
+  positions: [Position!] @derivedFrom(field: "user")
+}
+
+type Position @entity {
+  # geyser address, user address
+  id: ID!
+
+  user: User!
+  geyser: Geyser!
+
+  shares: BigDecimal!
+  stakes: [Stake!] @derivedFrom(field: "position")
+}
+
+type Stake @entity {
+  # geyser address, user address, timestamp
+  id: ID!
+
+  position: Position!
+  user: User!
+  geyser: Geyser!
+
+  shares: BigDecimal!
+  timestamp: BigInt!
 }

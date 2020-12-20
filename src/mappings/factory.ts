@@ -1,6 +1,6 @@
 // GYSR factory event handling and mapping
 
-import { Address, BigInt, log } from "@graphprotocol/graph-ts"
+import { Address, BigInt, BigDecimal, log } from "@graphprotocol/graph-ts"
 import { GeyserFactory, GeyserCreated } from "../../generated/GeyserFactory/GeyserFactory"
 import { Geyser as GeyserContract } from "../../generated/GeyserFactory/Geyser"
 import { ERC20 } from "../../generated/GeyserFactory/ERC20"
@@ -41,6 +41,7 @@ export function handleGeyserCreated(event: GeyserCreated): void {
   geyser.createdTimestamp = event.block.timestamp;
 
   geyser.users = ZERO_BIG_INT;
+  geyser.operations = ZERO_BIG_INT;
   geyser.staked = ZERO_BIG_DECIMAL;
   geyser.rewards = ZERO_BIG_DECIMAL;
   geyser.funded = ZERO_BIG_DECIMAL;
@@ -51,6 +52,7 @@ export function handleGeyserCreated(event: GeyserCreated): void {
   geyser.rewardsUSD = ZERO_BIG_DECIMAL;
   geyser.tvl = ZERO_BIG_DECIMAL;
   geyser.apy = ZERO_BIG_DECIMAL;
+  geyser.sharesPerToken = BigDecimal.fromString("1000000");
 
   geyser.save();
 

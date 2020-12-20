@@ -1,7 +1,7 @@
 // Geyser event handling and mapping
 
-import { Address, BigInt, log } from "@graphprotocol/graph-ts"
-import { 
+import { Address, BigInt, log, store } from "@graphprotocol/graph-ts"
+import {
     Geyser as GeyserContract,
     Staked,
     Unstaked,
@@ -11,12 +11,66 @@ import {
     RewardsExpired,
     GysrSpent
 } from "../../generated/templates/Geyser/Geyser"
-import { Geyser, Token } from "../../generated/schema"
-import { tokensToDecimal } from "../util/common"
+import { Geyser, Token, User, Position, Stake } from "../../generated/schema"
+import { tokensToDecimal, ZERO_BIG_INT, ZERO_BIG_DECIMAL } from "../util/common"
 
 
 export function handleStaked(event: Staked): void {
-    // todo
+    // load geyser and token
+    let geyser = Geyser.load(event.address.toHexString());
+    let token = Token.load(geyser.stakingToken);
+
+    // load or create user
+    let user = User.load(event.params.user.toHexString());
+
+    if (user === null) {
+        user = new User(event.params.user.toHexString());
+        user.operations = ZERO_BIG_INT;
+        user.earned = ZERO_BIG_DECIMAL;
+    }
+
+    // load or create position
+    let positionId = geyser.id + "_" + user.id;
+
+    let position = Position.load(positionId);
+
+    if (position === null) {
+        position = new Position(positionId);
+        position.user = user.id;
+        position.geyser = geyser.id;
+        position.shares = ZERO_BIG_DECIMAL;
+
+        geyser.users = geyser.users.plus(BigInt.fromI32(1));
+    }
+
+    // create new stake
+    let stakeId = positionId + "_" + event.block.timestamp.toString();
+
+    let stake = new Stake(stakeId);
+    stake.position = position.id;
+    stake.user = user.id;
+    stake.geyser = geyser.id;
+
+    // get share info from contract
+    let contract = GeyserContract.bind(event.address);
+    let idx = contract.stakeCount(event.params.user).minus(BigInt.fromI32(1));
+    let stakeStruct = contract.userStakes(event.params.user, idx);
+    let shares = tokensToDecimal(stakeStruct.value0, token.decimals);
+
+    // update info
+    stake.shares = shares;
+    stake.timestamp = event.block.timestamp;
+
+    position.shares = position.shares.plus(shares);
+
+    user.operations = user.operations.plus(BigInt.fromI32(1));
+    geyser.operations = geyser.operations.plus(BigInt.fromI32(1));
+
+    // store
+    stake.save();
+    position.save();
+    user.save();
+    geyser.save();
 }
 
 
