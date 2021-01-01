@@ -7,6 +7,9 @@ type Token @entity {
   name: String!
   decimals: BigInt!
   totalSupply: BigInt!
+
+  # stats
+  price: BigDecimal!
 }
 
 type Geyser @entity {
@@ -17,8 +20,8 @@ type Geyser @entity {
   stakingToken: Token!
   rewardToken: Token!
 
-  bonusMin: BigInt!
-  bonusMax: BigInt!
+  bonusMin: BigDecimal!
+  bonusMax: BigDecimal!
   bonusPeriod: BigInt!
 
   createdTimestamp: BigInt!
@@ -61,7 +64,7 @@ type Position @entity {
   geyser: Geyser!
 
   shares: BigDecimal!
-  stakes: [Stake!] @derivedFrom(field: "position")
+  stakes: [Stake!]!
 }
 
 type Stake @entity {

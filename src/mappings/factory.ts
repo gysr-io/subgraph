@@ -6,7 +6,7 @@ import { Geyser as GeyserContract } from "../../generated/GeyserFactory/Geyser"
 import { ERC20 } from "../../generated/GeyserFactory/ERC20"
 import { Geyser, Token } from "../../generated/schema"
 import { Geyser as GeyserTemplate } from '../../generated/templates'
-import { ZERO_BIG_DECIMAL, ZERO_BIG_INT } from "../util/common"
+import { integerToDecimal, ZERO_BIG_DECIMAL, ZERO_BIG_INT } from "../util/common"
 
 
 export function handleGeyserCreated(event: GeyserCreated): void {
@@ -34,8 +34,8 @@ export function handleGeyserCreated(event: GeyserCreated): void {
   let geyser = new Geyser(event.params.geyser.toHexString());
   geyser.stakingToken = stakingToken.id;
   geyser.rewardToken = rewardToken.id;
-  geyser.bonusMin = contract.bonusMin();
-  geyser.bonusMax = contract.bonusMax();
+  geyser.bonusMin = integerToDecimal(contract.bonusMin());
+  geyser.bonusMax = integerToDecimal(contract.bonusMax());
   geyser.bonusPeriod = contract.bonusPeriod();
   geyser.createdBlock = event.block.number;
   geyser.createdTimestamp = event.block.timestamp;
@@ -70,6 +70,7 @@ function createNewToken(address: Address): Token {
   token.symbol = '';
   token.decimals = BigInt.fromI32(0);
   token.totalSupply = BigInt.fromI32(0);
+  token.price = BigDecimal.fromString("1.0");
 
   let resName = tokenContract.try_name();
   if (!resName.reverted) {
