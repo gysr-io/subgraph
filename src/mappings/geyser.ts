@@ -12,7 +12,8 @@ import {
   GysrSpent
 } from "../../generated/templates/Geyser/Geyser"
 import { Geyser, Token, User, Position, Stake } from "../../generated/schema"
-import { integerToDecimal, ZERO_BIG_INT, ZERO_BIG_DECIMAL } from "../util/common"
+import { integerToDecimal } from "../util/common"
+import { ZERO_BIG_INT, ZERO_BIG_DECIMAL } from "../util/constants"
 
 
 export function handleStaked(event: Staked): void {

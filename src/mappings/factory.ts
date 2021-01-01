@@ -6,7 +6,9 @@ import { Geyser as GeyserContract } from "../../generated/GeyserFactory/Geyser"
 import { ERC20 } from "../../generated/GeyserFactory/ERC20"
 import { Geyser, Token } from "../../generated/schema"
 import { Geyser as GeyserTemplate } from '../../generated/templates'
-import { integerToDecimal, ZERO_BIG_DECIMAL, ZERO_BIG_INT } from "../util/common"
+import { integerToDecimal } from "../util/common"
+import { ZERO_BIG_INT, ZERO_BIG_DECIMAL } from "../util/constants"
+import { createNewToken } from "./token"
 
 
 export function handleGeyserCreated(event: GeyserCreated): void {
@@ -58,36 +60,4 @@ export function handleGeyserCreated(event: GeyserCreated): void {
 
   // create template event handler
   GeyserTemplate.create(event.params.geyser);
-}
-
-
-// helper function to define and populate new token entity
-function createNewToken(address: Address): Token {
-  let tokenContract = ERC20.bind(address);
-
-  let token = new Token(tokenContract._address.toHexString())
-  token.name = '';
-  token.symbol = '';
-  token.decimals = BigInt.fromI32(0);
-  token.totalSupply = BigInt.fromI32(0);
-  token.price = BigDecimal.fromString("1.0");
-
-  let resName = tokenContract.try_name();
-  if (!resName.reverted) {
-    token.name = resName.value;
-  }
-  let resSymbol = tokenContract.try_symbol();
-  if (!resSymbol.reverted) {
-    token.symbol = resSymbol.value;
-  }
-  let resDecimals = tokenContract.try_decimals();
-  if (!resDecimals.reverted) {
-    token.decimals = BigInt.fromI32(resDecimals.value as i32);
-  }
-  let resSupply = tokenContract.try_totalSupply();
-  if (!resSupply.reverted) {
-    token.totalSupply = resSupply.value;
-  }
-
-  return token;
 }

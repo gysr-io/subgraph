@@ -24,6 +24,10 @@ dataSources:
           file: ./abis/Geyser.json
         - name: ERC20
           file: ./abis/ERC20.json
+        - name: UniswapFactory
+          file: ./abis/thirdparty/uniswap/Factory.json
+        - name: UniswapPair
+          file: ./abis/thirdparty/uniswap/Pair.json
       eventHandlers:
         - event: GeyserCreated(indexed address,address)
           handler: handleGeyserCreated
@@ -59,3 +63,26 @@ templates:
         - event: GysrSpent(indexed address,uint256)
           handler: handleGysrSpent
       file: ./src/mappings/geyser.ts
+  - kind: ethereum/contract
+    name: Token
+    network: mainnet
+    source:
+      abi: ERC20
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Token
+      abis:
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: UniswapFactory
+          file: ./abis/thirdparty/uniswap/Factory.json
+        - name: UniswapPair
+          file: ./abis/thirdparty/uniswap/Pair.json
+      blockHandlers:
+        - handler: handleBlock
+          filter:
+            kind: call
+      file: ./src/mappings/token.ts
