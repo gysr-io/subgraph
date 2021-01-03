@@ -81,8 +81,28 @@ templates:
           file: ./abis/thirdparty/uniswap/Factory.json
         - name: UniswapPair
           file: ./abis/thirdparty/uniswap/Pair.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+      file: ./src/mappings/token.ts
+  - kind: ethereum/contract
+    name: HighVolumeToken
+    network: mainnet
+    source:
+      abi: ERC20
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Token
+      abis:
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: UniswapFactory
+          file: ./abis/thirdparty/uniswap/Factory.json
+        - name: UniswapPair
+          file: ./abis/thirdparty/uniswap/Pair.json
       blockHandlers:
         - handler: handleBlock
-          filter:
-            kind: call
       file: ./src/mappings/token.ts

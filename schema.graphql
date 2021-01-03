@@ -8,6 +8,8 @@ type Token @entity {
   decimals: BigInt!
   totalSupply: BigInt!
 
+  alias: String!
+
   # stats
   price: BigDecimal!
 }

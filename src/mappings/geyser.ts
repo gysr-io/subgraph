@@ -1,6 +1,6 @@
 // Geyser event handling and mapping
 
-import { Address, BigInt, log, store } from "@graphprotocol/graph-ts"
+import { Address, BigInt, log, store } from '@graphprotocol/graph-ts'
 import {
   Geyser as GeyserContract,
   Staked,
@@ -10,10 +10,10 @@ import {
   RewardsUnlocked,
   RewardsExpired,
   GysrSpent
-} from "../../generated/templates/Geyser/Geyser"
-import { Geyser, Token, User, Position, Stake } from "../../generated/schema"
-import { integerToDecimal } from "../util/common"
-import { ZERO_BIG_INT, ZERO_BIG_DECIMAL } from "../util/constants"
+} from '../../generated/templates/Geyser/Geyser'
+import { Geyser, Token, User, Position, Stake } from '../../generated/schema'
+import { integerToDecimal } from '../util/common'
+import { ZERO_BIG_INT, ZERO_BIG_DECIMAL } from '../util/constants'
 
 
 export function handleStaked(event: Staked): void {
@@ -31,7 +31,7 @@ export function handleStaked(event: Staked): void {
   }
 
   // load or create position
-  let positionId = geyser.id + "_" + user.id;
+  let positionId = geyser.id + '_' + user.id;
 
   let position = Position.load(positionId);
 
@@ -46,7 +46,7 @@ export function handleStaked(event: Staked): void {
   }
 
   // create new stake
-  let stakeId = positionId + "_" + event.block.timestamp.toString();
+  let stakeId = positionId + '_' + event.block.timestamp.toString();
 
   let stake = new Stake(stakeId);
   stake.position = position.id;
@@ -86,7 +86,7 @@ export function handleUnstaked(event: Unstaked): void {
   let user = User.load(event.params.user.toHexString());
 
   // load position
-  let positionId = geyser.id + "_" + user.id;
+  let positionId = geyser.id + '_' + user.id;
   let position = Position.load(positionId);
 
   // get share info from contract
@@ -94,13 +94,13 @@ export function handleUnstaked(event: Unstaked): void {
   let count = contract.stakeCount(event.params.user).toI32();
 
   // update or delete current stakes
-  // (for some reason this didn't work with a derived "stakes" field)
+  // (for some reason this didn't work with a derived 'stakes' field)
   let stakes = position.stakes;
 
   for (let i = stakes.length - 1; i >= 0; i--) {
     if (i >= count) {
       // delete stake
-      store.remove("Stake", stakes[i]);
+      store.remove('Stake', stakes[i]);
       stakes.pop();
       continue;
     }
@@ -111,7 +111,7 @@ export function handleUnstaked(event: Unstaked): void {
     let stakeStruct = contract.userStakes(event.params.user, BigInt.fromI32(i));
     if (stakeStruct.value1 != stake.timestamp) {
       log.error(
-        "Stake timestamps not equal: {} != {}",
+        'Stake timestamps not equal: {} != {}',
         [stake.timestamp.toString(), stakeStruct.value1.toString()]
       )
     }
@@ -129,7 +129,7 @@ export function handleUnstaked(event: Unstaked): void {
   if (position.shares) {
     position.save();
   } else {
-    store.remove("Position", positionId);
+    store.remove('Position', positionId);
   }
 
   // update general info

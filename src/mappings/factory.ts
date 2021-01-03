@@ -1,14 +1,14 @@
 // GYSR factory event handling and mapping
 
-import { Address, BigInt, BigDecimal, log } from "@graphprotocol/graph-ts"
-import { GeyserFactory, GeyserCreated } from "../../generated/GeyserFactory/GeyserFactory"
-import { Geyser as GeyserContract } from "../../generated/GeyserFactory/Geyser"
-import { ERC20 } from "../../generated/GeyserFactory/ERC20"
-import { Geyser, Token } from "../../generated/schema"
+import { Address, BigInt, BigDecimal, log } from '@graphprotocol/graph-ts'
+import { GeyserFactory, GeyserCreated } from '../../generated/GeyserFactory/GeyserFactory'
+import { Geyser as GeyserContract } from '../../generated/GeyserFactory/Geyser'
+import { ERC20 } from '../../generated/GeyserFactory/ERC20'
+import { Geyser, Token } from '../../generated/schema'
 import { Geyser as GeyserTemplate } from '../../generated/templates'
-import { integerToDecimal } from "../util/common"
-import { ZERO_BIG_INT, ZERO_BIG_DECIMAL } from "../util/constants"
-import { createNewToken } from "./token"
+import { integerToDecimal } from '../util/common'
+import { ZERO_BIG_INT, ZERO_BIG_DECIMAL } from '../util/constants'
+import { createNewToken } from './token'
 
 
 export function handleGeyserCreated(event: GeyserCreated): void {
@@ -54,7 +54,7 @@ export function handleGeyserCreated(event: GeyserCreated): void {
   geyser.rewardsUSD = ZERO_BIG_DECIMAL;
   geyser.tvl = ZERO_BIG_DECIMAL;
   geyser.apy = ZERO_BIG_DECIMAL;
-  geyser.sharesPerToken = BigDecimal.fromString("1000000");
+  geyser.sharesPerToken = BigDecimal.fromString('1000000');
 
   geyser.save();
 
