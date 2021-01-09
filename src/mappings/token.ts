@@ -3,16 +3,13 @@
 import { Address, BigInt, BigDecimal, ethereum, log, dataSource } from '@graphprotocol/graph-ts'
 import { ERC20, Transfer } from '../../generated/templates/Token/ERC20'
 import { Token } from '../../generated/schema'
-import {
-  Token as TokenTemplate,
-  HighVolumeToken as HighVolumeTokenTemplate
-} from '../../generated/templates'
 import { integerToDecimal } from '../util/common'
 import { ZERO_BIG_INT, HIGH_VOLUME_TOKENS, STABLECOINS, ZERO_BIG_DECIMAL } from '../util/constants'
 import {
   getTokenPrice,
   isUniswapLiquidityToken,
-  getUniswapLiquidityTokenAlias
+  getUniswapLiquidityTokenAlias,
+  getUniswapLiquidityTokenPrice
 } from '../pricing/uniswap'
 
 
@@ -24,10 +21,11 @@ export function createNewToken(address: Address): Token {
   let token = new Token(tokenContract._address.toHexString())
   token.name = '';
   token.symbol = '';
+  token.alias = '';
   token.decimals = BigInt.fromI32(0);
   token.totalSupply = BigInt.fromI32(0);
   token.price = ZERO_BIG_DECIMAL;
-  token.alias = token.symbol;
+  token.updated = ZERO_BIG_INT;
 
   let resName = tokenContract.try_name();
   if (!resName.reverted) {
@@ -36,6 +34,7 @@ export function createNewToken(address: Address): Token {
   let resSymbol = tokenContract.try_symbol();
   if (!resSymbol.reverted) {
     token.symbol = resSymbol.value;
+    token.alias = token.symbol;
   }
   let resDecimals = tokenContract.try_decimals();
   if (!resDecimals.reverted) {
@@ -49,23 +48,42 @@ export function createNewToken(address: Address): Token {
   // token type
   if (isUniswapLiquidityToken(address)) {
     token.alias = getUniswapLiquidityTokenAlias(address);
-    log.info('created new token: Uniswap LP, {}, {}', [token.id, token.alias])
-
-  } else if (HIGH_VOLUME_TOKENS.includes(address.toHexString())) {
-    log.info('created new token: high volume, {}, {}', [token.id, token.symbol])
-    //HighVolumeTokenTemplate.create(address);
+    token.type = 'UniswapLiquidity';
+    log.info('created new token: Uniswap LP, {}, {}', [token.id, token.alias]);
 
   } else if (STABLECOINS.includes(address.toHexString())) {
-    log.info('created new token: stablecoin, {}, {}', [token.id, token.symbol])
     token.price = BigDecimal.fromString('1.0');
+    token.type = 'Stable';
+    log.info('created new token: stablecoin, {}, {}', [token.id, token.symbol]);
+
+  } else if (HIGH_VOLUME_TOKENS.includes(address.toHexString())) {
+    token.type = 'Standard';
+    log.info('created new token: high volume, {}, {}', [token.id, token.symbol])
 
   } else { //if (address == Address.fromString('0xbEa98c05eEAe2f3bC8c3565Db7551Eb738c8CCAb')) {
-    TokenTemplate.create(address);
-    log.info('created new token: standard, {}, {}', [token.id, token.symbol])
+    token.type = 'Standard';
+    log.info('created new token: standard, {}, {}', [token.id, token.symbol]);
   }
 
   return token;
 }
+
+
+export function getPrice(token: Token): BigDecimal {
+  // price token based on type
+  if (token.type == 'Stable') {
+    return BigDecimal.fromString('1.0');
+
+  } else if (token.type == 'Standard') {
+    return getTokenPrice(Address.fromString(token.id.toString()));
+
+  } else if (token.type == 'UniswapLiquidity') {
+    return getUniswapLiquidityTokenPrice(Address.fromString(token.id.toString()));
+  }
+
+  return ZERO_BIG_DECIMAL;
+}
+
 
 export function handleTransfer(event: Transfer): void {
   let price = getTokenPrice(event.address);

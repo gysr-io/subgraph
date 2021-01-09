@@ -1,3 +1,11 @@
+# schema definitions for GYSR subgraph
+
+enum TokenType {
+  Standard
+  Stable
+  UniswapLiquidity
+}
+
 type Token @entity {
   # token contract address
   id: ID!
@@ -9,9 +17,11 @@ type Token @entity {
   totalSupply: BigInt!
 
   alias: String!
+  type: TokenType!
 
   # stats
   price: BigDecimal!
+  updated: BigInt!
 }
 
 type Geyser @entity {
@@ -44,6 +54,7 @@ type Geyser @entity {
   tvl: BigDecimal!
   apy: BigDecimal!
   sharesPerToken: BigDecimal!
+  updated: BigInt!
 }
 
 type User @entity {

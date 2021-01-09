@@ -59,6 +59,15 @@ export function getEthPrice(): BigDecimal {
 
 
 export function getTokenPrice(address: Address): BigDecimal {
+  // early exit for stables
+  if (STABLECOINS.includes(address.toHexString())) {
+    return BigDecimal.fromString('1.0');
+  }
+  if (address.toHexString() == WETH_ADDRESS) {
+    return getEthPrice();
+  }
+
+  // setup
   let factory = UniswapFactory.bind(Address.fromString(UNISWAP_FACTORY));
   let zero = Address.fromString(ZERO_ADDRESS);
 
@@ -102,4 +111,31 @@ export function getTokenPrice(address: Address): BigDecimal {
   }
 
   return ZERO_BIG_DECIMAL;
+}
+
+
+export function getUniswapLiquidityTokenPrice(address: Address): BigDecimal {
+
+  let pair = UniswapPair.bind(address);
+
+  let reserves = pair.getReserves();
+
+  let token0 = ERC20.bind(pair.token0());
+  let token1 = ERC20.bind(pair.token1());
+
+  let price0 = getTokenPrice(token0._address);
+  let price1 = getTokenPrice(token1._address);
+
+  if (price0 == ZERO_BIG_DECIMAL || price1 == ZERO_BIG_DECIMAL) {
+    return ZERO_BIG_DECIMAL;
+  }
+
+  let amount0 = integerToDecimal(reserves.value0, BigInt.fromI32(token0.decimals()));
+  let amount1 = integerToDecimal(reserves.value1, BigInt.fromI32(token1.decimals()));
+
+  let totalReservesUSD = (price0.times(amount0)).plus(price1.times(amount1));
+
+  let totalSupply = integerToDecimal(pair.totalSupply());
+
+  return totalReservesUSD.div(totalSupply);
 }

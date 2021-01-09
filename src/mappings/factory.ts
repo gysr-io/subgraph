@@ -55,6 +55,7 @@ export function handleGeyserCreated(event: GeyserCreated): void {
   geyser.tvl = ZERO_BIG_DECIMAL;
   geyser.apy = ZERO_BIG_DECIMAL;
   geyser.sharesPerToken = BigDecimal.fromString('1000000');
+  geyser.updated = ZERO_BIG_INT;
 
   geyser.save();
 
