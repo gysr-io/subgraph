@@ -44,7 +44,7 @@ export function getUniswapLiquidityTokenAlias(address: Address): string {
   let token0 = ERC20.bind(pair.token0());
   let token1 = ERC20.bind(pair.token1());
 
-  let alias = token0.symbol() + '-' + token1.symbol() + ' (Uniswap LP)';
+  let alias = token0.symbol() + '-' + token1.symbol();
   return alias;
 }
 

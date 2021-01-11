@@ -1,9 +1,8 @@
-// token event handling and mapping
+// token pricing methods
 
 import { Address, BigInt, BigDecimal, ethereum, log, dataSource } from '@graphprotocol/graph-ts'
-import { ERC20, Transfer } from '../../generated/templates/Token/ERC20'
+import { ERC20 } from '../../generated/templates/Token/ERC20'
 import { Token } from '../../generated/schema'
-import { integerToDecimal } from '../util/common'
 import { ZERO_BIG_INT, HIGH_VOLUME_TOKENS, STABLECOINS, ZERO_BIG_DECIMAL } from '../util/constants'
 import {
   getTokenPrice,
@@ -34,7 +33,6 @@ export function createNewToken(address: Address): Token {
   let resSymbol = tokenContract.try_symbol();
   if (!resSymbol.reverted) {
     token.symbol = resSymbol.value;
-    token.alias = token.symbol;
   }
   let resDecimals = tokenContract.try_decimals();
   if (!resDecimals.reverted) {
@@ -70,6 +68,11 @@ export function createNewToken(address: Address): Token {
 
 
 export function getPrice(token: Token): BigDecimal {
+  // only price tokens on mainnet
+  if (dataSource.network() != 'mainnet') {
+    return ZERO_BIG_DECIMAL;
+  }
+
   // price token based on type
   if (token.type == 'Stable') {
     return BigDecimal.fromString('1.0');
@@ -82,25 +85,4 @@ export function getPrice(token: Token): BigDecimal {
   }
 
   return ZERO_BIG_DECIMAL;
-}
-
-
-export function handleTransfer(event: Transfer): void {
-  let price = getTokenPrice(event.address);
-
-  let token = new Token(event.address.toHexString());
-  token.price = price;
-  token.save();
-}
-
-
-export function handleBlock(block: ethereum.Block): void {
-  if (block.number.mod(BigInt.fromI32(20)).notEqual(ZERO_BIG_INT)) {
-    return;
-  }
-  let price = getTokenPrice(dataSource.address());
-
-  let token = new Token(dataSource.address().toHexString());
-  token.price = price;
-  token.save();
 }

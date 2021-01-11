@@ -14,14 +14,15 @@ import {
 import { Geyser, Token, User, Position, Stake } from '../../generated/schema'
 import { integerToDecimal } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL } from '../util/constants'
-import { getPrice } from './token'
+import { getPrice } from '../pricing/token'
+import { updatePricing } from '../pricing/geyser'
 
 
 export function handleStaked(event: Staked): void {
   // load geyser and token
-  let geyser = Geyser.load(event.address.toHexString());
-  let stakingToken = Token.load(geyser.stakingToken);
-  let rewardToken = Token.load(geyser.rewardToken);
+  let geyser = Geyser.load(event.address.toHexString())!;
+  let stakingToken = Token.load(geyser.stakingToken)!;
+  let rewardToken = Token.load(geyser.rewardToken)!;
 
   // load or create user
   let user = User.load(event.params.user.toHexString());
@@ -72,18 +73,12 @@ export function handleStaked(event: Staked): void {
   geyser.operations = geyser.operations.plus(BigInt.fromI32(1));
 
   // update pricing info
-  stakingToken.price = getPrice(stakingToken!);
+  stakingToken.price = getPrice(stakingToken);
   stakingToken.updated = event.block.timestamp;
-  rewardToken.price = getPrice(rewardToken!);
+  rewardToken.price = getPrice(rewardToken);
   rewardToken.updated = event.block.timestamp;
 
-  geyser.staked = integerToDecimal(contract.totalStaked(), stakingToken.decimals);
-  geyser.rewards = integerToDecimal(contract.totalLocked(), rewardToken.decimals).plus(
-    integerToDecimal(contract.totalUnlocked(), rewardToken.decimals)
-  );
-  geyser.stakedUSD = geyser.staked.times(stakingToken.price);
-  geyser.rewardsUSD = geyser.rewards.times(rewardToken.price);
-  geyser.tvl = geyser.stakedUSD.plus(geyser.rewardsUSD);
+  updatePricing(geyser, contract, stakingToken, rewardToken);
   geyser.updated = event.block.timestamp;
 
   // store
@@ -98,9 +93,9 @@ export function handleStaked(event: Staked): void {
 
 export function handleUnstaked(event: Unstaked): void {
   // load geyser and token
-  let geyser = Geyser.load(event.address.toHexString());
-  let stakingToken = Token.load(geyser.stakingToken);
-  let rewardToken = Token.load(geyser.rewardToken);
+  let geyser = Geyser.load(event.address.toHexString())!;
+  let stakingToken = Token.load(geyser.stakingToken)!;
+  let rewardToken = Token.load(geyser.rewardToken)!;
 
   // load user
   let user = User.load(event.params.user.toHexString());
@@ -158,18 +153,12 @@ export function handleUnstaked(event: Unstaked): void {
   geyser.operations = geyser.operations.plus(BigInt.fromI32(1));
 
   // update pricing info
-  stakingToken.price = getPrice(stakingToken!);
+  stakingToken.price = getPrice(stakingToken);
   stakingToken.updated = event.block.timestamp;
-  rewardToken.price = getPrice(rewardToken!);
+  rewardToken.price = getPrice(rewardToken);
   rewardToken.updated = event.block.timestamp;
 
-  geyser.staked = integerToDecimal(contract.totalStaked(), stakingToken.decimals);
-  geyser.rewards = integerToDecimal(contract.totalLocked(), rewardToken.decimals).plus(
-    integerToDecimal(contract.totalUnlocked(), rewardToken.decimals)
-  );
-  geyser.stakedUSD = geyser.staked.times(stakingToken.price);
-  geyser.rewardsUSD = geyser.rewards.times(rewardToken.price);
-  geyser.tvl = geyser.stakedUSD.plus(geyser.rewardsUSD);
+  updatePricing(geyser, contract, stakingToken, rewardToken);
   geyser.updated = event.block.timestamp;
 
   // store
@@ -181,9 +170,9 @@ export function handleUnstaked(event: Unstaked): void {
 
 
 export function handleRewardsFunded(event: RewardsFunded): void {
-  let geyser = Geyser.load(event.address.toHexString());
-  let stakingToken = Token.load(geyser.stakingToken);
-  let rewardToken = Token.load(geyser.rewardToken);
+  let geyser = Geyser.load(event.address.toHexString())!;
+  let stakingToken = Token.load(geyser.stakingToken)!;
+  let rewardToken = Token.load(geyser.rewardToken)!;
 
   let contract = GeyserContract.bind(event.address);
 
@@ -197,13 +186,7 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   rewardToken.price = getPrice(rewardToken!);
   rewardToken.updated = event.block.timestamp;
 
-  geyser.staked = integerToDecimal(contract.totalStaked(), stakingToken.decimals);
-  geyser.rewards = integerToDecimal(contract.totalLocked(), rewardToken.decimals).plus(
-    integerToDecimal(contract.totalUnlocked(), rewardToken.decimals)
-  );
-  geyser.stakedUSD = geyser.staked.times(stakingToken.price);
-  geyser.rewardsUSD = geyser.rewards.times(rewardToken.price);
-  geyser.tvl = geyser.stakedUSD.plus(geyser.rewardsUSD);
+  updatePricing(geyser, contract, stakingToken, rewardToken);
   geyser.updated = event.block.timestamp;
 
   // store
