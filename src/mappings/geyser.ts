@@ -78,7 +78,7 @@ export function handleStaked(event: Staked): void {
   rewardToken.price = getPrice(rewardToken);
   rewardToken.updated = event.block.timestamp;
 
-  updatePricing(geyser, contract, stakingToken, rewardToken);
+  updatePricing(geyser, contract, stakingToken, rewardToken, event.block.timestamp);
   geyser.updated = event.block.timestamp;
 
   // store
@@ -158,7 +158,7 @@ export function handleUnstaked(event: Unstaked): void {
   rewardToken.price = getPrice(rewardToken);
   rewardToken.updated = event.block.timestamp;
 
-  updatePricing(geyser, contract, stakingToken, rewardToken);
+  updatePricing(geyser, contract, stakingToken, rewardToken, event.block.timestamp);
   geyser.updated = event.block.timestamp;
 
   // store
@@ -186,8 +186,19 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   rewardToken.price = getPrice(rewardToken!);
   rewardToken.updated = event.block.timestamp;
 
-  updatePricing(geyser, contract, stakingToken, rewardToken);
+  updatePricing(geyser, contract, stakingToken, rewardToken, event.block.timestamp);
   geyser.updated = event.block.timestamp;
+
+  // update timeframe for geyser
+  if (event.params.start.lt(geyser.start) || geyser.start.equals(ZERO_BIG_INT)) {
+    geyser.start = event.params.start;
+  }
+  let end = event.params.start.plus(event.params.duration);
+  if (end.gt(geyser.end) || geyser.end.equals(ZERO_BIG_INT)) {
+    geyser.end = end;
+  }
+
+  // TODO: map of reward rates over time
 
   // store
   geyser.save();

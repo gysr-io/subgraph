@@ -24,6 +24,13 @@ type Token @entity {
   updated: BigInt!
 }
 
+enum GeyserState {
+  Unfunded
+  Boiling
+  Active
+  Stale
+}
+
 type Geyser @entity {
   # geyser contract address
   id: ID!
@@ -48,6 +55,10 @@ type Geyser @entity {
   funded: BigDecimal!
   distributed: BigDecimal!
   gysrSpent: BigDecimal!
+
+  start: BigInt!
+  end: BigInt!
+  state: GeyserState!
 
   stakedUSD: BigDecimal!
   rewardsUSD: BigDecimal!

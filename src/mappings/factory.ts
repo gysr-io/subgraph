@@ -50,6 +50,9 @@ export function handleGeyserCreated(event: GeyserCreated): void {
   geyser.distributed = ZERO_BIG_DECIMAL;
   geyser.gysrSpent = ZERO_BIG_DECIMAL;
 
+  geyser.start = ZERO_BIG_INT;
+  geyser.end = ZERO_BIG_INT;
+  geyser.state = 'Unfunded';
   geyser.stakedUSD = ZERO_BIG_DECIMAL;
   geyser.rewardsUSD = ZERO_BIG_DECIMAL;
   geyser.tvl = ZERO_BIG_DECIMAL;
