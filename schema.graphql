@@ -46,6 +46,8 @@ type Geyser @entity {
   createdTimestamp: BigInt!
   createdBlock: BigInt!
 
+  tags: String!
+
   # stats
   users: BigInt!
   operations: BigInt!
@@ -67,6 +69,21 @@ type Geyser @entity {
   sharesPerToken: BigDecimal!
   updated: BigInt!
 }
+
+type _Schema_
+  @fulltext(
+    name: "geyserSearch",
+    language: en
+    algorithm: rank,
+    include: [
+      {
+        entity: "Geyser",
+        fields: [
+          { name: "tags" }
+        ]
+      }
+    ]
+  )
 
 type User @entity {
   # user address

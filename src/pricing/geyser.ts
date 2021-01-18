@@ -28,12 +28,12 @@ export function updatePricing(
   // fundings
   let count = contract.fundingCount().toI32();
   let active = false;
-  let next = BigInt.fromI32(3000000000);
+  let next = BigInt.fromI32(10).times(timestamp);
   let rate = ZERO_BIG_DECIMAL;
   for (let i = 0; i < count; i++) {
     let funding = contract.fundings(BigInt.fromI32(i));
     // active
-    if (funding.value4.lt(timestamp) && funding.value5.gt(timestamp) && !active) {
+    if (funding.value4.le(timestamp) && funding.value5.gt(timestamp) && !active) {
       active = true;
       rate = ZERO_BIG_DECIMAL;
     }
@@ -44,14 +44,14 @@ export function updatePricing(
     }
 
     // rate
-    if (active && funding.value4.lt(timestamp) && funding.value5.gt(timestamp)
-      || !active && funding.value4 == next) {
+    if ((active && funding.value4.lt(timestamp) && funding.value5.gt(timestamp))
+      || (!active && funding.value4 == next)) {
       // shares per second
       rate = rate.plus(
         integerToDecimal(funding.value1, rewardToken.decimals).div(
           funding.value6.toBigDecimal()
         )
-      )
+      );
     }
   }
 

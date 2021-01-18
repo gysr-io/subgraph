@@ -41,6 +41,12 @@ export function handleGeyserCreated(event: GeyserCreated): void {
   geyser.bonusPeriod = contract.bonusPeriod();
   geyser.createdBlock = event.block.number;
   geyser.createdTimestamp = event.block.timestamp;
+  geyser.tags = (
+    stakingToken.symbol
+    + " " + stakingToken.name
+    + " " + rewardToken.symbol
+    + " " + rewardToken.name
+  );
 
   geyser.users = ZERO_BIG_INT;
   geyser.operations = ZERO_BIG_INT;
