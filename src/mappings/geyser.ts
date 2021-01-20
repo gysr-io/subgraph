@@ -11,9 +11,9 @@ import {
   RewardsExpired,
   GysrSpent
 } from '../../generated/templates/Geyser/Geyser'
-import { Geyser, Token, User, Position, Stake } from '../../generated/schema'
+import { Geyser, Token, User, Position, Stake, Platform } from '../../generated/schema'
 import { integerToDecimal } from '../util/common'
-import { ZERO_BIG_INT, ZERO_BIG_DECIMAL } from '../util/constants'
+import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS } from '../util/constants'
 import { getPrice } from '../pricing/token'
 import { updatePricing } from '../pricing/geyser'
 
@@ -199,6 +199,18 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   }
 
   // TODO: map of reward rates over time
+
+  // update platform
+  let platform = Platform.load(ZERO_ADDRESS);
+  if (platform === null) {
+    platform = new Platform(ZERO_ADDRESS);
+    platform.tvl = ZERO_BIG_DECIMAL;
+    platform._geysers = [];
+  }
+  if (!platform._geysers.includes(geyser.id)) {
+    platform._geysers = platform._geysers.concat([geyser.id]);
+    platform.save();
+  }
 
   // store
   geyser.save();

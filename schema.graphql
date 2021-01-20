@@ -119,3 +119,12 @@ type Stake @entity {
   shares: BigDecimal!
   timestamp: BigInt!
 }
+
+type Platform @entity {
+  id: ID!
+
+  tvl: BigDecimal!
+
+  # list of actively priced geysers
+  _geysers: [Geyser!]!
+}
