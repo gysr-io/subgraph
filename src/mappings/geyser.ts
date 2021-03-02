@@ -12,7 +12,7 @@ import {
   GysrSpent
 } from '../../generated/templates/Geyser/Geyser'
 import { Geyser, Token, User, Position, Stake, Platform } from '../../generated/schema'
-import { integerToDecimal } from '../util/common'
+import { integerToDecimal, initializeUser } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS } from '../util/constants'
 import { getPrice } from '../pricing/token'
 import { updatePricing } from '../pricing/geyser'
@@ -28,9 +28,7 @@ export function handleStaked(event: Staked): void {
   let user = User.load(event.params.user.toHexString());
 
   if (user === null) {
-    user = new User(event.params.user.toHexString());
-    user.operations = ZERO_BIG_INT;
-    user.earned = ZERO_BIG_DECIMAL;
+    user = initializeUser(event.params.user);
   }
 
   // load or create position

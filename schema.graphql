@@ -35,6 +35,8 @@ type Geyser @entity {
   # geyser contract address
   id: ID!
 
+  owner: User!
+
   # geyser config
   stakingToken: Token!
   rewardToken: Token!
@@ -95,6 +97,9 @@ type User @entity {
 
   # global positions
   positions: [Position!] @derivedFrom(field: "user")
+
+  # geysers owned by this user
+  geysers: [Geyser!] @derivedFrom(field: "owner")
 }
 
 type Position @entity {
