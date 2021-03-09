@@ -11,7 +11,7 @@ export function integerToDecimal(value: BigInt, decimals: BigInt = BigInt.fromI3
   return value.toBigDecimal().div(denom.toBigDecimal());
 }
 
-export function initializeUser(address: Address): User {
+export function createNewUser(address: Address): User {
   let user = new User(address.toHexString());
   user.operations = ZERO_BIG_INT;
   user.earned = ZERO_BIG_DECIMAL;

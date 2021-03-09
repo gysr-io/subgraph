@@ -6,7 +6,7 @@ import { Geyser as GeyserContract } from '../../generated/GeyserFactory/Geyser'
 import { ERC20 } from '../../generated/GeyserFactory/ERC20'
 import { Geyser, Token, User } from '../../generated/schema'
 import { Geyser as GeyserTemplate } from '../../generated/templates'
-import { integerToDecimal, initializeUser } from '../util/common'
+import { integerToDecimal, createNewUser } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL } from '../util/constants'
 import { createNewToken } from '../pricing/token'
 
@@ -35,7 +35,7 @@ export function handleGeyserCreated(event: GeyserCreated): void {
   let user = User.load(event.params.user.toHexString());
 
   if (user == null) {
-    user = initializeUser(event.params.user);
+    user = createNewUser(event.params.user);
   }
 
   // geyser entity

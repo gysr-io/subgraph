@@ -91,6 +91,8 @@ templates:
           handler: handleRewardsFunded
         - event: RewardsDistributed(indexed address,uint256)
           handler: handleRewardsDistributed
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
         - event: RewardsUnlocked(uint256,uint256)
           handler: handleRewardsUnlocked
         - event: RewardsExpired(uint256,uint256,uint256)
