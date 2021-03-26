@@ -241,6 +241,7 @@ export function handleOwnershipTransferred(event: OwnershipTransferred): void {
   let newOwner = User.load(event.params.newOwner.toHexString());
   if (newOwner == null) {
     newOwner = createNewUser(event.params.newOwner);
+    newOwner.save()
   }
 
   geyser.owner = newOwner.id;
