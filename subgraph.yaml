@@ -8,9 +8,10 @@ dataSources:
     name: Platform
     network: mainnet
     source:
-      address: "0x0000000000000000000000000000000000000000"
-      abi: Geyser
-      startBlock: 11687000
+      #address: "0x0000000000000000000000000000000000000000"
+      address: "0x443D2f2755DB5942601fa062Cc248aAA153313D3"
+      abi: ESDRoot
+      startBlock: 11143895
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -27,8 +28,13 @@ dataSources:
           file: ./abis/thirdparty/uniswap/Factory.json
         - name: UniswapPair
           file: ./abis/thirdparty/uniswap/Pair.json
-      blockHandlers:
-        - handler: handleBlock
+        - name: ESDRoot
+          file: ./abis/thirdparty/emptysetdollar/Root.json
+      eventHandlers:
+        - event: Advance(indexed uint256,uint256,uint256)
+          handler: handleUpdate
+      #blockHandlers:
+      #  - handler: handleBlock
       file: ./src/mappings/platform.ts
 
   - kind: ethereum/contract

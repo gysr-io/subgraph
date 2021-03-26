@@ -8,11 +8,11 @@ import { getPrice } from '../pricing/token'
 import { updatePricing } from '../pricing/geyser'
 
 
-export function handleBlock(block: ethereum.Block): void {
+export function handleUpdate(event: ethereum.Event): void {
   // run handler periodically to keep stats fresh
-  if (block.number.mod(BigInt.fromI32(1000)).notEqual(ZERO_BIG_INT)) {
-    return;
-  }
+  //if (event.block.number.mod(BigInt.fromI32(1000)).notEqual(ZERO_BIG_INT)) {
+  //  return;
+  //}
   let platform = Platform.load(ZERO_ADDRESS);
   if (platform === null) {
     return;
@@ -32,12 +32,12 @@ export function handleBlock(block: ethereum.Block): void {
 
     // update pricing info
     stakingToken.price = getPrice(stakingToken);
-    stakingToken.updated = block.timestamp;
+    stakingToken.updated = event.block.timestamp;
     rewardToken.price = getPrice(rewardToken);
-    rewardToken.updated = block.timestamp;
+    rewardToken.updated = event.block.timestamp;
 
-    updatePricing(geyser, contract, stakingToken, rewardToken, block.timestamp);
-    geyser.updated = block.timestamp;
+    updatePricing(geyser, contract, stakingToken, rewardToken, event.block.timestamp);
+    geyser.updated = event.block.timestamp;
 
     // store
     geyser.save();
