@@ -9,10 +9,11 @@ import {
   RewardsDistributed,
   RewardsUnlocked,
   RewardsExpired,
-  GysrSpent
+  GysrSpent,
+  OwnershipTransferred
 } from '../../generated/templates/Geyser/Geyser'
 import { Geyser, Token, User, Position, Stake, Platform } from '../../generated/schema'
-import { integerToDecimal } from '../util/common'
+import { integerToDecimal, createNewUser } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS } from '../util/constants'
 import { getPrice } from '../pricing/token'
 import { updatePricing } from '../pricing/geyser'
@@ -28,9 +29,7 @@ export function handleStaked(event: Staked): void {
   let user = User.load(event.params.user.toHexString());
 
   if (user === null) {
-    user = new User(event.params.user.toHexString());
-    user.operations = ZERO_BIG_INT;
-    user.earned = ZERO_BIG_DECIMAL;
+    user = createNewUser(event.params.user);
   }
 
   // load or create position
@@ -198,6 +197,11 @@ export function handleRewardsFunded(event: RewardsFunded): void {
     geyser.end = end;
   }
 
+  // update general info
+  let user = User.load(geyser.owner);
+  user.operations = user.operations.plus(BigInt.fromI32(1));
+  geyser.operations = geyser.operations.plus(BigInt.fromI32(1));
+
   // TODO: map of reward rates over time
 
   // update platform
@@ -216,6 +220,7 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   geyser.save();
   stakingToken.save();
   rewardToken.save();
+  user.save();
 }
 
 
@@ -226,6 +231,20 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
   let amount = integerToDecimal(event.params.amount, token.decimals);
   geyser.rewards = geyser.rewards.minus(amount);
   geyser.distributed = geyser.distributed.plus(amount);
+
+  geyser.save();
+}
+
+
+export function handleOwnershipTransferred(event: OwnershipTransferred): void {
+  let geyser = Geyser.load(event.address.toHexString());
+  let newOwner = User.load(event.params.newOwner.toHexString());
+  if (newOwner == null) {
+    newOwner = createNewUser(event.params.newOwner);
+    newOwner.save()
+  }
+
+  geyser.owner = newOwner.id;
 
   geyser.save();
 }

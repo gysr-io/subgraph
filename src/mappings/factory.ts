@@ -4,9 +4,9 @@ import { Address, BigInt, BigDecimal, log } from '@graphprotocol/graph-ts'
 import { GeyserFactory, GeyserCreated } from '../../generated/GeyserFactory/GeyserFactory'
 import { Geyser as GeyserContract } from '../../generated/GeyserFactory/Geyser'
 import { ERC20 } from '../../generated/GeyserFactory/ERC20'
-import { Geyser, Token } from '../../generated/schema'
+import { Geyser, Token, User } from '../../generated/schema'
 import { Geyser as GeyserTemplate } from '../../generated/templates'
-import { integerToDecimal } from '../util/common'
+import { integerToDecimal, createNewUser } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL } from '../util/constants'
 import { createNewToken } from '../pricing/token'
 
@@ -32,8 +32,15 @@ export function handleGeyserCreated(event: GeyserCreated): void {
     rewardToken.save();
   }
 
+  let user = User.load(event.params.user.toHexString());
+
+  if (user == null) {
+    user = createNewUser(event.params.user);
+  }
+
   // geyser entity
   let geyser = new Geyser(event.params.geyser.toHexString());
+  geyser.owner = user.id;
   geyser.stakingToken = stakingToken.id;
   geyser.rewardToken = rewardToken.id;
   geyser.bonusMin = integerToDecimal(contract.bonusMin());
@@ -67,6 +74,7 @@ export function handleGeyserCreated(event: GeyserCreated): void {
   geyser.updated = ZERO_BIG_INT;
 
   geyser.save();
+  user.save();
 
   // create template event handler
   GeyserTemplate.create(event.params.geyser);
