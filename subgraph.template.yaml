@@ -6,12 +6,12 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: Platform
-    network: mainnet
+    network: {{network}}
     source:
       #address: "0x0000000000000000000000000000000000000000"
       address: "0x443D2f2755DB5942601fa062Cc248aAA153313D3"
       abi: ESDRoot
-      startBlock: 11143895
+      startBlock: {{geyser_factory_v1_start_block}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -39,11 +39,11 @@ dataSources:
 
   - kind: ethereum/contract
     name: GeyserFactory
-    network: mainnet
+    network: {{network}}
     source:
-      address: "0xCAda3423d33259A94C1ED1A7AEEcb73B87D0B684"
+      address: "{{geyser_factory_v1}}"
       abi: GeyserFactory
-      startBlock: 11143895
+      startBlock: {{geyser_factory_v1_start_block}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -69,7 +69,7 @@ dataSources:
 templates:
   - kind: ethereum/contract
     name: Geyser
-    network: mainnet
+    network: {{network}}
     source:
       abi: Geyser
     mapping:

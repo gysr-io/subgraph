@@ -3,7 +3,7 @@
 This repository implements a subgraph to index data and events
 for Geysers, tokens, and users on the [GYSR](https://www.gysr.io/) platform.
 
-It is deployed here:  
+It is deployed here:
 https://thegraph.com/explorer/subgraph/gysr-io/gysr
 
 
@@ -29,7 +29,8 @@ Make sure to specify the flag `--network development` while following the deploy
 
 Follow the [quickstart](https://thegraph.com/docs/quick-start#local-development) to setup a local graph node.
 
-Modify `subgraph.yaml` to point to the locally deployed factory contract `address` and comment out the `startBlock` parameter. Those current values are only relevant on mainnet.
+Copy the `config/mainnet.json` file to `config/local.json`. Replace the `geyser_factory_v1` parameter with the address of the locally deployed factory conract and replace the `geyser_factory_v1_start_block` with `0`. You can leave `network` as mainnet.
+
 
 
 ## Deploy
@@ -48,7 +49,7 @@ npm run create-local
 
 Build and deploy subgraph to local graph node
 ```
-npm run deploy-local
+npm run deploy:local
 ```
 
 ### Mainnet
@@ -66,7 +67,7 @@ Make sure to reset `subgraph.yaml` to the original values for mainnet factory ad
 
 Build and deploy subgraph to hosted service
 ```
-npm run deploy
+npm run deploy:mainnet
 ```
 
 ## Test
@@ -81,5 +82,5 @@ npx truffle console
 
 Monitor indexing logs of the graph node for debugging.
 
-Examine and validate indexed data with the query sandbox at:  
+Examine and validate indexed data with the query sandbox at:
 http://localhost:8000/subgraphs/name/gysr-io/gysr
