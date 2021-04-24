@@ -55,6 +55,8 @@ export function updatePricing(
     }
   }
 
+  geyser.sharesPerSecond = rate;
+
   // apy
   if (rate.gt(ZERO_BIG_DECIMAL)
     && rewardToken.price.gt(ZERO_BIG_DECIMAL)

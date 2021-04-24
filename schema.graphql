@@ -59,6 +59,8 @@ type Geyser @entity {
   funded: BigDecimal!
   distributed: BigDecimal!
   gysrSpent: BigDecimal!
+  sharesPerSecond: BigDecimal!
+  fundings: [Funding!]!
 
   start: BigInt!
   end: BigInt!
@@ -151,4 +153,18 @@ type Transaction @entity {
   amount: BigDecimal!
   earnings: BigDecimal
   gysrSpent: BigDecimal
+}
+
+type Funding @entity {
+  # geyser id, created at timestamp
+  id: ID!
+
+  geyser: Geyser!
+
+  createdTimestamp: BigInt!
+  start: BigInt!
+  end: BigInt!
+
+  sharesPerSecond: BigDecimal!
+  amount: BigDecimal!
 }

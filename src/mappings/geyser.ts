@@ -1,6 +1,6 @@
 // Geyser event handling and mapping
 
-import { Address, BigInt, log, store } from '@graphprotocol/graph-ts'
+import { BigInt, log, store } from '@graphprotocol/graph-ts'
 import {
   Geyser as GeyserContract,
   Staked,
@@ -12,7 +12,7 @@ import {
   GysrSpent,
   OwnershipTransferred
 } from '../../generated/templates/Geyser/Geyser'
-import { Geyser, Token, User, Position, Stake, Platform, Transaction } from '../../generated/schema'
+import { Geyser, Token, User, Position, Stake, Platform, Transaction, Funding } from '../../generated/schema'
 import { integerToDecimal, createNewUser } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS } from '../util/constants'
 import { getPrice } from '../pricing/token'
@@ -217,6 +217,21 @@ export function handleRewardsFunded(event: RewardsFunded): void {
     geyser.end = end;
   }
 
+  // create funding
+  let fundingId = geyser.id + '_' + event.block.timestamp.toString();
+  let funding = new Funding(fundingId);
+  funding.geyser = geyser.id;
+  funding.createdTimestamp = event.block.timestamp;
+  funding.start = event.params.start;
+  funding.end = event.params.start.plus(event.params.duration);
+  let amountPerSecond = event.params.amount.div(event.params.duration);
+  funding.sharesPerSecond = geyser.sharesPerToken.times(
+    integerToDecimal(amountPerSecond, rewardToken.decimals)
+  );
+  funding.amount = integerToDecimal(event.params.amount, rewardToken.decimals);
+
+  geyser.fundings = geyser.fundings.concat([funding.id])
+
   // TODO: map of reward rates over time
 
   // update platform
@@ -232,6 +247,7 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   }
 
   // store
+  funding.save();
   geyser.save();
   stakingToken.save();
   rewardToken.save();
@@ -275,7 +291,22 @@ export function handleRewardsUnlocked(event: RewardsUnlocked): void {
 
 
 export function handleRewardsExpired(event: RewardsExpired): void {
-  // todo
+  let geyser = Geyser.load(event.address.toHexString());
+  let rewardToken = Token.load(geyser.rewardToken);
+  let amount = integerToDecimal(event.params.amount, rewardToken.decimals);
+
+  for (let i = 0; i < geyser.fundings.length; i++) {
+    let fundingId = (geyser.fundings as string[])[i];
+    let funding = Funding.load(fundingId);
+
+    // remove expired funding
+    if (funding.start.equals(event.params.start)
+    && funding.end.equals(funding.start.plus(event.params.duration))
+    && funding.amount.equals(amount)) {
+      store.remove('Funding', fundingId);
+      break;
+    }
+  }
 }
 
 
