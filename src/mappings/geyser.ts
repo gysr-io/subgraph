@@ -247,7 +247,7 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
   geyser.distributed = geyser.distributed.plus(amount);
 
   // update unstake transaction earnings
-  let transaction = Transaction.load(event.transaction.hash.toHexString());
+  let transaction = new Transaction(event.transaction.hash.toHexString());
   transaction.earnings = amount;
 
   geyser.save();
@@ -281,7 +281,7 @@ export function handleRewardsExpired(event: RewardsExpired): void {
 
 export function handleGysrSpent(event: GysrSpent): void {
   // update gysr spent on unstake transaction
-  let transaction = Transaction.load(event.transaction.hash.toHexString());
+  let transaction = new Transaction(event.transaction.hash.toHexString());
   transaction.gysrSpent = integerToDecimal(event.params.amount, BigInt.fromI32(18));
 
   transaction.save();
