@@ -12,7 +12,7 @@ import {
   GysrSpent,
   OwnershipTransferred
 } from '../../generated/templates/Geyser/Geyser'
-import { Geyser, Token, User, Position, Stake, Platform } from '../../generated/schema'
+import { Geyser, Token, User, Position, Stake, Platform, Transaction } from '../../generated/schema'
 import { integerToDecimal, createNewUser } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS } from '../util/constants'
 import { getPrice } from '../pricing/token'
@@ -71,6 +71,14 @@ export function handleStaked(event: Staked): void {
   user.operations = user.operations.plus(BigInt.fromI32(1));
   geyser.operations = geyser.operations.plus(BigInt.fromI32(1));
 
+  // create new stake transaction
+  let transaction = new Transaction(event.transaction.hash.toHexString());
+  transaction.type = 'Stake';
+  transaction.timestamp = event.block.timestamp;
+  transaction.geyser = geyser.id;
+  transaction.user = user.id;
+  transaction.amount = integerToDecimal(event.params.amount, stakingToken.decimals);
+
   // update pricing info
   stakingToken.price = getPrice(stakingToken);
   stakingToken.updated = event.block.timestamp;
@@ -87,6 +95,7 @@ export function handleStaked(event: Staked): void {
   geyser.save();
   stakingToken.save();
   rewardToken.save();
+  transaction.save();
 }
 
 
@@ -151,6 +160,16 @@ export function handleUnstaked(event: Unstaked): void {
   user.operations = user.operations.plus(BigInt.fromI32(1));
   geyser.operations = geyser.operations.plus(BigInt.fromI32(1));
 
+  // create new unstake transaction
+  let transaction = new Transaction(event.transaction.hash.toHexString());
+  transaction.type = 'Unstake';
+  transaction.timestamp = event.block.timestamp;
+  transaction.geyser = geyser.id;
+  transaction.user = user.id;
+  transaction.amount = integerToDecimal(event.params.amount, stakingToken.decimals);
+  transaction.earnings = ZERO_BIG_DECIMAL;
+  transaction.gysrSpent = ZERO_BIG_DECIMAL;
+
   // update pricing info
   stakingToken.price = getPrice(stakingToken);
   stakingToken.updated = event.block.timestamp;
@@ -165,6 +184,7 @@ export function handleUnstaked(event: Unstaked): void {
   geyser.save();
   stakingToken.save();
   rewardToken.save();
+  transaction.save();
 }
 
 
@@ -197,11 +217,6 @@ export function handleRewardsFunded(event: RewardsFunded): void {
     geyser.end = end;
   }
 
-  // update general info
-  let user = User.load(geyser.owner);
-  user.operations = user.operations.plus(BigInt.fromI32(1));
-  geyser.operations = geyser.operations.plus(BigInt.fromI32(1));
-
   // TODO: map of reward rates over time
 
   // update platform
@@ -220,7 +235,6 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   geyser.save();
   stakingToken.save();
   rewardToken.save();
-  user.save();
 }
 
 
@@ -232,7 +246,12 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
   geyser.rewards = geyser.rewards.minus(amount);
   geyser.distributed = geyser.distributed.plus(amount);
 
+  // update unstake transaction earnings
+  let transaction = new Transaction(event.transaction.hash.toHexString());
+  transaction.earnings = amount;
+
   geyser.save();
+  transaction.save();
 }
 
 
@@ -261,5 +280,9 @@ export function handleRewardsExpired(event: RewardsExpired): void {
 
 
 export function handleGysrSpent(event: GysrSpent): void {
-  // todo
+  // update gysr spent on unstake transaction
+  let transaction = new Transaction(event.transaction.hash.toHexString());
+  transaction.gysrSpent = integerToDecimal(event.params.amount, BigInt.fromI32(18));
+
+  transaction.save();
 }

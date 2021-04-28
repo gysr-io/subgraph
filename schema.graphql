@@ -133,3 +133,22 @@ type Platform @entity {
   # list of actively priced geysers
   _geysers: [Geyser!]!
 }
+
+enum TransactionType {
+  Stake
+  Unstake
+}
+
+type Transaction @entity {
+  # tx hash
+  id: ID!
+
+  type: TransactionType!
+  timestamp: BigInt!
+  geyser: Geyser!
+  user: User!
+
+  amount: BigDecimal!
+  earnings: BigDecimal
+  gysrSpent: BigDecimal
+}
