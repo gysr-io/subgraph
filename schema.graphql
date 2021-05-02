@@ -160,11 +160,12 @@ type Funding @entity {
   id: ID!
 
   geyser: Geyser!
+  token: Token!
 
   createdTimestamp: BigInt!
   start: BigInt!
   end: BigInt!
 
   sharesPerSecond: BigDecimal!
-  amount: BigDecimal!
+  shares: BigDecimal!
 }

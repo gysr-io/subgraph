@@ -221,14 +221,14 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   let fundingId = geyser.id + '_' + event.block.timestamp.toString();
   let funding = new Funding(fundingId);
   funding.geyser = geyser.id;
+  funding.token = rewardToken.id;
   funding.createdTimestamp = event.block.timestamp;
   funding.start = event.params.start;
   funding.end = event.params.start.plus(event.params.duration);
-  let amountPerSecond = event.params.amount.div(event.params.duration);
-  funding.sharesPerSecond = geyser.sharesPerToken.times(
-    integerToDecimal(amountPerSecond, rewardToken.decimals)
-  );
-  funding.amount = integerToDecimal(event.params.amount, rewardToken.decimals);
+  let formattedAmount = integerToDecimal(event.params.amount, rewardToken.decimals);
+  let shares = formattedAmount.times(geyser.sharesPerToken);
+  funding.shares = shares;
+  funding.sharesPerSecond = shares.div(event.params.duration.toBigDecimal());
 
   geyser.fundings = geyser.fundings.concat([funding.id])
 
@@ -302,7 +302,7 @@ export function handleRewardsExpired(event: RewardsExpired): void {
     // remove expired funding
     if (funding.start.equals(event.params.start)
     && funding.end.equals(funding.start.plus(event.params.duration))
-    && funding.amount.equals(amount)) {
+    && funding.shares.div(geyser.sharesPerToken).equals(amount)) {
       store.remove('Funding', fundingId);
       break;
     }
