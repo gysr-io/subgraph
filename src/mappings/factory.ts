@@ -7,7 +7,7 @@ import { ERC20 } from '../../generated/GeyserFactory/ERC20'
 import { Geyser, Token, User } from '../../generated/schema'
 import { Geyser as GeyserTemplate } from '../../generated/templates'
 import { integerToDecimal, createNewUser } from '../util/common'
-import { ZERO_BIG_INT, ZERO_BIG_DECIMAL } from '../util/constants'
+import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, INITIAL_SHARES_PER_TOKEN } from '../util/constants'
 import { createNewToken } from '../pricing/token'
 
 
@@ -72,7 +72,8 @@ export function handleGeyserCreated(event: GeyserCreated): void {
   geyser.rewardsUSD = ZERO_BIG_DECIMAL;
   geyser.tvl = ZERO_BIG_DECIMAL;
   geyser.apy = ZERO_BIG_DECIMAL;
-  geyser.sharesPerToken = BigDecimal.fromString('1000000');
+  geyser.stakingSharesPerToken = INITIAL_SHARES_PER_TOKEN;
+  geyser.rewardSharesPerToken = INITIAL_SHARES_PER_TOKEN;
   geyser.updated = ZERO_BIG_INT;
 
   geyser.save();

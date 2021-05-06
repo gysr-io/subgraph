@@ -70,7 +70,8 @@ type Geyser @entity {
   rewardsUSD: BigDecimal!
   tvl: BigDecimal!
   apy: BigDecimal!
-  sharesPerToken: BigDecimal!
+  stakingSharesPerToken: BigDecimal!
+  rewardSharesPerToken: BigDecimal!
   updated: BigInt!
 }
 
@@ -166,6 +167,7 @@ type Funding @entity {
   start: BigInt!
   end: BigInt!
 
-  sharesPerSecond: BigDecimal!
+  originalAmount: BigDecimal!
   shares: BigDecimal!
-}
+  sharesPerSecond: BigDecimal!
+  }

@@ -4,7 +4,7 @@ import { Address, BigInt, BigDecimal, log, store } from '@graphprotocol/graph-ts
 import { Geyser as GeyserContract } from '../../generated/templates/Geyser/Geyser'
 import { Geyser, Token } from '../../generated/schema'
 import { integerToDecimal } from '../util/common'
-import { ZERO_BIG_DECIMAL, ZERO_BIG_INT } from '../util/constants';
+import { INITIAL_SHARES_PER_TOKEN, ZERO_BIG_DECIMAL, ZERO_BIG_INT } from '../util/constants';
 
 export function updatePricing(
   geyser: Geyser,
@@ -55,19 +55,26 @@ export function updatePricing(
     }
   }
 
+  let stakingSharesPerToken = contract.totalStaked().gt(ZERO_BIG_INT)
+    ? contract.totalStakingShares().toBigDecimal().div(contract.totalStaked().toBigDecimal())
+    : INITIAL_SHARES_PER_TOKEN;
+  let rewardSharesPerToken = contract.totalLocked().gt(ZERO_BIG_INT)
+    ? contract.totalLockedShares().toBigDecimal().div(contract.totalLocked().toBigDecimal())
+    : INITIAL_SHARES_PER_TOKEN;
+
   geyser.sharesPerSecond = rate;
+  geyser.stakingSharesPerToken = stakingSharesPerToken;
+  geyser.rewardSharesPerToken = rewardSharesPerToken;
+
 
   // apy
   if (rate.gt(ZERO_BIG_DECIMAL)
     && rewardToken.price.gt(ZERO_BIG_DECIMAL)
     && geyser.stakedUSD.gt(ZERO_BIG_DECIMAL)
   ) {
-    let tokensPerShare = contract.totalLocked().toBigDecimal().div(
-      contract.totalLockedShares().toBigDecimal()
-    )
     let yearly = BigDecimal.fromString('31536000').times(
       rewardToken.price.times(
-        rate.times(tokensPerShare)
+        rate.div(rewardSharesPerToken)
       )
     );
     geyser.apy = yearly.div(geyser.stakedUSD).times(BigDecimal.fromString('100'));
