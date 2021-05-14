@@ -36,7 +36,7 @@ export function handleUpdate(event: ethereum.Event): void {
     rewardToken.price = getPrice(rewardToken);
     rewardToken.updated = event.block.timestamp;
 
-    updatePricing(geyser, contract, stakingToken, rewardToken, event.block.timestamp);
+    updatePricing(geyser, <Platform>platform, contract, stakingToken, rewardToken, event.block.timestamp);
     geyser.updated = event.block.timestamp;
 
     // store
