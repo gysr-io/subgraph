@@ -36,22 +36,24 @@ export function handleUpdate(event: ethereum.Event): void {
     rewardToken.price = getPrice(rewardToken);
     rewardToken.updated = event.block.timestamp;
 
-    updatePricing(geyser, <Platform>platform, contract, stakingToken, rewardToken, event.block.timestamp);
+    updatePricing(geyser, platform!, contract, stakingToken, rewardToken, event.block.timestamp);
     geyser.updated = event.block.timestamp;
 
     // store
     geyser.save();
     stakingToken.save();
     rewardToken.save();
+    platform.save();
 
     // remove from priced geyser list if stale
     if (geyser.state == 'Stale') {
       stale.push(geyser.id);
-      log.info('Marking geyser as stale', [geyser.id.toString()]);
+      log.info('Marking geyser as stale {}', [geyser.id.toString()]);
     }
   }
 
   if (stale.length) {
     platform._geysers = geysers.filter((x) => !stale.includes(x));
+    platform.save();
   }
 }
