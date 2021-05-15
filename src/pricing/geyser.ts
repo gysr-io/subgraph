@@ -2,12 +2,13 @@
 
 import { Address, BigInt, BigDecimal, log, store } from '@graphprotocol/graph-ts'
 import { Geyser as GeyserContract } from '../../generated/templates/Geyser/Geyser'
-import { Geyser, Token } from '../../generated/schema'
+import { Geyser, Platform, Token } from '../../generated/schema'
 import { integerToDecimal } from '../util/common'
 import { INITIAL_SHARES_PER_TOKEN, ZERO_BIG_DECIMAL, ZERO_BIG_INT } from '../util/constants';
 
 export function updatePricing(
   geyser: Geyser,
+  platform: Platform,
   contract: GeyserContract,
   stakingToken: Token,
   rewardToken: Token,
@@ -23,7 +24,9 @@ export function updatePricing(
   // usd amounts
   geyser.stakedUSD = geyser.staked.times(stakingToken.price);
   geyser.rewardsUSD = geyser.rewards.times(rewardToken.price);
+  let previousGeyserValue = geyser.tvl;
   geyser.tvl = geyser.stakedUSD.plus(geyser.rewardsUSD);
+  platform.tvl = platform.tvl.plus(geyser.stakedUSD).plus(geyser.rewardsUSD).minus(previousGeyserValue);
 
   // fundings
   let count = contract.fundingCount().toI32();

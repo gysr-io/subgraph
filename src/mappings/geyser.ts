@@ -14,7 +14,7 @@ import {
 } from '../../generated/templates/Geyser/Geyser'
 import { Geyser, Token, User, Position, Stake, Platform, Transaction, Funding } from '../../generated/schema'
 import { integerToDecimal, createNewUser } from '../util/common'
-import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS } from '../util/constants'
+import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN } from '../util/constants'
 import { getPrice } from '../pricing/token'
 import { updatePricing } from '../pricing/geyser'
 
@@ -24,6 +24,7 @@ export function handleStaked(event: Staked): void {
   let geyser = Geyser.load(event.address.toHexString())!;
   let stakingToken = Token.load(geyser.stakingToken)!;
   let rewardToken = Token.load(geyser.rewardToken)!;
+  let platform = Platform.load(ZERO_ADDRESS)!;
 
   // load or create user
   let user = User.load(event.params.user.toHexString());
@@ -70,6 +71,7 @@ export function handleStaked(event: Staked): void {
 
   user.operations = user.operations.plus(BigInt.fromI32(1));
   geyser.operations = geyser.operations.plus(BigInt.fromI32(1));
+  platform.operations = platform.operations.plus(BigInt.fromI32(1));
 
   // create new stake transaction
   let transaction = new Transaction(event.transaction.hash.toHexString());
@@ -85,7 +87,7 @@ export function handleStaked(event: Staked): void {
   rewardToken.price = getPrice(rewardToken);
   rewardToken.updated = event.block.timestamp;
 
-  updatePricing(geyser, contract, stakingToken, rewardToken, event.block.timestamp);
+  updatePricing(geyser, platform, contract, stakingToken, rewardToken, event.block.timestamp);
   geyser.updated = event.block.timestamp;
 
   // store
@@ -96,6 +98,7 @@ export function handleStaked(event: Staked): void {
   stakingToken.save();
   rewardToken.save();
   transaction.save();
+  platform.save();
 }
 
 
@@ -104,6 +107,7 @@ export function handleUnstaked(event: Unstaked): void {
   let geyser = Geyser.load(event.address.toHexString())!;
   let stakingToken = Token.load(geyser.stakingToken)!;
   let rewardToken = Token.load(geyser.rewardToken)!;
+  let platform = Platform.load(ZERO_ADDRESS)!;
 
   // load user
   let user = User.load(event.params.user.toHexString());
@@ -115,6 +119,9 @@ export function handleUnstaked(event: Unstaked): void {
   // get share info from contract
   let contract = GeyserContract.bind(event.address);
   let count = contract.stakeCount(event.params.user).toI32();
+
+  // format unstake amount
+  let unstakeAmount = integerToDecimal(event.params.amount, stakingToken.decimals);
 
   // update or delete current stakes
   // (for some reason this didn't work with a derived 'stakes' field)
@@ -159,6 +166,7 @@ export function handleUnstaked(event: Unstaked): void {
   // update general info
   user.operations = user.operations.plus(BigInt.fromI32(1));
   geyser.operations = geyser.operations.plus(BigInt.fromI32(1));
+  platform.operations = platform.operations.plus(BigInt.fromI32(1));
 
   // create new unstake transaction
   let transaction = new Transaction(event.transaction.hash.toHexString());
@@ -166,7 +174,7 @@ export function handleUnstaked(event: Unstaked): void {
   transaction.timestamp = event.block.timestamp;
   transaction.geyser = geyser.id;
   transaction.user = user.id;
-  transaction.amount = integerToDecimal(event.params.amount, stakingToken.decimals);
+  transaction.amount = unstakeAmount;
   transaction.earnings = ZERO_BIG_DECIMAL;
   transaction.gysrSpent = ZERO_BIG_DECIMAL;
 
@@ -176,8 +184,11 @@ export function handleUnstaked(event: Unstaked): void {
   rewardToken.price = getPrice(rewardToken);
   rewardToken.updated = event.block.timestamp;
 
-  updatePricing(geyser, contract, stakingToken, rewardToken, event.block.timestamp);
+  updatePricing(geyser, platform, contract, stakingToken, rewardToken, event.block.timestamp);
   geyser.updated = event.block.timestamp;
+
+  // update platform value
+  platform.volume = platform.volume.plus(unstakeAmount.times(stakingToken.price));
 
   // store
   user.save();
@@ -185,6 +196,7 @@ export function handleUnstaked(event: Unstaked): void {
   stakingToken.save();
   rewardToken.save();
   transaction.save();
+  platform.save();
 }
 
 
@@ -192,6 +204,7 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   let geyser = Geyser.load(event.address.toHexString())!;
   let stakingToken = Token.load(geyser.stakingToken)!;
   let rewardToken = Token.load(geyser.rewardToken)!;
+  let platform = Platform.load(ZERO_ADDRESS)!;
 
   let contract = GeyserContract.bind(event.address);
 
@@ -205,7 +218,7 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   rewardToken.price = getPrice(rewardToken!);
   rewardToken.updated = event.block.timestamp;
 
-  updatePricing(geyser, contract, stakingToken, rewardToken, event.block.timestamp);
+  updatePricing(geyser, platform, contract, stakingToken, rewardToken, event.block.timestamp);
   geyser.updated = event.block.timestamp;
 
   // update timeframe for geyser
@@ -236,15 +249,8 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   // TODO: map of reward rates over time
 
   // update platform
-  let platform = Platform.load(ZERO_ADDRESS);
-  if (platform === null) {
-    platform = new Platform(ZERO_ADDRESS);
-    platform.tvl = ZERO_BIG_DECIMAL;
-    platform._geysers = [];
-  }
   if (!platform._geysers.includes(geyser.id)) {
     platform._geysers = platform._geysers.concat([geyser.id]);
-    platform.save();
   }
 
   // store
@@ -252,16 +258,19 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   geyser.save();
   stakingToken.save();
   rewardToken.save();
+  platform.save();
 }
 
 
 export function handleRewardsDistributed(event: RewardsDistributed): void {
   let geyser = Geyser.load(event.address.toHexString());
-  let token = Token.load(geyser.rewardToken);
+  let token = Token.load(geyser.rewardToken)!;
+  let platform = Platform.load(ZERO_ADDRESS);
 
   let amount = integerToDecimal(event.params.amount, token.decimals);
   geyser.rewards = geyser.rewards.minus(amount);
   geyser.distributed = geyser.distributed.plus(amount);
+  platform.volume = platform.volume.plus(amount.times(getPrice(token)));
 
   // update unstake transaction earnings
   let transaction = new Transaction(event.transaction.hash.toHexString());
@@ -312,9 +321,21 @@ export function handleRewardsExpired(event: RewardsExpired): void {
 
 
 export function handleGysrSpent(event: GysrSpent): void {
+  let amount = integerToDecimal(event.params.amount, BigInt.fromI32(18));
   // update gysr spent on unstake transaction
   let transaction = new Transaction(event.transaction.hash.toHexString());
-  transaction.gysrSpent = integerToDecimal(event.params.amount, BigInt.fromI32(18));
+  transaction.gysrSpent = amount;
+
+  let geyser = Geyser.load(event.address.toHexString())!;
+  geyser.gysrSpent = geyser.gysrSpent.plus(amount);
+
+  // update platform total GYSR spent
+  let platform = Platform.load(ZERO_ADDRESS);
+  let gysr = Token.load(GYSR_TOKEN)!;
+  platform.gysrSpent = platform.gysrSpent.plus(amount);
+  platform.volume = platform.volume.plus(amount.times(getPrice(gysr)));
 
   transaction.save();
+  geyser.save();
+  platform.save();
 }

@@ -4,10 +4,10 @@ import { Address, BigInt, BigDecimal, log } from '@graphprotocol/graph-ts'
 import { GeyserFactory, GeyserCreated } from '../../generated/GeyserFactory/GeyserFactory'
 import { Geyser as GeyserContract } from '../../generated/GeyserFactory/Geyser'
 import { ERC20 } from '../../generated/GeyserFactory/ERC20'
-import { Geyser, Token, User } from '../../generated/schema'
+import { Geyser, Platform, Token, User } from '../../generated/schema'
 import { Geyser as GeyserTemplate } from '../../generated/templates'
 import { integerToDecimal, createNewUser } from '../util/common'
-import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, INITIAL_SHARES_PER_TOKEN } from '../util/constants'
+import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, INITIAL_SHARES_PER_TOKEN, ZERO_ADDRESS } from '../util/constants'
 import { createNewToken } from '../pricing/token'
 
 
@@ -76,8 +76,12 @@ export function handleGeyserCreated(event: GeyserCreated): void {
   geyser.rewardSharesPerToken = INITIAL_SHARES_PER_TOKEN;
   geyser.updated = ZERO_BIG_INT;
 
+  let platform = Platform.load(ZERO_ADDRESS);
+  platform.pools = platform.pools.plus(BigInt.fromI32(1));
+
   geyser.save();
   user.save();
+  platform.save();
 
   // create template event handler
   GeyserTemplate.create(event.params.geyser);

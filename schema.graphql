@@ -132,6 +132,11 @@ type Platform @entity {
   id: ID!
 
   tvl: BigDecimal!
+  users: BigInt!
+  operations: BigInt!
+  pools: BigInt!
+  gysrSpent: BigDecimal!
+  volume: BigDecimal!
 
   # list of actively priced geysers
   _geysers: [Geyser!]!
