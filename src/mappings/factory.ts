@@ -6,7 +6,7 @@ import { Geyser as GeyserContract } from '../../generated/GeyserFactory/Geyser'
 import { ERC20 } from '../../generated/GeyserFactory/ERC20'
 import { Geyser, Platform, Token, User } from '../../generated/schema'
 import { Geyser as GeyserTemplate } from '../../generated/templates'
-import { integerToDecimal, createNewUser } from '../util/common'
+import { integerToDecimal, createNewUser, createNewPlatform } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, INITIAL_SHARES_PER_TOKEN, ZERO_ADDRESS } from '../util/constants'
 import { createNewToken } from '../pricing/token'
 
@@ -32,10 +32,17 @@ export function handleGeyserCreated(event: GeyserCreated): void {
     rewardToken.save();
   }
 
+  // platform
+  let platform = Platform.load(ZERO_ADDRESS);
+
+  if (platform === null) {
+    platform = createNewPlatform();
+  }
+
   let user = User.load(event.params.user.toHexString());
 
   if (user == null) {
-    user = createNewUser(event.params.user);
+    user = createNewUser(event.params.user, platform!);
   }
 
   // geyser entity
@@ -75,8 +82,8 @@ export function handleGeyserCreated(event: GeyserCreated): void {
   geyser.stakingSharesPerToken = INITIAL_SHARES_PER_TOKEN;
   geyser.rewardSharesPerToken = INITIAL_SHARES_PER_TOKEN;
   geyser.updated = ZERO_BIG_INT;
+  geyser.volume = ZERO_BIG_DECIMAL;
 
-  let platform = Platform.load(ZERO_ADDRESS);
   platform.pools = platform.pools.plus(BigInt.fromI32(1));
 
   geyser.save();

@@ -13,7 +13,7 @@ import {
   OwnershipTransferred
 } from '../../generated/templates/Geyser/Geyser'
 import { Geyser, Token, User, Position, Stake, Platform, Transaction, Funding } from '../../generated/schema'
-import { integerToDecimal, createNewUser } from '../util/common'
+import { integerToDecimal, createNewUser, createNewPlatform } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN } from '../util/constants'
 import { getPrice } from '../pricing/token'
 import { updatePricing } from '../pricing/geyser'
@@ -30,7 +30,7 @@ export function handleStaked(event: Staked): void {
   let user = User.load(event.params.user.toHexString());
 
   if (user === null) {
-    user = createNewUser(event.params.user);
+    user = createNewUser(event.params.user, platform!);
   }
 
   // load or create position
@@ -187,8 +187,10 @@ export function handleUnstaked(event: Unstaked): void {
   updatePricing(geyser, platform, contract, stakingToken, rewardToken, event.block.timestamp);
   geyser.updated = event.block.timestamp;
 
-  // update platform value
-  platform.volume = platform.volume.plus(unstakeAmount.times(stakingToken.price));
+  // update volume
+  let dollarAmount = unstakeAmount.times(stakingToken.price);
+  platform.volume = platform.volume.plus(dollarAmount);
+  geyser.volume = geyser.volume.plus(dollarAmount);
 
   // store
   user.save();
@@ -270,7 +272,10 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
   let amount = integerToDecimal(event.params.amount, token.decimals);
   geyser.rewards = geyser.rewards.minus(amount);
   geyser.distributed = geyser.distributed.plus(amount);
-  platform.volume = platform.volume.plus(amount.times(getPrice(token)));
+
+  let dollarAmount = amount.times(getPrice(token));
+  platform.volume = platform.volume.plus(dollarAmount);
+  geyser.volume = geyser.volume.plus(dollarAmount);
 
   // update unstake transaction earnings
   let transaction = new Transaction(event.transaction.hash.toHexString());
@@ -278,20 +283,27 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
 
   geyser.save();
   transaction.save();
+  platform.save();
 }
 
 
 export function handleOwnershipTransferred(event: OwnershipTransferred): void {
   let geyser = Geyser.load(event.address.toHexString());
   let newOwner = User.load(event.params.newOwner.toHexString());
+  let platform = Platform.load(ZERO_ADDRESS);
+  if (platform === null) {
+    platform = createNewPlatform();
+  }
+
   if (newOwner == null) {
-    newOwner = createNewUser(event.params.newOwner);
+    newOwner = createNewUser(event.params.newOwner, platform!);
     newOwner.save()
   }
 
   geyser.owner = newOwner.id;
 
   geyser.save();
+  platform.save();
 }
 
 
@@ -333,7 +345,9 @@ export function handleGysrSpent(event: GysrSpent): void {
   let platform = Platform.load(ZERO_ADDRESS);
   let gysr = Token.load(GYSR_TOKEN)!;
   platform.gysrSpent = platform.gysrSpent.plus(amount);
-  platform.volume = platform.volume.plus(amount.times(getPrice(gysr)));
+  let dollarAmount = amount.times(getPrice(gysr));
+  platform.volume = platform.volume.plus(dollarAmount);
+  geyser.volume = geyser.volume.plus(dollarAmount);
 
   transaction.save();
   geyser.save();

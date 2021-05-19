@@ -73,6 +73,7 @@ type Geyser @entity {
   stakingSharesPerToken: BigDecimal!
   rewardSharesPerToken: BigDecimal!
   updated: BigInt!
+  volume: BigDecimal!
 }
 
 type _Schema_
