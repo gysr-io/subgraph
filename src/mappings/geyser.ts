@@ -30,7 +30,8 @@ export function handleStaked(event: Staked): void {
   let user = User.load(event.params.user.toHexString());
 
   if (user === null) {
-    user = createNewUser(event.params.user, platform!);
+    user = createNewUser(event.params.user);
+    platform.users = platform.users.plus(BigInt.fromI32(1));
   }
 
   // load or create position
@@ -296,7 +297,8 @@ export function handleOwnershipTransferred(event: OwnershipTransferred): void {
   }
 
   if (newOwner == null) {
-    newOwner = createNewUser(event.params.newOwner, platform!);
+    newOwner = createNewUser(event.params.newOwner);
+    platform.users = platform.users.plus(BigInt.fromI32(1));
     newOwner.save()
   }
 

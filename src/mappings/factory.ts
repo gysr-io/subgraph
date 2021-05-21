@@ -42,7 +42,8 @@ export function handleGeyserCreated(event: GeyserCreated): void {
   let user = User.load(event.params.user.toHexString());
 
   if (user == null) {
-    user = createNewUser(event.params.user, platform!);
+    user = createNewUser(event.params.user);
+    platform.users = platform.users.plus(BigInt.fromI32(1));
   }
 
   // geyser entity

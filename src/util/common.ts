@@ -11,11 +11,10 @@ export function integerToDecimal(value: BigInt, decimals: BigInt = BigInt.fromI3
   return value.toBigDecimal().div(denom.toBigDecimal());
 }
 
-export function createNewUser(address: Address, platform: Platform): User {
+export function createNewUser(address: Address): User {
   let user = new User(address.toHexString());
   user.operations = ZERO_BIG_INT;
   user.earned = ZERO_BIG_DECIMAL;
-  platform.users = platform.users.plus(BigInt.fromI32(1));
 
   return user;
 }
