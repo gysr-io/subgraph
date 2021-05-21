@@ -13,7 +13,7 @@ import {
   OwnershipTransferred
 } from '../../generated/templates/Geyser/Geyser'
 import { Geyser, Token, User, Position, Stake, Platform, Transaction, Funding } from '../../generated/schema'
-import { integerToDecimal, createNewUser, createNewPlatform } from '../util/common'
+import { integerToDecimal, createNewUser, createNewPlatform, updatePoolDayData } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN } from '../util/constants'
 import { getPrice } from '../pricing/token'
 import { updatePricing } from '../pricing/geyser'
@@ -89,6 +89,7 @@ export function handleStaked(event: Staked): void {
   rewardToken.updated = event.block.timestamp;
 
   updatePricing(geyser, platform, contract, stakingToken, rewardToken, event.block.timestamp);
+  let poolDayData = updatePoolDayData(geyser, event.block.timestamp.toI32());
   geyser.updated = event.block.timestamp;
 
   // store
@@ -100,6 +101,7 @@ export function handleStaked(event: Staked): void {
   rewardToken.save();
   transaction.save();
   platform.save();
+  poolDayData.save();
 }
 
 
@@ -190,8 +192,10 @@ export function handleUnstaked(event: Unstaked): void {
 
   // update volume
   let dollarAmount = unstakeAmount.times(stakingToken.price);
+  let poolDayData = updatePoolDayData(geyser, event.block.timestamp.toI32());
   platform.volume = platform.volume.plus(dollarAmount);
   geyser.volume = geyser.volume.plus(dollarAmount);
+  poolDayData.volume = poolDayData.volume.plus(dollarAmount);
 
   // store
   user.save();
@@ -200,6 +204,7 @@ export function handleUnstaked(event: Unstaked): void {
   rewardToken.save();
   transaction.save();
   platform.save();
+  poolDayData.save();
 }
 
 
@@ -266,7 +271,7 @@ export function handleRewardsFunded(event: RewardsFunded): void {
 
 
 export function handleRewardsDistributed(event: RewardsDistributed): void {
-  let geyser = Geyser.load(event.address.toHexString());
+  let geyser = Geyser.load(event.address.toHexString())!;
   let token = Token.load(geyser.rewardToken)!;
   let platform = Platform.load(ZERO_ADDRESS);
 
@@ -275,8 +280,10 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
   geyser.distributed = geyser.distributed.plus(amount);
 
   let dollarAmount = amount.times(getPrice(token));
+  let poolDayData = updatePoolDayData(geyser, event.block.timestamp.toI32());
   platform.volume = platform.volume.plus(dollarAmount);
   geyser.volume = geyser.volume.plus(dollarAmount);
+  poolDayData.volume = poolDayData.volume.plus(dollarAmount);
 
   // update unstake transaction earnings
   let transaction = new Transaction(event.transaction.hash.toHexString());
@@ -285,6 +292,7 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
   geyser.save();
   transaction.save();
   platform.save();
+  poolDayData.save();
 }
 
 
@@ -347,11 +355,15 @@ export function handleGysrSpent(event: GysrSpent): void {
   let platform = Platform.load(ZERO_ADDRESS);
   let gysr = Token.load(GYSR_TOKEN)!;
   platform.gysrSpent = platform.gysrSpent.plus(amount);
+
   let dollarAmount = amount.times(getPrice(gysr));
+  let poolDayData = updatePoolDayData(geyser, event.block.timestamp.toI32());
   platform.volume = platform.volume.plus(dollarAmount);
   geyser.volume = geyser.volume.plus(dollarAmount);
+  poolDayData.volume = poolDayData.volume.plus(dollarAmount);
 
   transaction.save();
   geyser.save();
   platform.save();
+  poolDayData.save();
 }
