@@ -13,15 +13,8 @@ export function integerToDecimal(value: BigInt, decimals: BigInt = BigInt.fromI3
 
 export function createNewUser(address: Address): User {
   let user = new User(address.toHexString());
-  let platform = Platform.load(ZERO_ADDRESS);
-  if (platform === null) {
-    platform = createNewPlatform();
-  }
   user.operations = ZERO_BIG_INT;
   user.earned = ZERO_BIG_DECIMAL;
-  platform.users = platform.users.plus(BigInt.fromI32(1));
-
-  platform.save();
 
   return user;
 }
