@@ -176,4 +176,18 @@ type Funding @entity {
   originalAmount: BigDecimal!
   shares: BigDecimal!
   sharesPerSecond: BigDecimal!
-  }
+}
+
+type PoolDayData @entity {
+  # pool id, day id
+  id: ID!
+
+  poolAddress: String!
+
+  date: Int!
+  totalStaked: BigDecimal!
+  totalGysrSpent: BigDecimal!
+  totalUsers: BigInt!
+  tvl: BigDecimal!
+  volume: BigDecimal!
+}
