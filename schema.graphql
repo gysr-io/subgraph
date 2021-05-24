@@ -188,5 +188,6 @@ type PoolDayData @entity {
   totalStaked: BigDecimal!
   totalGysrSpent: BigDecimal!
   totalUsers: BigInt!
+  tvl: BigDecimal!
   volume: BigDecimal!
 }

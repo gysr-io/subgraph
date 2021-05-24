@@ -48,6 +48,7 @@ export function updatePoolDayData(geyser: Geyser, timestamp: number): PoolDayDat
   poolDayData.totalStaked = geyser.staked;
   poolDayData.totalGysrSpent = geyser.gysrSpent;
   poolDayData.totalUsers = geyser.users;
+  poolDayData.tvl = geyser.tvl;
   poolDayData.volume = ZERO_BIG_DECIMAL;
 
   return poolDayData!;

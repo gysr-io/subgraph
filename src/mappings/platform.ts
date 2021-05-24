@@ -6,6 +6,7 @@ import { Geyser, Token, Platform } from '../../generated/schema'
 import { ZERO_BIG_INT, ZERO_ADDRESS } from '../util/constants'
 import { getPrice } from '../pricing/token'
 import { updatePricing } from '../pricing/geyser'
+import { updatePoolDayData } from '../util/common'
 
 
 export function handleUpdate(event: ethereum.Event): void {
@@ -39,11 +40,15 @@ export function handleUpdate(event: ethereum.Event): void {
     updatePricing(geyser, platform!, contract, stakingToken, rewardToken, event.block.timestamp);
     geyser.updated = event.block.timestamp;
 
+    // update geyser day snapshot
+    let poolDayData = updatePoolDayData(geyser, event.block.timestamp.toI32());
+
     // store
     geyser.save();
     stakingToken.save();
     rewardToken.save();
     platform.save();
+    poolDayData.save();
 
     // remove from priced geyser list if stale
     if (geyser.state == 'Stale') {
