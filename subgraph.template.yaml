@@ -66,6 +66,39 @@ dataSources:
           handler: handleGeyserV1Created
       file: ./src/mappings/factoryv1.ts
 
+  - kind: ethereum/contract
+    name: PoolFactory
+    network: {{network}}
+    source:
+      address: "{{pool_factory}}"
+      abi: PoolFactory
+      startBlock: {{pool_factory_start_block}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Pool
+      abis:
+        - name: PoolFactory
+          file: ./abis/PoolFactory.json
+        - name: Pool
+          file: './abis/Pool.json'
+        - name: ERC20StakingModule
+          file: './abis/ERC20StakingModule.json'
+        - name: ERC20BaseRewardModule
+          file: './abis/ERC20BaseRewardModule.json'
+        - name: ERC20CompetitiveRewardModule
+          file: './abis/ERC20CompetitiveRewardModule.json'
+        - name: ERC20FriendlyRewardModule
+          file: './abis/ERC20FriendlyRewardModule.json'
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: PoolCreated(indexed address,address)
+          handler: handlePoolCreated
+      file: ./src/mappings/factoryv2.ts
+
 templates:
   - kind: ethereum/contract
     name: GeyserV1
@@ -106,3 +139,23 @@ templates:
         - event: GysrSpent(indexed address,uint256)
           handler: handleGysrSpent
       file: ./src/mappings/geyserv1.ts
+
+  - kind: ethereum/contract
+    name: Pool
+    network: {{network}}
+    source:
+      abi: Pool
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Pool
+        - Platform
+      abis:
+        - name: Pool
+          file: ./abis/Pool.json
+      eventHandlers:
+        - event: Staked(indexed address,indexed address,uint256,uint256)
+          handler: handleStaked
+      file: ./src/mappings/pool.ts

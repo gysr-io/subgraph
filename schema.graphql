@@ -31,6 +31,12 @@ enum PoolState {
   Stale
 }
 
+enum PoolType {
+  GeyserV1
+  GeyserV2
+  Fountain
+}
+
 type Pool @entity {
   # pool contract address
   id: ID!
@@ -49,6 +55,8 @@ type Pool @entity {
   createdBlock: BigInt!
 
   tags: String!
+
+  poolType: PoolType!
 
   # stats
   users: BigInt!
