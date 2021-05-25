@@ -1,7 +1,7 @@
 // token pricing methods
 
 import { Address, BigInt, BigDecimal, ethereum, log, dataSource } from '@graphprotocol/graph-ts'
-import { ERC20 } from '../../generated/templates/Geyser/ERC20'
+import { ERC20 } from '../../generated/templates/GeyserV1/ERC20'
 import { Token } from '../../generated/schema'
 import { ZERO_BIG_INT, HIGH_VOLUME_TOKENS, STABLECOINS, ZERO_BIG_DECIMAL } from '../util/constants'
 import {
@@ -69,6 +69,7 @@ export function createNewToken(address: Address): Token {
 
 export function getPrice(token: Token): BigDecimal {
   // only price tokens on mainnet
+  return BigDecimal.fromString('1')
   if (dataSource.network() != 'mainnet') {
     return BigDecimal.fromString('1.0');
   }

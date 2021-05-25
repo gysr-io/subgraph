@@ -17,11 +17,11 @@ dataSources:
       apiVersion: 0.0.4
       language: wasm/assemblyscript
       entities:
-        - Geyser
+        - Pool
         - Platform
       abis:
-        - name: Geyser
-          file: ./abis/Geyser.json
+        - name: GeyserV1
+          file: ./abis/GeyserV1.json
         - name: ERC20
           file: ./abis/ERC20.json
         - name: UniswapFactory
@@ -38,23 +38,23 @@ dataSources:
       file: ./src/mappings/platform.ts
 
   - kind: ethereum/contract
-    name: GeyserFactory
+    name: GeyserV1Factory
     network: {{network}}
     source:
       address: "{{geyser_factory_v1}}"
-      abi: GeyserFactory
+      abi: GeyserV1Factory
       startBlock: {{geyser_factory_v1_start_block}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
       language: wasm/assemblyscript
       entities:
-        - Geyser
+        - Pool
       abis:
-        - name: GeyserFactory
-          file: ./abis/GeyserFactory.json
-        - name: Geyser
-          file: ./abis/Geyser.json
+        - name: GeyserV1Factory
+          file: ./abis/GeyserV1Factory.json
+        - name: GeyserV1
+          file: ./abis/GeyserV1.json
         - name: ERC20
           file: ./abis/ERC20.json
         - name: UniswapFactory
@@ -63,25 +63,25 @@ dataSources:
           file: ./abis/thirdparty/uniswap/Pair.json
       eventHandlers:
         - event: GeyserCreated(indexed address,address)
-          handler: handleGeyserCreated
+          handler: handleGeyserV1Created
       file: ./src/mappings/factory.ts
 
 templates:
   - kind: ethereum/contract
-    name: Geyser
+    name: GeyserV1
     network: {{network}}
     source:
-      abi: Geyser
+      abi: GeyserV1
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
       language: wasm/assemblyscript
       entities:
-        - Geyser
+        - Pool
         - Platform
       abis:
-        - name: Geyser
-          file: ./abis/Geyser.json
+        - name: GeyserV1
+          file: ./abis/GeyserV1.json
         - name: ERC20
           file: ./abis/ERC20.json
         - name: UniswapFactory
@@ -105,4 +105,4 @@ templates:
           handler: handleRewardsExpired
         - event: GysrSpent(indexed address,uint256)
           handler: handleGysrSpent
-      file: ./src/mappings/geyser.ts
+      file: ./src/mappings/geyserv1.ts
