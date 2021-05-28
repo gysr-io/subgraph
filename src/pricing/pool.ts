@@ -1,4 +1,4 @@
-// pricing for geyser information on apy, tvl, and more
+// pricing for pool information on apr, tvl, and more
 
 import { Address, BigInt, BigDecimal, log, store } from '@graphprotocol/graph-ts'
 import { GeyserV1 as GeyserV1Contract } from '../../generated/templates/GeyserV1/GeyserV1'
@@ -70,7 +70,7 @@ export function updatePricing(
   pool.rewardSharesPerToken = rewardSharesPerToken;
 
 
-  // apy
+  // apr
   if (rate.gt(ZERO_BIG_DECIMAL)
     && rewardToken.price.gt(ZERO_BIG_DECIMAL)
     && pool.stakedUSD.gt(ZERO_BIG_DECIMAL)
@@ -80,10 +80,10 @@ export function updatePricing(
         rate.div(rewardSharesPerToken)
       )
     );
-    pool.apy = yearly.div(pool.stakedUSD).times(BigDecimal.fromString('100'));
+    pool.apr = yearly.div(pool.stakedUSD).times(BigDecimal.fromString('100'));
 
   } else {
-    pool.apy = ZERO_BIG_DECIMAL;
+    pool.apr = ZERO_BIG_DECIMAL;
   }
 
   // state

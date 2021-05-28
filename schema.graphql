@@ -69,7 +69,7 @@ type Pool @entity {
   stakedUSD: BigDecimal!
   rewardsUSD: BigDecimal!
   tvl: BigDecimal!
-  apy: BigDecimal!
+  apr: BigDecimal!
   stakingSharesPerToken: BigDecimal!
   rewardSharesPerToken: BigDecimal!
   updated: BigInt!
