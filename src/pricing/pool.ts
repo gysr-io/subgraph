@@ -1,7 +1,7 @@
 // pricing for pool information on apr, tvl, and more
 
 import { Address, BigInt, BigDecimal, log, store } from '@graphprotocol/graph-ts'
-import { GeyserV1 as GeyserV1Contract } from '../../generated/templates/GeyserV1/GeyserV1'
+import { GeyserV1 as GeyserContractV1 } from '../../generated/templates/GeyserV1/GeyserV1'
 import { Pool, Platform, Token } from '../../generated/schema'
 import { integerToDecimal } from '../util/common'
 import { INITIAL_SHARES_PER_TOKEN, ZERO_BIG_DECIMAL, ZERO_BIG_INT } from '../util/constants';
@@ -9,7 +9,7 @@ import { INITIAL_SHARES_PER_TOKEN, ZERO_BIG_DECIMAL, ZERO_BIG_INT } from '../uti
 export function updatePricing(
   pool: Pool,
   platform: Platform,
-  contract: GeyserV1Contract,
+  contract: GeyserContractV1,
   stakingToken: Token,
   rewardToken: Token,
   timestamp: BigInt

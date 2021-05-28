@@ -2,7 +2,7 @@
 
 import { BigInt, log, store } from '@graphprotocol/graph-ts'
 import {
-  GeyserV1 as GeyserV1Contract,
+  GeyserV1 as GeyserContractV1,
   Staked,
   Unstaked,
   RewardsFunded,
@@ -58,7 +58,7 @@ export function handleStaked(event: Staked): void {
   stake.pool = pool.id;
 
   // get share info from contract
-  let contract = GeyserV1Contract.bind(event.address);
+  let contract = GeyserContractV1.bind(event.address);
   let idx = contract.stakeCount(event.params.user).minus(BigInt.fromI32(1));
   let stakeStruct = contract.userStakes(event.params.user, idx);
   let shares = integerToDecimal(stakeStruct.value0, stakingToken.decimals);
@@ -120,7 +120,7 @@ export function handleUnstaked(event: Unstaked): void {
   let position = Position.load(positionId);
 
   // get share info from contract
-  let contract = GeyserV1Contract.bind(event.address);
+  let contract = GeyserContractV1.bind(event.address);
   let count = contract.stakeCount(event.params.user).toI32();
 
   // format unstake amount
@@ -214,7 +214,7 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   let rewardToken = Token.load(pool.rewardToken)!;
   let platform = Platform.load(ZERO_ADDRESS)!;
 
-  let contract = GeyserV1Contract.bind(event.address);
+  let contract = GeyserContractV1.bind(event.address);
 
   let amount = integerToDecimal(event.params.amount, rewardToken.decimals)
   pool.rewards = pool.rewards.plus(amount);

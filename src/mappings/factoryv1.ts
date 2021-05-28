@@ -1,10 +1,10 @@
 // GYSR factory event handling and mapping
 
 import { Address, BigInt, BigDecimal, log } from '@graphprotocol/graph-ts'
-import { GeyserCreated } from '../../generated/GeyserV1Factory/GeyserV1Factory'
-import { GeyserV1 as GeyserV1Contract } from '../../generated/GeyserV1Factory/GeyserV1'
+import { GeyserCreated } from '../../generated/GeyserFactoryV1/GeyserFactoryV1'
+import { GeyserV1 as GeyserContractV1 } from '../../generated/GeyserFactoryV1/GeyserV1'
 import { Pool, Platform, Token, User } from '../../generated/schema'
-import { GeyserV1 as GeyserV1Template } from '../../generated/templates'
+import { GeyserV1 as GeyserTemplateV1 } from '../../generated/templates'
 import { integerToDecimal, createNewUser, createNewPlatform } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, INITIAL_SHARES_PER_TOKEN, ZERO_ADDRESS } from '../util/constants'
 import { createNewToken } from '../pricing/token'
@@ -13,7 +13,7 @@ import { createNewToken } from '../pricing/token'
 export function handleGeyserV1Created(event: GeyserCreated): void {
 
   // interface to actual Geyser contract
-  let contract = GeyserV1Contract.bind(event.params.geyser);
+  let contract = GeyserContractV1.bind(event.params.geyser);
 
   // staking token
   let stakingToken = Token.load(contract.stakingToken().toHexString())
@@ -91,5 +91,5 @@ export function handleGeyserV1Created(event: GeyserCreated): void {
   platform.save();
 
   // create template event handler
-  GeyserV1Template.create(event.params.geyser);
+  GeyserTemplateV1.create(event.params.geyser);
 }

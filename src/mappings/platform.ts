@@ -1,7 +1,7 @@
 // platform wide mappings
 
 import { Address, BigInt, log, ethereum } from '@graphprotocol/graph-ts'
-import { GeyserV1 as GeyserV1Contract } from '../../generated/templates/GeyserV1/GeyserV1'
+import { GeyserV1 as GeyserContractV1 } from '../../generated/templates/GeyserV1/GeyserV1'
 import { Pool, Token, Platform } from '../../generated/schema'
 import { ZERO_BIG_INT, ZERO_ADDRESS } from '../util/constants'
 import { getPrice } from '../pricing/token'
@@ -29,7 +29,7 @@ export function handleUpdate(event: ethereum.Event): void {
     let rewardToken = Token.load(pool.rewardToken)!;
 
     // bind to contract
-    let contract = GeyserV1Contract.bind(Address.fromString(pool.id));
+    let contract = GeyserContractV1.bind(Address.fromString(pool.id));
 
     // update pricing info
     stakingToken.price = getPrice(stakingToken);

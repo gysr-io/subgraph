@@ -38,11 +38,11 @@ dataSources:
       file: ./src/mappings/platform.ts
 
   - kind: ethereum/contract
-    name: GeyserV1Factory
+    name: GeyserFactoryV1
     network: {{network}}
     source:
       address: "{{geyser_factory_v1}}"
-      abi: GeyserV1Factory
+      abi: GeyserFactoryV1
       startBlock: {{geyser_factory_v1_start_block}}
     mapping:
       kind: ethereum/events
@@ -51,8 +51,8 @@ dataSources:
       entities:
         - Pool
       abis:
-        - name: GeyserV1Factory
-          file: ./abis/GeyserV1Factory.json
+        - name: GeyserFactoryV1
+          file: ./abis/GeyserFactoryV1.json
         - name: GeyserV1
           file: ./abis/GeyserV1.json
         - name: ERC20
@@ -64,7 +64,7 @@ dataSources:
       eventHandlers:
         - event: GeyserCreated(indexed address,address)
           handler: handleGeyserV1Created
-      file: ./src/mappings/factory.ts
+      file: ./src/mappings/factoryv1.ts
 
 templates:
   - kind: ethereum/contract

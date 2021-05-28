@@ -69,7 +69,6 @@ export function createNewToken(address: Address): Token {
 
 export function getPrice(token: Token): BigDecimal {
   // only price tokens on mainnet
-  return BigDecimal.fromString('1')
   if (dataSource.network() != 'mainnet') {
     return BigDecimal.fromString('1.0');
   }
