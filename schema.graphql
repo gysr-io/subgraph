@@ -24,20 +24,20 @@ type Token @entity {
   updated: BigInt!
 }
 
-enum GeyserState {
+enum PoolState {
   Unfunded
   Boiling
   Active
   Stale
 }
 
-type Geyser @entity {
-  # geyser contract address
+type Pool @entity {
+  # pool contract address
   id: ID!
 
   owner: User!
 
-  # geyser config
+  # pool config
   stakingToken: Token!
   rewardToken: Token!
 
@@ -64,12 +64,12 @@ type Geyser @entity {
 
   start: BigInt!
   end: BigInt!
-  state: GeyserState!
+  state: PoolState!
 
   stakedUSD: BigDecimal!
   rewardsUSD: BigDecimal!
   tvl: BigDecimal!
-  apy: BigDecimal!
+  apr: BigDecimal!
   stakingSharesPerToken: BigDecimal!
   rewardSharesPerToken: BigDecimal!
   updated: BigInt!
@@ -78,12 +78,12 @@ type Geyser @entity {
 
 type _Schema_
   @fulltext(
-    name: "geyserSearch",
+    name: "poolSearch",
     language: en
     algorithm: rank,
     include: [
       {
-        entity: "Geyser",
+        entity: "Pool",
         fields: [
           { name: "tags" }
         ]
@@ -102,28 +102,28 @@ type User @entity {
   # global positions
   positions: [Position!] @derivedFrom(field: "user")
 
-  # geysers owned by this user
-  geysers: [Geyser!] @derivedFrom(field: "owner")
+  # pools owned by this user
+  pools: [Pool!] @derivedFrom(field: "owner")
 }
 
 type Position @entity {
-  # geyser address, user address
+  # pool address, user address
   id: ID!
 
   user: User!
-  geyser: Geyser!
+  pool: Pool!
 
   shares: BigDecimal!
   stakes: [Stake!]!
 }
 
 type Stake @entity {
-  # geyser address, user address, timestamp
+  # pool address, user address, timestamp
   id: ID!
 
   position: Position!
   user: User!
-  geyser: Geyser!
+  pool: Pool!
 
   shares: BigDecimal!
   timestamp: BigInt!
@@ -139,8 +139,8 @@ type Platform @entity {
   gysrSpent: BigDecimal!
   volume: BigDecimal!
 
-  # list of actively priced geysers
-  _geysers: [Geyser!]!
+  # list of actively priced pools
+  _activePools: [Pool!]!
 }
 
 enum TransactionType {
@@ -154,7 +154,7 @@ type Transaction @entity {
 
   type: TransactionType!
   timestamp: BigInt!
-  geyser: Geyser!
+  pool: Pool!
   user: User!
 
   amount: BigDecimal!
@@ -163,10 +163,10 @@ type Transaction @entity {
 }
 
 type Funding @entity {
-  # geyser id, created at timestamp
+  # pool id, created at timestamp
   id: ID!
 
-  geyser: Geyser!
+  pool: Pool!
   token: Token!
 
   createdTimestamp: BigInt!

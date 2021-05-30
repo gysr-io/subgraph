@@ -1,8 +1,8 @@
-// Geyser event handling and mapping
+// Pool event handling and mapping
 
 import { BigInt, log, store } from '@graphprotocol/graph-ts'
 import {
-  Geyser as GeyserContract,
+  GeyserV1 as GeyserContractV1,
   Staked,
   Unstaked,
   RewardsFunded,
@@ -11,19 +11,19 @@ import {
   RewardsExpired,
   GysrSpent,
   OwnershipTransferred
-} from '../../generated/templates/Geyser/Geyser'
-import { Geyser, Token, User, Position, Stake, Platform, Transaction, Funding } from '../../generated/schema'
+} from '../../generated/templates/GeyserV1/GeyserV1'
+import { Pool, Token, User, Position, Stake, Platform, Transaction, Funding } from '../../generated/schema'
 import { integerToDecimal, createNewUser, createNewPlatform, updatePoolDayData } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN } from '../util/constants'
 import { getPrice } from '../pricing/token'
-import { updatePricing } from '../pricing/geyser'
+import { updatePricing } from '../pricing/pool'
 
 
 export function handleStaked(event: Staked): void {
-  // load geyser and token
-  let geyser = Geyser.load(event.address.toHexString())!;
-  let stakingToken = Token.load(geyser.stakingToken)!;
-  let rewardToken = Token.load(geyser.rewardToken)!;
+  // load pool and token
+  let pool = Pool.load(event.address.toHexString())!;
+  let stakingToken = Token.load(pool.stakingToken)!;
+  let rewardToken = Token.load(pool.rewardToken)!;
   let platform = Platform.load(ZERO_ADDRESS)!;
 
   // load or create user
@@ -35,18 +35,18 @@ export function handleStaked(event: Staked): void {
   }
 
   // load or create position
-  let positionId = geyser.id + '_' + user.id;
+  let positionId = pool.id + '_' + user.id;
 
   let position = Position.load(positionId);
 
   if (position === null) {
     position = new Position(positionId);
     position.user = user.id;
-    position.geyser = geyser.id;
+    position.pool = pool.id;
     position.shares = ZERO_BIG_DECIMAL;
     position.stakes = [];
 
-    geyser.users = geyser.users.plus(BigInt.fromI32(1));
+    pool.users = pool.users.plus(BigInt.fromI32(1));
   }
 
   // create new stake
@@ -55,10 +55,10 @@ export function handleStaked(event: Staked): void {
   let stake = new Stake(stakeId);
   stake.position = position.id;
   stake.user = user.id;
-  stake.geyser = geyser.id;
+  stake.pool = pool.id;
 
   // get share info from contract
-  let contract = GeyserContract.bind(event.address);
+  let contract = GeyserContractV1.bind(event.address);
   let idx = contract.stakeCount(event.params.user).minus(BigInt.fromI32(1));
   let stakeStruct = contract.userStakes(event.params.user, idx);
   let shares = integerToDecimal(stakeStruct.value0, stakingToken.decimals);
@@ -71,14 +71,14 @@ export function handleStaked(event: Staked): void {
   position.stakes = position.stakes.concat([stake.id]);
 
   user.operations = user.operations.plus(BigInt.fromI32(1));
-  geyser.operations = geyser.operations.plus(BigInt.fromI32(1));
+  pool.operations = pool.operations.plus(BigInt.fromI32(1));
   platform.operations = platform.operations.plus(BigInt.fromI32(1));
 
   // create new stake transaction
   let transaction = new Transaction(event.transaction.hash.toHexString());
   transaction.type = 'Stake';
   transaction.timestamp = event.block.timestamp;
-  transaction.geyser = geyser.id;
+  transaction.pool = pool.id;
   transaction.user = user.id;
   transaction.amount = integerToDecimal(event.params.amount, stakingToken.decimals);
 
@@ -88,15 +88,15 @@ export function handleStaked(event: Staked): void {
   rewardToken.price = getPrice(rewardToken);
   rewardToken.updated = event.block.timestamp;
 
-  updatePricing(geyser, platform, contract, stakingToken, rewardToken, event.block.timestamp);
-  let poolDayData = updatePoolDayData(geyser, event.block.timestamp.toI32());
-  geyser.updated = event.block.timestamp;
+  updatePricing(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp);
+  let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
+  pool.updated = event.block.timestamp;
 
   // store
   stake.save();
   position.save();
   user.save();
-  geyser.save();
+  pool.save();
   stakingToken.save();
   rewardToken.save();
   transaction.save();
@@ -106,21 +106,21 @@ export function handleStaked(event: Staked): void {
 
 
 export function handleUnstaked(event: Unstaked): void {
-  // load geyser and token
-  let geyser = Geyser.load(event.address.toHexString())!;
-  let stakingToken = Token.load(geyser.stakingToken)!;
-  let rewardToken = Token.load(geyser.rewardToken)!;
+  // load pool and token
+  let pool = Pool.load(event.address.toHexString())!;
+  let stakingToken = Token.load(pool.stakingToken)!;
+  let rewardToken = Token.load(pool.rewardToken)!;
   let platform = Platform.load(ZERO_ADDRESS)!;
 
   // load user
   let user = User.load(event.params.user.toHexString());
 
   // load position
-  let positionId = geyser.id + '_' + user.id;
+  let positionId = pool.id + '_' + user.id;
   let position = Position.load(positionId);
 
   // get share info from contract
-  let contract = GeyserContract.bind(event.address);
+  let contract = GeyserContractV1.bind(event.address);
   let count = contract.stakeCount(event.params.user).toI32();
 
   // format unstake amount
@@ -163,19 +163,19 @@ export function handleUnstaked(event: Unstaked): void {
     position.save();
   } else {
     store.remove('Position', positionId);
-    geyser.users = geyser.users.minus(BigInt.fromI32(1));
+    pool.users = pool.users.minus(BigInt.fromI32(1));
   }
 
   // update general info
   user.operations = user.operations.plus(BigInt.fromI32(1));
-  geyser.operations = geyser.operations.plus(BigInt.fromI32(1));
+  pool.operations = pool.operations.plus(BigInt.fromI32(1));
   platform.operations = platform.operations.plus(BigInt.fromI32(1));
 
   // create new unstake transaction
   let transaction = new Transaction(event.transaction.hash.toHexString());
   transaction.type = 'Unstake';
   transaction.timestamp = event.block.timestamp;
-  transaction.geyser = geyser.id;
+  transaction.pool = pool.id;
   transaction.user = user.id;
   transaction.amount = unstakeAmount;
   transaction.earnings = ZERO_BIG_DECIMAL;
@@ -187,19 +187,19 @@ export function handleUnstaked(event: Unstaked): void {
   rewardToken.price = getPrice(rewardToken);
   rewardToken.updated = event.block.timestamp;
 
-  updatePricing(geyser, platform, contract, stakingToken, rewardToken, event.block.timestamp);
-  geyser.updated = event.block.timestamp;
+  updatePricing(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp);
+  pool.updated = event.block.timestamp;
 
   // update volume
   let dollarAmount = unstakeAmount.times(stakingToken.price);
-  let poolDayData = updatePoolDayData(geyser, event.block.timestamp.toI32());
+  let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
   platform.volume = platform.volume.plus(dollarAmount);
-  geyser.volume = geyser.volume.plus(dollarAmount);
+  pool.volume = pool.volume.plus(dollarAmount);
   poolDayData.volume = poolDayData.volume.plus(dollarAmount);
 
   // store
   user.save();
-  geyser.save();
+  pool.save();
   stakingToken.save();
   rewardToken.save();
   transaction.save();
@@ -209,16 +209,16 @@ export function handleUnstaked(event: Unstaked): void {
 
 
 export function handleRewardsFunded(event: RewardsFunded): void {
-  let geyser = Geyser.load(event.address.toHexString())!;
-  let stakingToken = Token.load(geyser.stakingToken)!;
-  let rewardToken = Token.load(geyser.rewardToken)!;
+  let pool = Pool.load(event.address.toHexString())!;
+  let stakingToken = Token.load(pool.stakingToken)!;
+  let rewardToken = Token.load(pool.rewardToken)!;
   let platform = Platform.load(ZERO_ADDRESS)!;
 
-  let contract = GeyserContract.bind(event.address);
+  let contract = GeyserContractV1.bind(event.address);
 
   let amount = integerToDecimal(event.params.amount, rewardToken.decimals)
-  geyser.rewards = geyser.rewards.plus(amount);
-  geyser.funded = geyser.funded.plus(amount);
+  pool.rewards = pool.rewards.plus(amount);
+  pool.funded = pool.funded.plus(amount);
 
   // update pricing info
   stakingToken.price = getPrice(stakingToken!);
@@ -226,44 +226,44 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   rewardToken.price = getPrice(rewardToken!);
   rewardToken.updated = event.block.timestamp;
 
-  updatePricing(geyser, platform, contract, stakingToken, rewardToken, event.block.timestamp);
-  geyser.updated = event.block.timestamp;
+  updatePricing(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp);
+  pool.updated = event.block.timestamp;
 
-  // update timeframe for geyser
-  if (event.params.start.lt(geyser.start) || geyser.start.equals(ZERO_BIG_INT)) {
-    geyser.start = event.params.start;
+  // update timeframe for pool
+  if (event.params.start.lt(pool.start) || pool.start.equals(ZERO_BIG_INT)) {
+    pool.start = event.params.start;
   }
   let end = event.params.start.plus(event.params.duration);
-  if (end.gt(geyser.end) || geyser.end.equals(ZERO_BIG_INT)) {
-    geyser.end = end;
+  if (end.gt(pool.end) || pool.end.equals(ZERO_BIG_INT)) {
+    pool.end = end;
   }
 
   // create funding
-  let fundingId = geyser.id + '_' + event.block.timestamp.toString();
+  let fundingId = pool.id + '_' + event.block.timestamp.toString();
   let funding = new Funding(fundingId);
-  funding.geyser = geyser.id;
+  funding.pool = pool.id;
   funding.token = rewardToken.id;
   funding.createdTimestamp = event.block.timestamp;
   funding.start = event.params.start;
   funding.end = event.params.start.plus(event.params.duration);
   let formattedAmount = integerToDecimal(event.params.amount, rewardToken.decimals);
-  let shares = formattedAmount.times(geyser.rewardSharesPerToken);
+  let shares = formattedAmount.times(pool.rewardSharesPerToken);
   funding.originalAmount = formattedAmount;
   funding.shares = shares;
   funding.sharesPerSecond = shares.div(event.params.duration.toBigDecimal());
 
-  geyser.fundings = geyser.fundings.concat([funding.id])
+  pool.fundings = pool.fundings.concat([funding.id])
 
   // TODO: map of reward rates over time
 
   // update platform
-  if (!platform._geysers.includes(geyser.id)) {
-    platform._geysers = platform._geysers.concat([geyser.id]);
+  if (!platform._activePools.includes(pool.id)) {
+    platform._activePools = platform._activePools.concat([pool.id]);
   }
 
   // store
   funding.save();
-  geyser.save();
+  pool.save();
   stakingToken.save();
   rewardToken.save();
   platform.save();
@@ -271,25 +271,25 @@ export function handleRewardsFunded(event: RewardsFunded): void {
 
 
 export function handleRewardsDistributed(event: RewardsDistributed): void {
-  let geyser = Geyser.load(event.address.toHexString())!;
-  let token = Token.load(geyser.rewardToken)!;
+  let pool = Pool.load(event.address.toHexString())!;
+  let token = Token.load(pool.rewardToken)!;
   let platform = Platform.load(ZERO_ADDRESS);
 
   let amount = integerToDecimal(event.params.amount, token.decimals);
-  geyser.rewards = geyser.rewards.minus(amount);
-  geyser.distributed = geyser.distributed.plus(amount);
+  pool.rewards = pool.rewards.minus(amount);
+  pool.distributed = pool.distributed.plus(amount);
 
   let dollarAmount = amount.times(getPrice(token));
-  let poolDayData = updatePoolDayData(geyser, event.block.timestamp.toI32());
+  let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
   platform.volume = platform.volume.plus(dollarAmount);
-  geyser.volume = geyser.volume.plus(dollarAmount);
+  pool.volume = pool.volume.plus(dollarAmount);
   poolDayData.volume = poolDayData.volume.plus(dollarAmount);
 
   // update unstake transaction earnings
   let transaction = new Transaction(event.transaction.hash.toHexString());
   transaction.earnings = amount;
 
-  geyser.save();
+  pool.save();
   transaction.save();
   platform.save();
   poolDayData.save();
@@ -297,7 +297,7 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
 
 
 export function handleOwnershipTransferred(event: OwnershipTransferred): void {
-  let geyser = Geyser.load(event.address.toHexString());
+  let pool = Pool.load(event.address.toHexString());
   let newOwner = User.load(event.params.newOwner.toHexString());
   let platform = Platform.load(ZERO_ADDRESS);
   if (platform === null) {
@@ -310,9 +310,9 @@ export function handleOwnershipTransferred(event: OwnershipTransferred): void {
     newOwner.save()
   }
 
-  geyser.owner = newOwner.id;
+  pool.owner = newOwner.id;
 
-  geyser.save();
+  pool.save();
   platform.save();
 }
 
@@ -323,12 +323,12 @@ export function handleRewardsUnlocked(event: RewardsUnlocked): void {
 
 
 export function handleRewardsExpired(event: RewardsExpired): void {
-  let geyser = Geyser.load(event.address.toHexString());
-  let rewardToken = Token.load(geyser.rewardToken);
+  let pool = Pool.load(event.address.toHexString());
+  let rewardToken = Token.load(pool.rewardToken);
   let amount = integerToDecimal(event.params.amount, rewardToken.decimals);
 
-  for (let i = 0; i < geyser.fundings.length; i++) {
-    let fundingId = (geyser.fundings as string[])[i];
+  for (let i = 0; i < pool.fundings.length; i++) {
+    let fundingId = (pool.fundings as string[])[i];
     let funding = Funding.load(fundingId);
 
     // remove expired funding
@@ -348,8 +348,8 @@ export function handleGysrSpent(event: GysrSpent): void {
   let transaction = new Transaction(event.transaction.hash.toHexString());
   transaction.gysrSpent = amount;
 
-  let geyser = Geyser.load(event.address.toHexString())!;
-  geyser.gysrSpent = geyser.gysrSpent.plus(amount);
+  let pool = Pool.load(event.address.toHexString())!;
+  pool.gysrSpent = pool.gysrSpent.plus(amount);
 
   // update platform total GYSR spent
   let platform = Platform.load(ZERO_ADDRESS);
@@ -357,13 +357,13 @@ export function handleGysrSpent(event: GysrSpent): void {
   platform.gysrSpent = platform.gysrSpent.plus(amount);
 
   let dollarAmount = amount.times(getPrice(gysr));
-  let poolDayData = updatePoolDayData(geyser, event.block.timestamp.toI32());
+  let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
   platform.volume = platform.volume.plus(dollarAmount);
-  geyser.volume = geyser.volume.plus(dollarAmount);
+  pool.volume = pool.volume.plus(dollarAmount);
   poolDayData.volume = poolDayData.volume.plus(dollarAmount);
 
   transaction.save();
-  geyser.save();
+  pool.save();
   platform.save();
   poolDayData.save();
 }

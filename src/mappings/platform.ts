@@ -1,11 +1,11 @@
 // platform wide mappings
 
 import { Address, BigInt, log, ethereum } from '@graphprotocol/graph-ts'
-import { Geyser as GeyserContract } from '../../generated/templates/Geyser/Geyser'
-import { Geyser, Token, Platform } from '../../generated/schema'
+import { GeyserV1 as GeyserContractV1 } from '../../generated/templates/GeyserV1/GeyserV1'
+import { Pool, Token, Platform } from '../../generated/schema'
 import { ZERO_BIG_INT, ZERO_ADDRESS } from '../util/constants'
 import { getPrice } from '../pricing/token'
-import { updatePricing } from '../pricing/geyser'
+import { updatePricing } from '../pricing/pool'
 import { updatePoolDayData } from '../util/common'
 
 
@@ -19,17 +19,17 @@ export function handleUpdate(event: ethereum.Event): void {
     return;
   }
 
-  let geysers = platform._geysers;
+  let pools = platform._activePools;
   var stale: string[] = [];
 
-  for (let i = 0; i < geysers.length; i++) {
+  for (let i = 0; i < pools.length; i++) {
     // load
-    let geyser = Geyser.load(geysers[i])!;
-    let stakingToken = Token.load(geyser.stakingToken)!;
-    let rewardToken = Token.load(geyser.rewardToken)!;
+    let pool = Pool.load(pools[i])!;
+    let stakingToken = Token.load(pool.stakingToken)!;
+    let rewardToken = Token.load(pool.rewardToken)!;
 
     // bind to contract
-    let contract = GeyserContract.bind(Address.fromString(geyser.id));
+    let contract = GeyserContractV1.bind(Address.fromString(pool.id));
 
     // update pricing info
     stakingToken.price = getPrice(stakingToken);
@@ -37,28 +37,28 @@ export function handleUpdate(event: ethereum.Event): void {
     rewardToken.price = getPrice(rewardToken);
     rewardToken.updated = event.block.timestamp;
 
-    updatePricing(geyser, platform!, contract, stakingToken, rewardToken, event.block.timestamp);
-    geyser.updated = event.block.timestamp;
+    updatePricing(pool, platform!, contract, stakingToken, rewardToken, event.block.timestamp);
+    pool.updated = event.block.timestamp;
 
-    // update geyser day snapshot
-    let poolDayData = updatePoolDayData(geyser, event.block.timestamp.toI32());
+    // update pool day snapshot
+    let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
 
     // store
-    geyser.save();
+    pool.save();
     stakingToken.save();
     rewardToken.save();
     platform.save();
     poolDayData.save();
 
-    // remove from priced geyser list if stale
-    if (geyser.state == 'Stale') {
-      stale.push(geyser.id);
-      log.info('Marking geyser as stale {}', [geyser.id.toString()]);
+    // remove from priced pool list if stale
+    if (pool.state == 'Stale') {
+      stale.push(pool.id);
+      log.info('Marking pool as stale {}', [pool.id.toString()]);
     }
   }
 
   if (stale.length) {
-    platform._geysers = geysers.filter((x) => !stale.includes(x));
+    platform._activePools = pools.filter((x) => !stale.includes(x));
     platform.save();
   }
 }

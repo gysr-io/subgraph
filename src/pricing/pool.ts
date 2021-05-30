@@ -1,32 +1,32 @@
-// pricing for geyser information on apy, tvl, and more
+// pricing for pool information on apr, tvl, and more
 
 import { Address, BigInt, BigDecimal, log, store } from '@graphprotocol/graph-ts'
-import { Geyser as GeyserContract } from '../../generated/templates/Geyser/Geyser'
-import { Geyser, Platform, Token } from '../../generated/schema'
+import { GeyserV1 as GeyserContractV1 } from '../../generated/templates/GeyserV1/GeyserV1'
+import { Pool, Platform, Token } from '../../generated/schema'
 import { integerToDecimal } from '../util/common'
 import { INITIAL_SHARES_PER_TOKEN, ZERO_BIG_DECIMAL, ZERO_BIG_INT } from '../util/constants';
 
 export function updatePricing(
-  geyser: Geyser,
+  pool: Pool,
   platform: Platform,
-  contract: GeyserContract,
+  contract: GeyserContractV1,
   stakingToken: Token,
   rewardToken: Token,
   timestamp: BigInt
 ): void {
 
   // token amounts
-  geyser.staked = integerToDecimal(contract.totalStaked(), stakingToken.decimals);
-  geyser.rewards = integerToDecimal(contract.totalLocked(), rewardToken.decimals).plus(
+  pool.staked = integerToDecimal(contract.totalStaked(), stakingToken.decimals);
+  pool.rewards = integerToDecimal(contract.totalLocked(), rewardToken.decimals).plus(
     integerToDecimal(contract.totalUnlocked(), rewardToken.decimals)
   );
 
   // usd amounts
-  geyser.stakedUSD = geyser.staked.times(stakingToken.price);
-  geyser.rewardsUSD = geyser.rewards.times(rewardToken.price);
-  let previousGeyserValue = geyser.tvl;
-  geyser.tvl = geyser.stakedUSD.plus(geyser.rewardsUSD);
-  platform.tvl = platform.tvl.plus(geyser.stakedUSD).plus(geyser.rewardsUSD).minus(previousGeyserValue);
+  pool.stakedUSD = pool.staked.times(stakingToken.price);
+  pool.rewardsUSD = pool.rewards.times(rewardToken.price);
+  let previousPoolValue = pool.tvl;
+  pool.tvl = pool.stakedUSD.plus(pool.rewardsUSD);
+  platform.tvl = platform.tvl.plus(pool.stakedUSD).plus(pool.rewardsUSD).minus(previousPoolValue);
 
   // fundings
   let count = contract.fundingCount().toI32();
@@ -65,33 +65,33 @@ export function updatePricing(
     ? contract.totalLockedShares().toBigDecimal().div(contract.totalLocked().toBigDecimal())
     : INITIAL_SHARES_PER_TOKEN;
 
-  geyser.sharesPerSecond = rate;
-  geyser.stakingSharesPerToken = stakingSharesPerToken;
-  geyser.rewardSharesPerToken = rewardSharesPerToken;
+  pool.sharesPerSecond = rate;
+  pool.stakingSharesPerToken = stakingSharesPerToken;
+  pool.rewardSharesPerToken = rewardSharesPerToken;
 
 
-  // apy
+  // apr
   if (rate.gt(ZERO_BIG_DECIMAL)
     && rewardToken.price.gt(ZERO_BIG_DECIMAL)
-    && geyser.stakedUSD.gt(ZERO_BIG_DECIMAL)
+    && pool.stakedUSD.gt(ZERO_BIG_DECIMAL)
   ) {
     let yearly = BigDecimal.fromString('31536000').times(
       rewardToken.price.times(
         rate.div(rewardSharesPerToken)
       )
     );
-    geyser.apy = yearly.div(geyser.stakedUSD).times(BigDecimal.fromString('100'));
+    pool.apr = yearly.div(pool.stakedUSD).times(BigDecimal.fromString('100'));
 
   } else {
-    geyser.apy = ZERO_BIG_DECIMAL;
+    pool.apr = ZERO_BIG_DECIMAL;
   }
 
   // state
   if (active) {
-    geyser.state = 'Active';
+    pool.state = 'Active';
   } else if (rate.gt(ZERO_BIG_DECIMAL)) {
-    geyser.state = 'Boiling';
+    pool.state = 'Boiling';
   } else if (contract.totalRewards().gt(ZERO_BIG_INT)) {
-    geyser.state = 'Stale';
+    pool.state = 'Stale';
   }
 }

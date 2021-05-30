@@ -2,7 +2,7 @@
 
 import { Address, BigDecimal, BigInt, log } from '@graphprotocol/graph-ts';
 
-import { Platform, User, PoolDayData, Geyser } from '../../generated/schema'
+import { Platform, User, PoolDayData, Pool } from '../../generated/schema'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS } from '../util/constants'
 
 
@@ -27,29 +27,28 @@ export function createNewPlatform(): Platform {
   platform.operations = ZERO_BIG_INT;
   platform.gysrSpent = ZERO_BIG_DECIMAL;
   platform.volume = ZERO_BIG_DECIMAL;
-  platform._geysers = [];
+  platform._activePools = [];
 
   return platform;
 }
 
-export function updatePoolDayData(geyser: Geyser, timestamp: number): PoolDayData {
+export function updatePoolDayData(pool: Pool, timestamp: number): PoolDayData {
   let day = Math.floor(timestamp / 86400) as i32;
   let dayStartTimestamp = day * 86400; // will be 12:00am UTC due to rounding
-  let id = geyser.id + '_' + day.toString();
+  let id = pool.id + '_' + day.toString();
 
   let poolDayData = PoolDayData.load(id);
   if (poolDayData === null) {
     poolDayData = new PoolDayData(id);
-    poolDayData.poolAddress = geyser.id;
+    poolDayData.poolAddress = pool.id;
     poolDayData.date = dayStartTimestamp;
     poolDayData.volume = ZERO_BIG_DECIMAL;
   }
 
-  poolDayData.totalStaked = geyser.staked;
-  poolDayData.totalGysrSpent = geyser.gysrSpent;
-  poolDayData.totalUsers = geyser.users;
-  poolDayData.tvl = geyser.tvl;
-  poolDayData.volume = ZERO_BIG_DECIMAL;
+  poolDayData.totalStaked = pool.staked;
+  poolDayData.totalGysrSpent = pool.gysrSpent;
+  poolDayData.totalUsers = pool.users;
+  poolDayData.tvl = pool.tvl;
 
   return poolDayData!;
 }

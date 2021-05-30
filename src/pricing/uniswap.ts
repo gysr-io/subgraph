@@ -1,9 +1,9 @@
 // pricing for uniswap traded tokens and uniswap LP tokens
 
 import { Address, BigInt, BigDecimal, log } from '@graphprotocol/graph-ts'
-import { UniswapFactory } from '../../generated/templates/Geyser/UniswapFactory'
-import { UniswapPair } from '../../generated/templates/Geyser/UniswapPair'
-import { ERC20 } from '../../generated/templates/Geyser/ERC20'
+import { UniswapFactory } from '../../generated/templates/GeyserV1/UniswapFactory'
+import { UniswapPair } from '../../generated/templates/GeyserV1/UniswapPair'
+import { ERC20 } from '../../generated/templates/GeyserV1/ERC20'
 import { integerToDecimal } from '../util/common'
 import {
   ZERO_BIG_INT,
