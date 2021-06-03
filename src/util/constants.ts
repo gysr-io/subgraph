@@ -35,8 +35,9 @@ export let HIGH_VOLUME_TOKENS: string[] = [
 // uniswap
 export let USDT_WETH_PAIR = '0x0d4a11d5eeaac28ec3f61d100daf4d40471f1852';
 export let UNISWAP_FACTORY = '0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f';
-export let MIN_ETH_PRICING = BigDecimal.fromString('1.0');
-export let MIN_USD_PRICING = BigDecimal.fromString('1000.0');
+export let SUSHI_FACTORY = '0xc0aee478e3658e2610c5f7a4a2e1777ce9e4f2ac';
+export let MIN_ETH_PRICING = BigDecimal.fromString('5.0');
+export let MIN_USD_PRICING = BigDecimal.fromString('10000.0');
 
 // contract
 export let INITIAL_SHARES_PER_TOKEN = BigDecimal.fromString('1000000');
