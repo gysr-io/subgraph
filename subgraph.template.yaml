@@ -94,6 +94,10 @@ dataSources:
           file: './abis/ERC20FriendlyRewardModule.json'
         - name: ERC20
           file: ./abis/ERC20.json
+        - name: UniswapFactory
+          file: ./abis/thirdparty/uniswap/Factory.json
+        - name: UniswapPair
+          file: ./abis/thirdparty/uniswap/Pair.json
       eventHandlers:
         - event: PoolCreated(indexed address,address)
           handler: handlePoolCreated

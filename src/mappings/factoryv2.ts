@@ -66,14 +66,14 @@ export function handlePoolCreated(event: PoolCreated): void {
   // if bonusMin call was reverted, we know that it is not a competitive reward module
   if (testBonusMin.reverted) {
     let friendlyContract = ERC20FriendlyRewardModuleContract.bind(rewardModule);
-    pool.bonusMin = integerToDecimal(friendlyContract.vestingStart());
-    pool.bonusMax = BigDecimal.fromString('1');
-    pool.bonusPeriod = friendlyContract.vestingPeriod();
+    pool.timeMultMin = integerToDecimal(friendlyContract.vestingStart());
+    pool.timeMultMax = BigDecimal.fromString('1');
+    pool.timeMultPeriod = friendlyContract.vestingPeriod();
     pool.poolType = 'Fountain'
   } else {
-    pool.bonusMin = integerToDecimal(testBonusMin.value);
-    pool.bonusMax = integerToDecimal(competitiveContract.bonusMax());
-    pool.bonusPeriod = competitiveContract.bonusPeriod();
+    pool.timeMultMin = integerToDecimal(testBonusMin.value);
+    pool.timeMultMax = integerToDecimal(competitiveContract.bonusMax());
+    pool.timeMultPeriod = competitiveContract.bonusPeriod();
     pool.poolType = 'GeyserV2'
   }
 

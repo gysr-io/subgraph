@@ -47,9 +47,9 @@ type Pool @entity {
   stakingToken: Token!
   rewardToken: Token!
 
-  bonusMin: BigDecimal!
-  bonusMax: BigDecimal!
-  bonusPeriod: BigInt!
+  timeMultMin: BigDecimal!
+  timeMultMax: BigDecimal!
+  timeMultPeriod: BigInt!
 
   createdTimestamp: BigInt!
   createdBlock: BigInt!

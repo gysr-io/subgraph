@@ -50,9 +50,9 @@ export function handleGeyserV1Created(event: GeyserCreated): void {
   pool.owner = user.id;
   pool.stakingToken = stakingToken.id;
   pool.rewardToken = rewardToken.id;
-  pool.bonusMin = integerToDecimal(contract.bonusMin());
-  pool.bonusMax = integerToDecimal(contract.bonusMax());
-  pool.bonusPeriod = contract.bonusPeriod();
+  pool.timeMultMin = integerToDecimal(contract.bonusMin());
+  pool.timeMultMax = integerToDecimal(contract.bonusMax());
+  pool.timeMultPeriod = contract.bonusPeriod();
   pool.createdBlock = event.block.number;
   pool.createdTimestamp = event.block.timestamp;
   pool.tags = (
