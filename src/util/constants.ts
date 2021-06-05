@@ -1,6 +1,6 @@
 // constants
 
-import { BigDecimal, BigInt, log } from '@graphprotocol/graph-ts';
+import { BigDecimal, BigInt, Address } from '@graphprotocol/graph-ts';
 
 
 export let ZERO_BIG_DECIMAL = BigDecimal.fromString('0');
@@ -40,3 +40,10 @@ export let MIN_USD_PRICING = BigDecimal.fromString('1000.0');
 
 // contract
 export let INITIAL_SHARES_PER_TOKEN = BigDecimal.fromString('1000000');
+
+// factories
+export let MAINNET_ERC20_COMPETITIVE_REWARD_MODULE_FACTORY = Address.fromString('');
+export let MAINNET_ERC20_FRIENDLY_REWARD_MODULE_FACTORY = Address.fromString('');
+
+export let KOVAN_ERC20_COMPETITIVE_REWARD_MODULE_FACTORY = Address.fromString('0x1bbb3350fab2efbfc94cc7929477d54aa1952a47');
+export let KOVAN_ERC20_FRIENDLY_REWARD_MODULE_FACTORY = Address.fromString('0xaf32ba4876ea902bded8bd8a618299ea96944cd3');

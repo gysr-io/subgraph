@@ -1,6 +1,6 @@
 // V2 Pool Factory event handling and mapping
 
-import { BigDecimal, BigInt } from '@graphprotocol/graph-ts'
+import { BigDecimal, BigInt, dataSource, Address } from '@graphprotocol/graph-ts'
 import { PoolCreated } from '../../generated/PoolFactory/PoolFactory'
 import { Pool as PoolContract } from '../../generated/PoolFactory/Pool'
 import { ERC20StakingModule as ERC20StakingModuleContract } from '../../generated/PoolFactory/ERC20StakingModule'
@@ -10,7 +10,14 @@ import { ERC20FriendlyRewardModule as ERC20FriendlyRewardModuleContract } from '
 import { Pool, Platform, Token, User } from '../../generated/schema'
 import { Pool as PoolTemplate } from '../../generated/templates'
 import { integerToDecimal, createNewUser, createNewPlatform } from '../util/common'
-import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, INITIAL_SHARES_PER_TOKEN, ZERO_ADDRESS } from '../util/constants'
+import {
+  ZERO_BIG_INT,
+  ZERO_BIG_DECIMAL,
+  INITIAL_SHARES_PER_TOKEN,
+  ZERO_ADDRESS,
+  MAINNET_ERC20_COMPETITIVE_REWARD_MODULE_FACTORY,
+  KOVAN_ERC20_COMPETITIVE_REWARD_MODULE_FACTORY
+} from '../util/constants'
 import { createNewToken } from '../pricing/token'
 
 export function handlePoolCreated(event: PoolCreated): void {
@@ -47,6 +54,7 @@ export function handlePoolCreated(event: PoolCreated): void {
     platform = createNewPlatform();
   }
 
+  // user
   let user = User.load(event.params.user.toHexString());
 
   if (user == null) {
@@ -60,21 +68,28 @@ export function handlePoolCreated(event: PoolCreated): void {
   pool.stakingToken = stakingToken.id;
   pool.rewardToken = rewardToken.id;
 
-  // get bonus info
-  let competitiveContract = ERC20CompetitiveRewardModuleContract.bind(rewardModule);
-  let testBonusMin = competitiveContract.try_bonusMin()
-  // if bonusMin call was reverted, we know that it is not a competitive reward module
-  if (testBonusMin.reverted) {
+  // get factory address depending on network
+  let competitiveModuleFactory: Address;
+  if (dataSource.network() == 'mainnet') {
+    competitiveModuleFactory = MAINNET_ERC20_COMPETITIVE_REWARD_MODULE_FACTORY
+  } else {
+    competitiveModuleFactory = KOVAN_ERC20_COMPETITIVE_REWARD_MODULE_FACTORY
+  }
+
+  // get bonus info and pool type depending
+  let rewardFactory = rewardModuleContract.factory();
+  if (rewardFactory == competitiveModuleFactory) {
+    let competitiveContract = ERC20CompetitiveRewardModuleContract.bind(rewardModule)
+    pool.timeMultMin = integerToDecimal(competitiveContract.bonusMin());
+    pool.timeMultMax = integerToDecimal(competitiveContract.bonusMax());
+    pool.timeMultPeriod = competitiveContract.bonusPeriod();
+    pool.poolType = 'GeyserV2'
+  } else {
     let friendlyContract = ERC20FriendlyRewardModuleContract.bind(rewardModule);
     pool.timeMultMin = integerToDecimal(friendlyContract.vestingStart());
     pool.timeMultMax = BigDecimal.fromString('1');
     pool.timeMultPeriod = friendlyContract.vestingPeriod();
     pool.poolType = 'Fountain'
-  } else {
-    pool.timeMultMin = integerToDecimal(testBonusMin.value);
-    pool.timeMultMax = integerToDecimal(competitiveContract.bonusMax());
-    pool.timeMultPeriod = competitiveContract.bonusPeriod();
-    pool.poolType = 'GeyserV2'
   }
 
   pool.createdBlock = event.block.number;
