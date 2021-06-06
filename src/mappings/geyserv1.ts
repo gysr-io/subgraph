@@ -1,4 +1,4 @@
-// Pool event handling and mapping
+// Geyser V1 event handling and mapping
 
 import { BigInt, log, store } from '@graphprotocol/graph-ts'
 import {

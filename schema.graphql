@@ -31,6 +31,12 @@ enum PoolState {
   Stale
 }
 
+enum PoolType {
+  GeyserV1
+  GeyserV2
+  Fountain
+}
+
 type Pool @entity {
   # pool contract address
   id: ID!
@@ -41,14 +47,16 @@ type Pool @entity {
   stakingToken: Token!
   rewardToken: Token!
 
-  bonusMin: BigDecimal!
-  bonusMax: BigDecimal!
-  bonusPeriod: BigInt!
+  timeMultMin: BigDecimal!
+  timeMultMax: BigDecimal!
+  timeMultPeriod: BigInt!
 
   createdTimestamp: BigInt!
   createdBlock: BigInt!
 
   tags: String!
+
+  poolType: PoolType!
 
   # stats
   users: BigInt!
