@@ -2,6 +2,6 @@
   "network": "kovan",
   "geyser_factory_v1": "0x31B200B465bAe2dA6D7c0Fbc852C2dBA4515c58d",
   "geyser_factory_v1_start_block": 24352438,
-  "pool_factory": "0x494469a7a6754a75A50aEAc07Ec0D507635777a7",
-  "pool_factory_start_block": 24975454
+  "pool_factory": "0x88e25783D5c255f8ff4e8191A82974d620Ab56eb",
+  "pool_factory_start_block": 25306575
 }

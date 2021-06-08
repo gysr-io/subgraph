@@ -162,4 +162,26 @@ templates:
       eventHandlers:
         - event: Staked(indexed address,indexed address,uint256,uint256)
           handler: handleStaked
+        - event: RewardsDistributed(indexed address,indexed address,uint256,uint256)
+          handler: handleRewardsDistributed
       file: ./src/mappings/pool.ts
+
+  - kind: ethereum/contract
+    name: ERC20BaseRewardModule
+    network: {{network}}
+    source:
+      abi: ERC20BaseRewardModule
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Pool
+        - Platform
+      abis:
+        - name: ERC20BaseRewardModule
+          file: './abis/ERC20BaseRewardModule.json'
+      eventHandlers:
+        - event: RewardsFunded(indexed address,uint256,uint256,uint256)
+          handler: handleRewardsFunded
+      file: ./src/mappings/rewardmodule.ts
