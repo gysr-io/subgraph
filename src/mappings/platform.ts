@@ -9,6 +9,7 @@ import { getPrice } from '../pricing/token'
 import { updatePricing } from '../pricing/pool'
 import { updatePoolDayData, integerToDecimal } from '../util/common'
 import { updateGeyserV1 } from '../util/geyserv1'
+import { updatePool } from '../util/pool'
 
 
 export function handleUpdate(event: ethereum.Event): void {
@@ -35,7 +36,7 @@ export function handleUpdate(event: ethereum.Event): void {
       let contract = GeyserContractV1.bind(Address.fromString(pool.id));
       updateGeyserV1(pool, platform!, contract, stakingToken, rewardToken, event.block.timestamp);
     } else {
-      // TODO v2 amounts
+      updatePool(pool, platform!, stakingToken, rewardToken, event.block.timestamp);
     }
 
     // update pool day snapshot

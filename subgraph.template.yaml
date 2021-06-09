@@ -159,6 +159,10 @@ templates:
       abis:
         - name: Pool
           file: ./abis/Pool.json
+        - name: ERC20StakingModule
+          file: ./abis/ERC20StakingModule.json
+        - name: ERC20BaseRewardModule
+          file: './abis/ERC20BaseRewardModule.json'
       eventHandlers:
         - event: Staked(indexed address,indexed address,uint256,uint256)
           handler: handleStaked
@@ -179,6 +183,10 @@ templates:
         - Pool
         - Platform
       abis:
+        - name: Pool
+          file: ./abis/Pool.json
+        - name: ERC20StakingModule
+          file: ./abis/ERC20StakingModule.json
         - name: ERC20BaseRewardModule
           file: './abis/ERC20BaseRewardModule.json'
       eventHandlers:

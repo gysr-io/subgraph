@@ -1,4 +1,4 @@
-// utilities for Geyser V1 pricing
+// utilities for Geyser V1 updates and pricing
 
 import { BigInt, log, store } from '@graphprotocol/graph-ts'
 import { GeyserV1 as GeyserContractV1 } from '../../generated/templates/GeyserV1/GeyserV1'

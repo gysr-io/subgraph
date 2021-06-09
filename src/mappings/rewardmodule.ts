@@ -7,7 +7,7 @@ import { Pool, Token, Platform, Funding } from '../../generated/schema'
 import { integerToDecimal } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS } from '../util/constants'
 import { getPrice } from '../pricing/token'
-import { updatePricing } from '../pricing/pool'
+import { updatePool } from '../util/pool'
 
 
 export function handleRewardsFunded(event: RewardsFunded): void {
@@ -49,6 +49,7 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   funding.originalAmount = formattedAmount;
   funding.shares = shares;
   funding.sharesPerSecond = shares.div(duration.toBigDecimal());
+  funding.save(); // save before pricing
 
   pool.fundings = pool.fundings.concat([funding.id])
 
@@ -58,9 +59,8 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   rewardToken.price = getPrice(rewardToken!);
   rewardToken.updated = event.block.timestamp;
 
-  // TODO
-  //updatePricing(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp);
-  pool.updated = event.block.timestamp;
+  // update pool pricing
+  updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp);
 
   // update platform
   if (!platform._activePools.includes(pool.id)) {
@@ -68,7 +68,6 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   }
 
   // store
-  funding.save();
   pool.save();
   stakingToken.save();
   rewardToken.save();
