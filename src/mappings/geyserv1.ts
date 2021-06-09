@@ -14,9 +14,9 @@ import {
 } from '../../generated/templates/GeyserV1/GeyserV1'
 import { Pool, Token, User, Position, Stake, Platform, Transaction, Funding } from '../../generated/schema'
 import { integerToDecimal, createNewUser, createNewPlatform, updatePoolDayData } from '../util/common'
-import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN } from '../util/constants'
+import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN, INITIAL_SHARES_PER_TOKEN } from '../util/constants'
 import { getPrice } from '../pricing/token'
-import { updatePricing } from '../pricing/pool'
+import { updateGeyserV1 } from '../util/geyserv1'
 
 
 export function handleStaked(event: Staked): void {
@@ -83,14 +83,9 @@ export function handleStaked(event: Staked): void {
   transaction.amount = integerToDecimal(event.params.amount, stakingToken.decimals);
 
   // update pricing info
-  stakingToken.price = getPrice(stakingToken);
-  stakingToken.updated = event.block.timestamp;
-  rewardToken.price = getPrice(rewardToken);
-  rewardToken.updated = event.block.timestamp;
+  updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp);
 
-  updatePricing(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp);
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
-  pool.updated = event.block.timestamp;
 
   // store
   stake.save();
@@ -182,13 +177,7 @@ export function handleUnstaked(event: Unstaked): void {
   transaction.gysrSpent = ZERO_BIG_DECIMAL;
 
   // update pricing info
-  stakingToken.price = getPrice(stakingToken);
-  stakingToken.updated = event.block.timestamp;
-  rewardToken.price = getPrice(rewardToken);
-  rewardToken.updated = event.block.timestamp;
-
-  updatePricing(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp);
-  pool.updated = event.block.timestamp;
+  updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp);
 
   // update volume
   let dollarAmount = unstakeAmount.times(stakingToken.price);
@@ -217,17 +206,7 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   let contract = GeyserContractV1.bind(event.address);
 
   let amount = integerToDecimal(event.params.amount, rewardToken.decimals)
-  pool.rewards = pool.rewards.plus(amount);
   pool.funded = pool.funded.plus(amount);
-
-  // update pricing info
-  stakingToken.price = getPrice(stakingToken!);
-  stakingToken.updated = event.block.timestamp;
-  rewardToken.price = getPrice(rewardToken!);
-  rewardToken.updated = event.block.timestamp;
-
-  updatePricing(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp);
-  pool.updated = event.block.timestamp;
 
   // update timeframe for pool
   if (event.params.start.lt(pool.start) || pool.start.equals(ZERO_BIG_INT)) {
@@ -251,10 +230,12 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   funding.originalAmount = formattedAmount;
   funding.shares = shares;
   funding.sharesPerSecond = shares.div(event.params.duration.toBigDecimal());
+  funding.save();  // save before pricing
 
   pool.fundings = pool.fundings.concat([funding.id])
 
-  // TODO: map of reward rates over time
+  // update pricing info
+  updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp);
 
   // update platform
   if (!platform._activePools.includes(pool.id)) {
@@ -262,7 +243,6 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   }
 
   // store
-  funding.save();
   pool.save();
   stakingToken.save();
   rewardToken.save();
@@ -333,8 +313,8 @@ export function handleRewardsExpired(event: RewardsExpired): void {
 
     // remove expired funding
     if (funding.start.equals(event.params.start)
-    && funding.end.equals(funding.start.plus(event.params.duration))
-    && funding.originalAmount.equals(amount)) {
+      && funding.end.equals(funding.start.plus(event.params.duration))
+      && funding.originalAmount.equals(amount)) {
       store.remove('Funding', fundingId);
       break;
     }

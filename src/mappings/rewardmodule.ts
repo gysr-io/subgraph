@@ -1,4 +1,4 @@
-// ERC20BaseRewardModule event handling and mapping
+// ERC20 base reward module event handling and mapping
 
 import { Address, BigInt, log, store } from '@graphprotocol/graph-ts'
 import { RewardsFunded } from '../../generated/templates/ERC20BaseRewardModule/ERC20BaseRewardModule'

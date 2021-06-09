@@ -1,5 +1,7 @@
 {
   "network": "mainnet",
   "geyser_factory_v1": "0xCAda3423d33259A94C1ED1A7AEEcb73B87D0B684",
-  "geyser_factory_v1_start_block": 11143895
+  "geyser_factory_v1_start_block": 11143895,
+  "pool_factory": "0x0000000000000000000000000000000000000000",
+  "pool_factory_start_block": 12600000
 }
