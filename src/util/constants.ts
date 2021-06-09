@@ -11,6 +11,7 @@ export let WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
 export let ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 export let GYSR_TOKEN = '0xbea98c05eeae2f3bc8c3565db7551eb738c8ccab';
+export let KOVAN_GYSR_TOKEN = '0xda9b55de6e04404f6c77673d4b243142a4efc6b8';
 
 export let STABLECOINS: string[] = [
   '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',  // usdc

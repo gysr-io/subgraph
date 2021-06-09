@@ -1,6 +1,6 @@
 // Geyser V1 event handling and mapping
 
-import { BigInt, log, store } from '@graphprotocol/graph-ts'
+import { Address, BigInt, log, store, dataSource } from '@graphprotocol/graph-ts'
 import {
   GeyserV1 as GeyserContractV1,
   Staked,
@@ -14,8 +14,8 @@ import {
 } from '../../generated/templates/GeyserV1/GeyserV1'
 import { Pool, Token, User, Position, Stake, Platform, Transaction, Funding } from '../../generated/schema'
 import { integerToDecimal, createNewUser, createNewPlatform, updatePoolDayData } from '../util/common'
-import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN, INITIAL_SHARES_PER_TOKEN } from '../util/constants'
-import { getPrice } from '../pricing/token'
+import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN, KOVAN_GYSR_TOKEN } from '../util/constants'
+import { getPrice, createNewToken } from '../pricing/token'
 import { updateGeyserV1 } from '../util/geyserv1'
 
 
@@ -333,10 +333,17 @@ export function handleGysrSpent(event: GysrSpent): void {
 
   // update platform total GYSR spent
   let platform = Platform.load(ZERO_ADDRESS);
-  let gysr = Token.load(GYSR_TOKEN)!;
   platform.gysrSpent = platform.gysrSpent.plus(amount);
 
-  let dollarAmount = amount.times(getPrice(gysr));
+  let gysrAddress = dataSource.network() == 'mainnet' ? GYSR_TOKEN : KOVAN_GYSR_TOKEN;
+  let gysr = Token.load(gysrAddress);
+  if (gysr === null) {
+    gysr = createNewToken(Address.fromString(gysrAddress));
+  }
+  gysr.price = getPrice(gysr!);
+  gysr.updated = event.block.timestamp;
+
+  let dollarAmount = amount.times(gysr.price);
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
   platform.volume = platform.volume.plus(dollarAmount);
   pool.volume = pool.volume.plus(dollarAmount);
@@ -346,4 +353,5 @@ export function handleGysrSpent(event: GysrSpent): void {
   pool.save();
   platform.save();
   poolDayData.save();
+  gysr.save();
 }

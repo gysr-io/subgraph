@@ -166,8 +166,6 @@ templates:
       eventHandlers:
         - event: Staked(indexed address,indexed address,uint256,uint256)
           handler: handleStaked
-        - event: RewardsDistributed(indexed address,indexed address,uint256,uint256)
-          handler: handleRewardsDistributed
       file: ./src/mappings/pool.ts
 
   - kind: ethereum/contract
@@ -192,4 +190,8 @@ templates:
       eventHandlers:
         - event: RewardsFunded(indexed address,uint256,uint256,uint256)
           handler: handleRewardsFunded
+        - event: RewardsDistributed(indexed address,indexed address,uint256,uint256)
+          handler: handleRewardsDistributed
+        - event: GysrSpent(indexed address,uint256)
+          handler: handleGysrSpent
       file: ./src/mappings/rewardmodule.ts
