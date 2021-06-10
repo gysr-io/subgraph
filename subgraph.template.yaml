@@ -215,7 +215,13 @@ templates:
           file: ./abis/ERC20StakingModule.json
         - name: ERC20BaseRewardModule
           file: './abis/ERC20BaseRewardModule.json'
+        - name: ERC20CompetitiveRewardModule
+          file: './abis/ERC20CompetitiveRewardModule.json'
+        - name: ERC20FriendlyRewardModule
+          file: './abis/ERC20FriendlyRewardModule.json'
       eventHandlers:
         - event: Staked(indexed address,indexed address,uint256,uint256)
           handler: handleStaked
+        - event: Unstaked(indexed address,indexed address,uint256,uint256)
+          handler: handleUnstaked
       file: ./src/mappings/stakingmodule.ts

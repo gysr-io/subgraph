@@ -112,7 +112,7 @@ export function handleGysrSpent(event: GysrSpent): void {
   poolDayData.volume = poolDayData.volume.plus(dollarAmount);
 
   pool.save();
-  //transaction.save();
+  transaction.save();
   platform.save();
   poolDayData.save();
   gysr.save();
@@ -141,7 +141,7 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
   transaction.earnings = amount;
 
   pool.save();
-  //transaction.save();
+  transaction.save();
   platform.save();
   poolDayData.save();
 }
