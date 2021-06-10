@@ -2,12 +2,10 @@
 
 import { Address, BigInt, log, store, dataSource } from '@graphprotocol/graph-ts'
 import {
+  ERC20BaseRewardModule as ERC20BaseRewardModuleContract,
   RewardsFunded,
   GysrSpent,
   RewardsDistributed
-} from '../../generated/templates/ERC20BaseRewardModule/ERC20BaseRewardModule'
-import {
-  ERC20BaseRewardModule as ERC20BaseRewardModuleContract
 } from '../../generated/templates/ERC20BaseRewardModule/ERC20BaseRewardModule'
 import { Pool, Token, Platform, Funding, Transaction } from '../../generated/schema'
 import { integerToDecimal } from '../util/common'

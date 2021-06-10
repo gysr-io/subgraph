@@ -164,8 +164,8 @@ templates:
         - name: ERC20BaseRewardModule
           file: './abis/ERC20BaseRewardModule.json'
       eventHandlers:
-        - event: Staked(indexed address,indexed address,uint256,uint256)
-          handler: handleStaked
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
       file: ./src/mappings/pool.ts
 
   - kind: ethereum/contract
@@ -195,3 +195,27 @@ templates:
         - event: GysrSpent(indexed address,uint256)
           handler: handleGysrSpent
       file: ./src/mappings/rewardmodule.ts
+
+  - kind: ethereum/contract
+    name: ERC20StakingModule
+    network: {{network}}
+    source:
+      abi: ERC20StakingModule
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Pool
+        - Platform
+      abis:
+        - name: Pool
+          file: ./abis/Pool.json
+        - name: ERC20StakingModule
+          file: ./abis/ERC20StakingModule.json
+        - name: ERC20BaseRewardModule
+          file: './abis/ERC20BaseRewardModule.json'
+      eventHandlers:
+        - event: Staked(indexed address,indexed address,uint256,uint256)
+          handler: handleStaked
+      file: ./src/mappings/stakingmodule.ts
