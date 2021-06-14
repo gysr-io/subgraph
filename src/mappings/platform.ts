@@ -2,11 +2,14 @@
 
 import { Address, BigInt, log, ethereum } from '@graphprotocol/graph-ts'
 import { GeyserV1 as GeyserContractV1 } from '../../generated/templates/GeyserV1/GeyserV1'
+import { ERC20BaseRewardModule as ERC20BaseRewardModuleContract } from '../../generated/templates/ERC20BaseRewardModule/ERC20BaseRewardModule'
 import { Pool, Token, Platform } from '../../generated/schema'
 import { ZERO_BIG_INT, ZERO_ADDRESS } from '../util/constants'
 import { getPrice } from '../pricing/token'
 import { updatePricing } from '../pricing/pool'
-import { updatePoolDayData } from '../util/common'
+import { updatePoolDayData, integerToDecimal } from '../util/common'
+import { updateGeyserV1 } from '../util/geyserv1'
+import { updatePool } from '../util/pool'
 
 
 export function handleUpdate(event: ethereum.Event): void {
@@ -28,17 +31,13 @@ export function handleUpdate(event: ethereum.Event): void {
     let stakingToken = Token.load(pool.stakingToken)!;
     let rewardToken = Token.load(pool.rewardToken)!;
 
-    // bind to contract
-    let contract = GeyserContractV1.bind(Address.fromString(pool.id));
-
-    // update pricing info
-    stakingToken.price = getPrice(stakingToken);
-    stakingToken.updated = event.block.timestamp;
-    rewardToken.price = getPrice(rewardToken);
-    rewardToken.updated = event.block.timestamp;
-
-    updatePricing(pool, platform!, contract, stakingToken, rewardToken, event.block.timestamp);
-    pool.updated = event.block.timestamp;
+    // update pool
+    if (pool.poolType == 'GeyserV1') {
+      let contract = GeyserContractV1.bind(Address.fromString(pool.id));
+      updateGeyserV1(pool, platform!, contract, stakingToken, rewardToken, event.block.timestamp);
+    } else {
+      updatePool(pool, platform!, stakingToken, rewardToken, event.block.timestamp);
+    }
 
     // update pool day snapshot
     let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());

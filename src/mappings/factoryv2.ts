@@ -1,6 +1,6 @@
 // V2 Pool Factory event handling and mapping
 
-import { BigDecimal, BigInt, dataSource, Address } from '@graphprotocol/graph-ts'
+import { BigDecimal, BigInt, dataSource, Address, log } from '@graphprotocol/graph-ts'
 import { PoolCreated } from '../../generated/PoolFactory/PoolFactory'
 import { Pool as PoolContract } from '../../generated/PoolFactory/Pool'
 import { ERC20StakingModule as ERC20StakingModuleContract } from '../../generated/PoolFactory/ERC20StakingModule'
@@ -8,7 +8,11 @@ import { ERC20BaseRewardModule as ERC20BaseRewardModuleContract } from '../../ge
 import { ERC20CompetitiveRewardModule as ERC20CompetitiveRewardModuleContract } from '../../generated/PoolFactory/ERC20CompetitiveRewardModule'
 import { ERC20FriendlyRewardModule as ERC20FriendlyRewardModuleContract } from '../../generated/PoolFactory/ERC20FriendlyRewardModule'
 import { Pool, Platform, Token, User } from '../../generated/schema'
-import { Pool as PoolTemplate } from '../../generated/templates'
+import {
+  Pool as PoolTemplate,
+  ERC20BaseRewardModule as ERC20BaseRewardModuleTemplate,
+  ERC20StakingModule as ERC20StakingModuleTemplate
+} from '../../generated/templates'
 import { integerToDecimal, createNewUser, createNewPlatform } from '../util/common'
 import {
   ZERO_BIG_INT,
@@ -129,6 +133,10 @@ export function handlePoolCreated(event: PoolCreated): void {
   user.save();
   platform.save();
 
+  log.info('created new v2 pool: {}, {}, {}, {}', [pool.id, pool.poolType, stakingToken.symbol, rewardToken.symbol]);
+
   // create template event handler
   PoolTemplate.create(event.params.pool);
+  ERC20BaseRewardModuleTemplate.create(rewardModuleContract._address);
+  ERC20StakingModuleTemplate.create(stakingModuleContract._address);
 }

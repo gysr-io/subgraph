@@ -91,6 +91,8 @@ export function handleGeyserV1Created(event: GeyserCreated): void {
   user.save();
   platform.save();
 
+  log.info('created new pool: geyser v1, {}, {}, {}', [pool.id, stakingToken.symbol, rewardToken.symbol]);
+
   // create template event handler
   GeyserTemplateV1.create(event.params.geyser);
 }
