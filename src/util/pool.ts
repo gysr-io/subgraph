@@ -31,7 +31,6 @@ export function updatePool(
   // token amounts
   pool.staked = integerToDecimal(contract.stakingTotals()[0], stakingToken.decimals);
   pool.rewards = integerToDecimal(contract.rewardBalances()[0], rewardToken.decimals);
-  //  plus(integerToDecimal(contract.totalUnlocked(), rewardToken.decimals));
 
   // share/amount rate
   let stakingSharesPerToken = pool.staked.gt(ZERO_BIG_DECIMAL)
