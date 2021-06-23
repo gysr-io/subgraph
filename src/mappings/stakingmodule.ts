@@ -70,6 +70,8 @@ export function handleStaked(event: Staked): void {
   transaction.pool = pool.id;
   transaction.user = user.id;
   transaction.amount = integerToDecimal(event.params.amount, stakingToken.decimals);
+  transaction.earnings = ZERO_BIG_DECIMAL;
+  transaction.gysrSpent = ZERO_BIG_DECIMAL;
 
   // update pricing info
   updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp);

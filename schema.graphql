@@ -167,8 +167,8 @@ type Transaction @entity {
   user: User!
 
   amount: BigDecimal!
-  earnings: BigDecimal
-  gysrSpent: BigDecimal
+  earnings: BigDecimal!
+  gysrSpent: BigDecimal!
 }
 
 type Funding @entity {
