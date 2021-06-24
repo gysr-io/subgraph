@@ -46,6 +46,9 @@ export function updatePool(
   pool.stakingSharesPerToken = stakingSharesPerToken;
   pool.rewardSharesPerToken = rewardSharesPerToken;
 
+  // usage
+  pool.usage = integerToDecimal(contract.usage());
+
   // pool pricing
   updatePricing(pool, platform, stakingToken, rewardToken, timestamp);
   pool.updated = timestamp;

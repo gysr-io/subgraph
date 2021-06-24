@@ -40,6 +40,9 @@ export function updateGeyserV1(
   pool.stakingSharesPerToken = stakingSharesPerToken;
   pool.rewardSharesPerToken = rewardSharesPerToken;
 
+  // usage
+  pool.usage = integerToDecimal(contract.ratio());
+
   // pool pricing
   updatePricing(pool, platform, stakingToken, rewardToken, timestamp);
   pool.updated = timestamp;

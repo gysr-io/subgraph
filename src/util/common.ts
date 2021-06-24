@@ -49,6 +49,8 @@ export function updatePoolDayData(pool: Pool, timestamp: number): PoolDayData {
   poolDayData.totalGysrSpent = pool.gysrSpent;
   poolDayData.totalUsers = pool.users;
   poolDayData.tvl = pool.tvl;
+  poolDayData.apr = pool.apr;
+  poolDayData.usage = pool.usage;
 
   return poolDayData!;
 }
