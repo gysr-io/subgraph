@@ -80,6 +80,7 @@ export function handleGeyserV1Created(event: GeyserCreated): void {
   pool.rewardsUSD = ZERO_BIG_DECIMAL;
   pool.tvl = ZERO_BIG_DECIMAL;
   pool.apr = ZERO_BIG_DECIMAL;
+  pool.usage = ZERO_BIG_DECIMAL;
   pool.stakingSharesPerToken = INITIAL_SHARES_PER_TOKEN;
   pool.rewardSharesPerToken = INITIAL_SHARES_PER_TOKEN;
   pool.updated = ZERO_BIG_INT;

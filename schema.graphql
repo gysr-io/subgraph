@@ -78,6 +78,7 @@ type Pool @entity {
   rewardsUSD: BigDecimal!
   tvl: BigDecimal!
   apr: BigDecimal!
+  usage: BigDecimal!
   stakingSharesPerToken: BigDecimal!
   rewardSharesPerToken: BigDecimal!
   updated: BigInt!
@@ -197,5 +198,7 @@ type PoolDayData @entity {
   totalGysrSpent: BigDecimal!
   totalUsers: BigInt!
   tvl: BigDecimal!
+  apr: BigDecimal!
+  usage: BigDecimal!
   volume: BigDecimal!
 }

@@ -22,6 +22,12 @@ dataSources:
       abis:
         - name: GeyserV1
           file: ./abis/GeyserV1.json
+        - name: Pool
+          file: './abis/Pool.json'
+        - name: ERC20StakingModule
+          file: './abis/ERC20StakingModule.json'
+        - name: ERC20BaseRewardModule
+          file: './abis/ERC20BaseRewardModule.json'
         - name: ERC20
           file: ./abis/ERC20.json
         - name: UniswapFactory
@@ -163,6 +169,12 @@ templates:
           file: ./abis/ERC20StakingModule.json
         - name: ERC20BaseRewardModule
           file: './abis/ERC20BaseRewardModule.json'
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: UniswapFactory
+          file: ./abis/thirdparty/uniswap/Factory.json
+        - name: UniswapPair
+          file: ./abis/thirdparty/uniswap/Pair.json
       eventHandlers:
         - event: OwnershipTransferred(indexed address,indexed address)
           handler: handleOwnershipTransferred
@@ -187,6 +199,12 @@ templates:
           file: ./abis/ERC20StakingModule.json
         - name: ERC20BaseRewardModule
           file: './abis/ERC20BaseRewardModule.json'
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: UniswapFactory
+          file: ./abis/thirdparty/uniswap/Factory.json
+        - name: UniswapPair
+          file: ./abis/thirdparty/uniswap/Pair.json
       eventHandlers:
         - event: RewardsFunded(indexed address,uint256,uint256,uint256)
           handler: handleRewardsFunded
@@ -219,6 +237,12 @@ templates:
           file: './abis/ERC20CompetitiveRewardModule.json'
         - name: ERC20FriendlyRewardModule
           file: './abis/ERC20FriendlyRewardModule.json'
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: UniswapFactory
+          file: ./abis/thirdparty/uniswap/Factory.json
+        - name: UniswapPair
+          file: ./abis/thirdparty/uniswap/Pair.json
       eventHandlers:
         - event: Staked(indexed address,indexed address,uint256,uint256)
           handler: handleStaked
