@@ -58,8 +58,9 @@ typings/
 .env
 config/local.json
 
-# generated subgraph yaml
+# generated files
 subgraph.yaml
+src/util/constants.ts
 
 # next.js build output
 .next

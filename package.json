@@ -4,9 +4,10 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "prepare:mainnet": "mustache config/mainnet.json subgraph.template.yaml > subgraph.yaml",
-    "prepare:kovan": "mustache config/kovan.json subgraph.template.yaml > subgraph.yaml",
-    "prepare:local": "mustache config/local.json subgraph.template.yaml > subgraph.yaml",
+    "prepare:mainnet": "mustache config/mainnet.json subgraph.template.yaml > subgraph.yaml && mustache config/mainnet.json src/util/constants.template.ts > src/util/constants.ts",
+    "prepare:kovan": "mustache config/kovan.json subgraph.template.yaml > subgraph.yaml && mustache config/kovan.json src/util/constants.template.ts > src/util/constants.ts",
+    "prepare:polygon": "mustache config/polygon.json subgraph.template.yaml > subgraph.yaml && mustache config/polygon.json src/util/constants.template.ts > src/util/constants.ts",
+    "prepare:local": "mustache config/local.json subgraph.template.yaml > subgraph.yaml && mustache config/local.json src/util/constants.template.ts > src/util/constants.ts",
     "_deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ gysr-io/gysr",
     "_deploy-kovan": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ gysr-io/gysr-kovan",
     "_deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 gysr-io/gysr",

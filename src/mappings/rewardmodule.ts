@@ -1,6 +1,6 @@
 // ERC20 base reward module event handling and mapping
 
-import { Address, BigInt, log, store, dataSource } from '@graphprotocol/graph-ts'
+import { Address, BigInt, log } from '@graphprotocol/graph-ts'
 import {
   ERC20BaseRewardModule as ERC20BaseRewardModuleContract,
   RewardsFunded,
@@ -9,7 +9,7 @@ import {
 } from '../../generated/templates/ERC20BaseRewardModule/ERC20BaseRewardModule'
 import { Pool, Token, Platform, Funding, Transaction } from '../../generated/schema'
 import { integerToDecimal } from '../util/common'
-import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN, KOVAN_GYSR_TOKEN } from '../util/constants'
+import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN } from '../util/constants'
 import { getPrice, createNewToken } from '../pricing/token'
 import { updatePool } from '../util/pool'
 import { updatePoolDayData } from '../util/common'
@@ -97,10 +97,9 @@ export function handleGysrSpent(event: GysrSpent): void {
   pool.gysrSpent = pool.gysrSpent.plus(amount);
 
   // pricing for volume
-  let gysrAddress = dataSource.network() == 'mainnet' ? GYSR_TOKEN : KOVAN_GYSR_TOKEN;
-  let gysr = Token.load(gysrAddress);
+  let gysr = Token.load(GYSR_TOKEN);
   if (gysr === null) {
-    gysr = createNewToken(Address.fromString(gysrAddress));
+    gysr = createNewToken(Address.fromString(GYSR_TOKEN));
   }
   gysr.price = getPrice(gysr!);
   gysr.updated = event.block.timestamp;
