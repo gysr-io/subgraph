@@ -1,6 +1,6 @@
 // V2 Pool Factory event handling and mapping
 
-import { BigDecimal, BigInt, dataSource, Address, log } from '@graphprotocol/graph-ts'
+import { BigDecimal, BigInt, log } from '@graphprotocol/graph-ts'
 import { PoolCreated } from '../../generated/PoolFactory/PoolFactory'
 import { Pool as PoolContract } from '../../generated/PoolFactory/Pool'
 import { ERC20StakingModule as ERC20StakingModuleContract } from '../../generated/PoolFactory/ERC20StakingModule'
@@ -19,8 +19,7 @@ import {
   ZERO_BIG_DECIMAL,
   INITIAL_SHARES_PER_TOKEN,
   ZERO_ADDRESS,
-  MAINNET_ERC20_COMPETITIVE_REWARD_MODULE_FACTORY,
-  KOVAN_ERC20_COMPETITIVE_REWARD_MODULE_FACTORY
+  ERC20_COMPETITIVE_REWARD_MODULE_FACTORY
 } from '../util/constants'
 import { createNewToken } from '../pricing/token'
 
@@ -72,17 +71,9 @@ export function handlePoolCreated(event: PoolCreated): void {
   pool.stakingToken = stakingToken.id;
   pool.rewardToken = rewardToken.id;
 
-  // get factory address depending on network
-  let competitiveModuleFactory: Address;
-  if (dataSource.network() == 'mainnet') {
-    competitiveModuleFactory = MAINNET_ERC20_COMPETITIVE_REWARD_MODULE_FACTORY
-  } else {
-    competitiveModuleFactory = KOVAN_ERC20_COMPETITIVE_REWARD_MODULE_FACTORY
-  }
-
   // get bonus info and pool type depending
   let rewardFactory = rewardModuleContract.factory();
-  if (rewardFactory == competitiveModuleFactory) {
+  if (rewardFactory == ERC20_COMPETITIVE_REWARD_MODULE_FACTORY) {
     let competitiveContract = ERC20CompetitiveRewardModuleContract.bind(rewardModule)
     pool.timeMultMin = integerToDecimal(competitiveContract.bonusMin());
     pool.timeMultMax = integerToDecimal(competitiveContract.bonusMax());

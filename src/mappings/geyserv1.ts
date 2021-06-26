@@ -1,6 +1,6 @@
 // Geyser V1 event handling and mapping
 
-import { Address, BigInt, log, store, dataSource } from '@graphprotocol/graph-ts'
+import { Address, BigInt, log, store } from '@graphprotocol/graph-ts'
 import {
   GeyserV1 as GeyserContractV1,
   Staked,
@@ -14,7 +14,7 @@ import {
 } from '../../generated/templates/GeyserV1/GeyserV1'
 import { Pool, Token, User, Position, Stake, Platform, Transaction, Funding } from '../../generated/schema'
 import { integerToDecimal, createNewUser, createNewPlatform, updatePoolDayData } from '../util/common'
-import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN, KOVAN_GYSR_TOKEN } from '../util/constants'
+import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN } from '../util/constants'
 import { getPrice, createNewToken } from '../pricing/token'
 import { updateGeyserV1 } from '../util/geyserv1'
 
@@ -335,10 +335,9 @@ export function handleGysrSpent(event: GysrSpent): void {
   let platform = Platform.load(ZERO_ADDRESS);
   platform.gysrSpent = platform.gysrSpent.plus(amount);
 
-  let gysrAddress = dataSource.network() == 'mainnet' ? GYSR_TOKEN : KOVAN_GYSR_TOKEN;
-  let gysr = Token.load(gysrAddress);
+  let gysr = Token.load(GYSR_TOKEN);
   if (gysr === null) {
-    gysr = createNewToken(Address.fromString(gysrAddress));
+    gysr = createNewToken(Address.fromString(GYSR_TOKEN));
   }
   gysr.price = getPrice(gysr!);
   gysr.updated = event.block.timestamp;
