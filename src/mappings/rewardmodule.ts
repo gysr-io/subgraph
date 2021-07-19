@@ -49,11 +49,9 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   funding.createdTimestamp = event.block.timestamp;
   funding.start = event.params.timestamp;
   funding.end = end;
-  let formattedAmount = integerToDecimal(event.params.amount, rewardToken.decimals);
-  let shares = formattedAmount.times(pool.rewardSharesPerToken);
-  funding.originalAmount = formattedAmount;
-  funding.shares = shares;
-  funding.sharesPerSecond = shares.div(duration.toBigDecimal());
+  funding.originalAmount = integerToDecimal(event.params.amount, rewardToken.decimals);
+  funding.shares = integerToDecimal(event.params.shares, rewardToken.decimals);
+  funding.sharesPerSecond = funding.shares.div(duration.toBigDecimal());
   funding.save(); // save before pricing
 
   pool.fundings = pool.fundings.concat([funding.id])
