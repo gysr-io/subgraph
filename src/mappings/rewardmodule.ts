@@ -5,7 +5,8 @@ import {
   ERC20BaseRewardModule as ERC20BaseRewardModuleContract,
   RewardsFunded,
   GysrSpent,
-  RewardsDistributed
+  RewardsDistributed,
+  RewardsExpired
 } from '../../generated/templates/ERC20BaseRewardModule/ERC20BaseRewardModule'
 import { Pool, Token, Platform, Funding, Transaction } from '../../generated/schema'
 import { integerToDecimal } from '../util/common'
@@ -49,11 +50,10 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   funding.createdTimestamp = event.block.timestamp;
   funding.start = event.params.timestamp;
   funding.end = end;
-  let formattedAmount = integerToDecimal(event.params.amount, rewardToken.decimals);
-  let shares = formattedAmount.times(pool.rewardSharesPerToken);
-  funding.originalAmount = formattedAmount;
-  funding.shares = shares;
-  funding.sharesPerSecond = shares.div(duration.toBigDecimal());
+  funding.originalAmount = integerToDecimal(event.params.amount, rewardToken.decimals);
+  funding.shares = integerToDecimal(event.params.shares, rewardToken.decimals);
+  funding.sharesPerSecond = funding.shares.div(duration.toBigDecimal());
+  funding.cleaned = false;
   funding.save(); // save before pricing
 
   pool.fundings = pool.fundings.concat([funding.id])
@@ -143,4 +143,26 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
   transaction.save();
   platform.save();
   poolDayData.save();
+}
+
+
+export function handleRewardsExpired(event: RewardsExpired): void {
+  let pool = Pool.load(event.address.toHexString());
+  let rewardToken = Token.load(pool.rewardToken);
+  let amount = integerToDecimal(event.params.amount, rewardToken.decimals);
+
+  let fundings = pool.fundings;
+  for (let i = 0; i < fundings.length; i++) {
+    let funding = Funding.load(fundings[i]);
+
+    // mark expired funding as cleaned
+    if (funding.start.equals(event.params.timestamp)
+      && funding.originalAmount.equals(amount)
+      && funding.end.lt(event.block.timestamp)
+      && !funding.cleaned) {
+      funding.cleaned = true;
+      funding.save();
+      break;
+    }
+  }
 }

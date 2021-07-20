@@ -38,7 +38,7 @@ export function updatePool(
     : INITIAL_SHARES_PER_TOKEN;
   let rewardSharesPerToken = pool.rewards.gt(ZERO_BIG_DECIMAL)
     ? integerToDecimal(
-      rewardContract.totalShares(Address.fromString(rewardToken.id)),
+      rewardContract.lockedShares(Address.fromString(rewardToken.id)),
       rewardToken.decimals
     ).div(pool.rewards)
     : INITIAL_SHARES_PER_TOKEN;

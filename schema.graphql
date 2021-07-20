@@ -185,6 +185,8 @@ type Funding @entity {
   originalAmount: BigDecimal!
   shares: BigDecimal!
   sharesPerSecond: BigDecimal!
+
+  cleaned: Boolean!
 }
 
 type PoolDayData @entity {

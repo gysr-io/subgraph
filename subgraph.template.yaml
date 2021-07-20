@@ -210,6 +210,8 @@ templates:
           handler: handleRewardsFunded
         - event: RewardsDistributed(indexed address,indexed address,uint256,uint256)
           handler: handleRewardsDistributed
+        - event: RewardsExpired(indexed address,uint256,uint256,uint256)
+          handler: handleRewardsExpired
         - event: GysrSpent(indexed address,uint256)
           handler: handleGysrSpent
       file: ./src/mappings/rewardmodule.ts
