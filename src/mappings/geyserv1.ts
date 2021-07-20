@@ -232,6 +232,7 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   funding.originalAmount = formattedAmount;
   funding.shares = shares;
   funding.sharesPerSecond = shares.div(event.params.duration.toBigDecimal());
+  funding.cleaned = false;
   funding.save();  // save before pricing
 
   pool.fundings = pool.fundings.concat([funding.id])
@@ -313,11 +314,12 @@ export function handleRewardsExpired(event: RewardsExpired): void {
     let fundingId = (pool.fundings as string[])[i];
     let funding = Funding.load(fundingId);
 
-    // remove expired funding
+    // mark expired funding as cleaned
     if (funding.start.equals(event.params.start)
       && funding.end.equals(funding.start.plus(event.params.duration))
       && funding.originalAmount.equals(amount)) {
-      store.remove('Funding', fundingId);
+      funding.cleaned = true;
+      funding.save();
       break;
     }
   }

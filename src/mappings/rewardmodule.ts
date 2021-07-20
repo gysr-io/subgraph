@@ -5,7 +5,8 @@ import {
   ERC20BaseRewardModule as ERC20BaseRewardModuleContract,
   RewardsFunded,
   GysrSpent,
-  RewardsDistributed
+  RewardsDistributed,
+  RewardsExpired
 } from '../../generated/templates/ERC20BaseRewardModule/ERC20BaseRewardModule'
 import { Pool, Token, Platform, Funding, Transaction } from '../../generated/schema'
 import { integerToDecimal } from '../util/common'
@@ -52,6 +53,7 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   funding.originalAmount = integerToDecimal(event.params.amount, rewardToken.decimals);
   funding.shares = integerToDecimal(event.params.shares, rewardToken.decimals);
   funding.sharesPerSecond = funding.shares.div(duration.toBigDecimal());
+  funding.cleaned = false;
   funding.save(); // save before pricing
 
   pool.fundings = pool.fundings.concat([funding.id])
@@ -141,4 +143,26 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
   transaction.save();
   platform.save();
   poolDayData.save();
+}
+
+
+export function handleRewardsExpired(event: RewardsExpired): void {
+  let pool = Pool.load(event.address.toHexString());
+  let rewardToken = Token.load(pool.rewardToken);
+  let amount = integerToDecimal(event.params.amount, rewardToken.decimals);
+
+  for (let i = 0; i < pool.fundings.length; i++) {
+    let fundingId = (pool.fundings as string[])[i];
+    let funding = Funding.load(fundingId);
+
+    // mark expired funding as cleaned
+    if (funding.start.equals(event.params.timestamp)
+      && funding.originalAmount.equals(amount)
+      && funding.end.lt(event.block.timestamp)
+      && !funding.cleaned) {
+      funding.cleaned = true;
+      funding.save();
+      break;
+    }
+  }
 }
