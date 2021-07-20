@@ -151,9 +151,9 @@ export function handleRewardsExpired(event: RewardsExpired): void {
   let rewardToken = Token.load(pool.rewardToken);
   let amount = integerToDecimal(event.params.amount, rewardToken.decimals);
 
-  for (let i = 0; i < pool.fundings.length; i++) {
-    let fundingId = (pool.fundings as string[])[i];
-    let funding = Funding.load(fundingId);
+  let fundings = pool.fundings;
+  for (let i = 0; i < fundings.length; i++) {
+    let funding = Funding.load(fundings[i]);
 
     // mark expired funding as cleaned
     if (funding.start.equals(event.params.timestamp)
