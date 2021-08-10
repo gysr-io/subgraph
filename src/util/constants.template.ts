@@ -37,7 +37,7 @@ export let USDT_WETH_PAIR = '{{usdt_weth_address}}';
 export let UNISWAP_FACTORY = '{{uniswap_factory}}';
 export let SUSHI_FACTORY = '{{sushi_factory}}';
 export let MIN_ETH_PRICING = BigDecimal.fromString('5.0');
-export let MIN_USD_PRICING = BigDecimal.fromString('500.0');
+export let MIN_USD_PRICING = BigDecimal.fromString('10000.0');
 
 // contract
 export let INITIAL_SHARES_PER_TOKEN = BigDecimal.fromString('1000000');
