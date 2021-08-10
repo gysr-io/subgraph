@@ -125,7 +125,6 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
   let platform = Platform.load(ZERO_ADDRESS);
 
   let amount = integerToDecimal(event.params.amount, token.decimals);
-  pool.rewards = pool.rewards.minus(amount);
   pool.distributed = pool.distributed.plus(amount);
 
   // pricing for volume
@@ -147,7 +146,8 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
 
 
 export function handleRewardsExpired(event: RewardsExpired): void {
-  let pool = Pool.load(event.address.toHexString());
+  let contract = ERC20BaseRewardModuleContract.bind(event.address);
+  let pool = Pool.load(contract.owner().toHexString());
   let rewardToken = Token.load(pool.rewardToken);
   let amount = integerToDecimal(event.params.amount, rewardToken.decimals);
 

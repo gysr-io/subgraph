@@ -156,7 +156,7 @@ export function handleUnstaked(event: Unstaked): void {
   let shares = integerToDecimal(userStruct.value0, stakingToken.decimals);
   position.shares = shares;
   position.stakes = stakes;
-  if (position.shares) {
+  if (position.shares.gt(ZERO_BIG_DECIMAL)) {
     position.save();
   } else {
     store.remove('Position', positionId);
@@ -259,7 +259,6 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
   let platform = Platform.load(ZERO_ADDRESS);
 
   let amount = integerToDecimal(event.params.amount, token.decimals);
-  pool.rewards = pool.rewards.minus(amount);
   pool.distributed = pool.distributed.plus(amount);
 
   let dollarAmount = amount.times(getPrice(token));
