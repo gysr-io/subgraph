@@ -10,9 +10,11 @@
     "prepare:local": "mustache config/local.json subgraph.template.yaml > subgraph.yaml && mustache config/local.json src/util/constants.template.ts > src/util/constants.ts",
     "_deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ gysr-io/gysr",
     "_deploy-kovan": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ gysr-io/gysr-kovan",
+    "_deploy-polygon": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ gysr-io/gysr-polygon",
     "_deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 gysr-io/gysr",
     "deploy:mainnet": "npm run prepare:mainnet && npm run _deploy",
     "deploy:kovan": "npm run prepare:kovan && npm run _deploy-kovan",
+    "deploy:polygon": "npm run prepare:polygon && npm run _deploy-polygon",
     "deploy:local": "npm run prepare:local && npm run _deploy-local",
     "create-local": "graph create --node http://localhost:8020/ gysr-io/gysr",
     "remove-local": "graph remove --node http://localhost:8020/ gysr-io/gysr"
