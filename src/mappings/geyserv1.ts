@@ -156,7 +156,7 @@ export function handleUnstaked(event: Unstaked): void {
   let shares = integerToDecimal(userStruct.value0, stakingToken.decimals);
   position.shares = shares;
   position.stakes = stakes;
-  if (position.shares) {
+  if (position.shares.gt(ZERO_BIG_DECIMAL)) {
     position.save();
   } else {
     store.remove('Position', positionId);

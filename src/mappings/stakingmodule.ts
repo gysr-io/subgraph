@@ -170,7 +170,7 @@ export function handleUnstaked(event: Unstaked): void {
   // update position info
   position.shares = integerToDecimal(contract.shares(event.params.user), stakingToken.decimals);
   position.stakes = stakes;
-  if (position.shares) {
+  if (position.shares.gt(ZERO_BIG_DECIMAL)) {
     position.save();
   } else {
     store.remove('Position', positionId);
