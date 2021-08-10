@@ -155,6 +155,7 @@ type Platform @entity {
 enum TransactionType {
   Stake
   Unstake
+  Claim
 }
 
 type Transaction @entity {

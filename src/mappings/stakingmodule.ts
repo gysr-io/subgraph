@@ -211,3 +211,132 @@ export function handleUnstaked(event: Unstaked): void {
   platform.save();
   poolDayData.save();
 }
+
+
+export function handleClaimed(event: Claimed): void {
+  // load pool and token
+  let contract = ERC20StakingModuleContract.bind(event.address);
+  let pool = Pool.load(contract.owner().toHexString())!;
+  let stakingToken = Token.load(pool.stakingToken)!;
+  let rewardToken = Token.load(pool.rewardToken)!;
+  let platform = Platform.load(ZERO_ADDRESS)!;
+
+  // load user
+  let user = User.load(event.params.user.toHexString());
+
+  // load position
+  let positionId = pool.id + '_' + user.id;
+  let position = Position.load(positionId);
+
+  // update current stakes
+  // (for some reason this didn't work with a derived 'stakes' field)
+  let stakes = position.stakes;
+
+  // note: should encapsulate this behind an interface when we have additional module types
+  let poolContract = PoolContract.bind(Address.fromString(pool.id));
+  if (pool.poolType == 'GeyserV2') {
+    // competitive
+    let rewardContract = ERC20CompetitiveRewardModuleContract.bind(poolContract.rewardModule());
+    let count = rewardContract.stakeCount(event.params.user).toI32();
+
+    if (count == stakes.length) {
+      // update timestamp for last position
+      let s = rewardContract.stakes(event.params.user, BigInt.fromI32(count - 1));
+      let stake = Stake.load(stakes[count - 1]);
+      stake.timestamp = s.value1;
+      stake.save();
+    } else {
+      // rebuild stakes list
+      for (let i = 0; i < stakes.length; i++) {
+        store.remove('Stake', stakes[i]);
+      }
+      stakes = [];
+      for (let i = 0; i < count; i++) {
+        let s = rewardContract.stakes(event.params.user, BigInt.fromI32(i));
+        let stakeId = positionId + '_' + s.value1.toString();
+
+        let stake = new Stake(stakeId);
+        stake.position = position.id;
+        stake.user = user.id;
+        stake.pool = pool.id;
+        stake.shares = integerToDecimal(s.value0, stakingToken.decimals);
+        stake.timestamp = s.value1;
+
+        stake.save();
+
+        stakes = stakes.concat([stake.id]);
+      }
+    }
+
+  } else {
+    // friendly
+    let rewardContract = ERC20FriendlyRewardModuleContract.bind(poolContract.rewardModule());
+    let count = rewardContract.stakeCount(event.params.user).toI32();
+
+    if (count == stakes.length) {
+      // get info for updated last position
+      let s = rewardContract.stakes(event.params.user, BigInt.fromI32(count - 1));
+      let stake = Stake.load(stakes[count - 1]);
+      stake.timestamp = s.value4;
+      stake.save();
+    } else {
+      // rebuild stakes list
+      for (let i = 0; i < stakes.length; i++) {
+        store.remove('Stake', stakes[i]);
+      }
+      stakes = [];
+      for (let i = 0; i < count; i++) {
+        let s = rewardContract.stakes(event.params.user, BigInt.fromI32(i));
+        let stakeId = positionId + '_' + s.value4.toString();
+
+        let stake = new Stake(stakeId);
+        stake.position = position.id;
+        stake.user = user.id;
+        stake.pool = pool.id;
+        stake.shares = integerToDecimal(s.value0, stakingToken.decimals);
+        stake.timestamp = s.value4;
+
+        stake.save();
+
+        stakes = stakes.concat([stake.id]);
+      }
+    }
+  }
+
+  // update position info
+  position.stakes = stakes;
+  // overall shares cannot change here
+
+  // update general info
+  user.operations = user.operations.plus(BigInt.fromI32(1));
+  pool.operations = pool.operations.plus(BigInt.fromI32(1));
+  platform.operations = platform.operations.plus(BigInt.fromI32(1));
+
+  // create new claim transaction
+  let transaction = new Transaction(event.transaction.hash.toHexString());
+  transaction.type = 'Claim';
+  transaction.timestamp = event.block.timestamp;
+  transaction.pool = pool.id;
+  transaction.user = user.id;
+  transaction.amount = integerToDecimal(event.params.amount, stakingToken.decimals);
+  transaction.earnings = ZERO_BIG_DECIMAL;
+  transaction.gysrSpent = ZERO_BIG_DECIMAL;
+
+  // update pricing info
+  updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp);
+
+  // not considering claim amount in volume
+
+  // update daily pool info
+  let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
+
+  // store
+  user.save();
+  position.save();
+  pool.save();
+  stakingToken.save();
+  rewardToken.save();
+  transaction.save();
+  platform.save();
+  poolDayData.save();
+}

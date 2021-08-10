@@ -146,7 +146,8 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
 
 
 export function handleRewardsExpired(event: RewardsExpired): void {
-  let pool = Pool.load(event.address.toHexString());
+  let contract = ERC20BaseRewardModuleContract.bind(event.address);
+  let pool = Pool.load(contract.owner().toHexString());
   let rewardToken = Token.load(pool.rewardToken);
   let amount = integerToDecimal(event.params.amount, rewardToken.decimals);
 
