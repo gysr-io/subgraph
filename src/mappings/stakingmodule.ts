@@ -53,10 +53,10 @@ export function handleStaked(event: Staked): void {
   stake.position = position.id;
   stake.user = user.id;
   stake.pool = pool.id;
-  stake.shares = integerToDecimal(event.params.shares);
+  stake.shares = integerToDecimal(event.params.shares, stakingToken.decimals);
   stake.timestamp = event.block.timestamp;
 
-  position.shares = position.shares.plus(integerToDecimal(event.params.shares));
+  position.shares = position.shares.plus(stake.shares);
   position.stakes = position.stakes.concat([stake.id]);
 
   user.operations = user.operations.plus(BigInt.fromI32(1));
@@ -168,7 +168,9 @@ export function handleUnstaked(event: Unstaked): void {
   }
 
   // update position info
-  position.shares = integerToDecimal(contract.shares(event.params.user), stakingToken.decimals);
+  position.shares = position.shares.minus(
+    integerToDecimal(event.params.shares, stakingToken.decimals)
+  );
   position.stakes = stakes;
   if (position.shares.gt(ZERO_BIG_DECIMAL)) {
     position.save();
