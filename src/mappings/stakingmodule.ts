@@ -47,16 +47,16 @@ export function handleStaked(event: Staked): void {
   }
 
   // create new stake
-  let stakeId = positionId + '_' + event.block.timestamp.toString();
+  let stakeId = positionId + '_' + event.transaction.hash.toHexString();
 
   let stake = new Stake(stakeId);
   stake.position = position.id;
   stake.user = user.id;
   stake.pool = pool.id;
-  stake.shares = integerToDecimal(event.params.shares);
+  stake.shares = integerToDecimal(event.params.shares, stakingToken.decimals);
   stake.timestamp = event.block.timestamp;
 
-  position.shares = position.shares.plus(integerToDecimal(event.params.shares));
+  position.shares = position.shares.plus(stake.shares);
   position.stakes = position.stakes.concat([stake.id]);
 
   user.operations = user.operations.plus(BigInt.fromI32(1));
@@ -168,7 +168,9 @@ export function handleUnstaked(event: Unstaked): void {
   }
 
   // update position info
-  position.shares = integerToDecimal(contract.shares(event.params.user), stakingToken.decimals);
+  position.shares = position.shares.minus(
+    integerToDecimal(event.params.shares, stakingToken.decimals)
+  );
   position.stakes = stakes;
   if (position.shares.gt(ZERO_BIG_DECIMAL)) {
     position.save();
@@ -253,7 +255,7 @@ export function handleClaimed(event: Claimed): void {
       stakes = [];
       for (let i = 0; i < count; i++) {
         let s = rewardContract.stakes(event.params.user, BigInt.fromI32(i));
-        let stakeId = positionId + '_' + s.value1.toString();
+        let stakeId = positionId + '_' + i.toString();
 
         let stake = new Stake(stakeId);
         stake.position = position.id;

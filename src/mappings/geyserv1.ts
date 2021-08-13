@@ -50,18 +50,20 @@ export function handleStaked(event: Staked): void {
   }
 
   // create new stake
-  let stakeId = positionId + '_' + event.block.timestamp.toString();
+  let stakeId = positionId + '_' + event.transaction.hash.toHexString();
 
   let stake = new Stake(stakeId);
   stake.position = position.id;
   stake.user = user.id;
   stake.pool = pool.id;
 
-  // get share info from contract
+  // update pricing info
   let contract = GeyserContractV1.bind(event.address);
-  let idx = contract.stakeCount(event.params.user).minus(BigInt.fromI32(1));
-  let stakeStruct = contract.userStakes(event.params.user, idx);
-  let shares = integerToDecimal(stakeStruct.value0, stakingToken.decimals);
+  updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp);
+
+  // amount and shares
+  let amount = integerToDecimal(event.params.amount, stakingToken.decimals);
+  let shares = amount.times(pool.stakingSharesPerToken);
 
   // update info
   stake.shares = shares;
@@ -80,13 +82,11 @@ export function handleStaked(event: Staked): void {
   transaction.timestamp = event.block.timestamp;
   transaction.pool = pool.id;
   transaction.user = user.id;
-  transaction.amount = integerToDecimal(event.params.amount, stakingToken.decimals);
+  transaction.amount = amount;
   transaction.earnings = ZERO_BIG_DECIMAL;
   transaction.gysrSpent = ZERO_BIG_DECIMAL;
 
-  // update pricing info
-  updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp);
-
+  // daily
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
 
   // store
@@ -121,7 +121,7 @@ export function handleUnstaked(event: Unstaked): void {
   let count = contract.stakeCount(event.params.user).toI32();
 
   // format unstake amount
-  let unstakeAmount = integerToDecimal(event.params.amount, stakingToken.decimals);
+  let amount = integerToDecimal(event.params.amount, stakingToken.decimals);
 
   // update or delete current stakes
   // (for some reason this didn't work with a derived 'stakes' field)
@@ -151,18 +151,6 @@ export function handleUnstaked(event: Unstaked): void {
     break;
   }
 
-  // update position info
-  let userStruct = contract.userTotals(event.params.user);
-  let shares = integerToDecimal(userStruct.value0, stakingToken.decimals);
-  position.shares = shares;
-  position.stakes = stakes;
-  if (position.shares.gt(ZERO_BIG_DECIMAL)) {
-    position.save();
-  } else {
-    store.remove('Position', positionId);
-    pool.users = pool.users.minus(BigInt.fromI32(1));
-  }
-
   // update general info
   user.operations = user.operations.plus(BigInt.fromI32(1));
   pool.operations = pool.operations.plus(BigInt.fromI32(1));
@@ -174,15 +162,26 @@ export function handleUnstaked(event: Unstaked): void {
   transaction.timestamp = event.block.timestamp;
   transaction.pool = pool.id;
   transaction.user = user.id;
-  transaction.amount = unstakeAmount;
+  transaction.amount = amount;
   transaction.earnings = ZERO_BIG_DECIMAL;
   transaction.gysrSpent = ZERO_BIG_DECIMAL;
 
   // update pricing info
   updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp);
 
+  // update position info
+  let shares = amount.times(pool.stakingSharesPerToken);
+  position.shares = position.shares.minus(shares);
+  position.stakes = stakes;
+  if (position.shares.gt(ZERO_BIG_DECIMAL)) {
+    position.save();
+  } else {
+    store.remove('Position', positionId);
+    pool.users = pool.users.minus(BigInt.fromI32(1));
+  }
+
   // update volume
-  let dollarAmount = unstakeAmount.times(stakingToken.price);
+  let dollarAmount = amount.times(stakingToken.price);
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
   platform.volume = platform.volume.plus(dollarAmount);
   pool.volume = pool.volume.plus(dollarAmount);
