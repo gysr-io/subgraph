@@ -50,7 +50,7 @@ export function handleStaked(event: Staked): void {
   }
 
   // create new stake
-  let stakeId = positionId + '_' + event.block.timestamp.toString();
+  let stakeId = positionId + '_' + event.transaction.hash.toHexString();
 
   let stake = new Stake(stakeId);
   stake.position = position.id;

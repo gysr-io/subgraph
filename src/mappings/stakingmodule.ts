@@ -47,7 +47,7 @@ export function handleStaked(event: Staked): void {
   }
 
   // create new stake
-  let stakeId = positionId + '_' + event.block.timestamp.toString();
+  let stakeId = positionId + '_' + event.transaction.hash.toHexString();
 
   let stake = new Stake(stakeId);
   stake.position = position.id;
@@ -255,7 +255,7 @@ export function handleClaimed(event: Claimed): void {
       stakes = [];
       for (let i = 0; i < count; i++) {
         let s = rewardContract.stakes(event.params.user, BigInt.fromI32(i));
-        let stakeId = positionId + '_' + s.value1.toString();
+        let stakeId = positionId + '_' + i.toString();
 
         let stake = new Stake(stakeId);
         stake.position = position.id;
