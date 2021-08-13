@@ -10,6 +10,7 @@ import {
   getUniswapLiquidityTokenAlias,
   getUniswapLiquidityTokenPrice
 } from '../pricing/uniswap'
+import { getBalancerLiquidityTokenPrice, isBalancerLiquidityToken } from './balancer'
 
 
 // factory function to define and populate new token entity
@@ -49,6 +50,10 @@ export function createNewToken(address: Address): Token {
     token.type = 'UniswapLiquidity';
     log.info('created new token: Uniswap LP, {}, {}', [token.id, token.alias]);
 
+  } else if (isBalancerLiquidityToken(address)) {
+    token.type = 'BalancerLiquidity';
+    log.info('created new token: Balancer Weighted LP, {}, {}', [token.id, token.symbol]);
+
   } else if (STABLECOINS.includes(address.toHexString())) {
     token.price = BigDecimal.fromString('1.0');
     token.type = 'Stable';
@@ -66,7 +71,6 @@ export function createNewToken(address: Address): Token {
   return token;
 }
 
-
 export function getPrice(token: Token): BigDecimal {
   // only price tokens on mainnet
   if (dataSource.network() != 'mainnet' && dataSource.network() != 'matic') {
@@ -79,9 +83,10 @@ export function getPrice(token: Token): BigDecimal {
 
   } else if (token.type == 'Standard') {
     return getTokenPrice(Address.fromString(token.id.toString()));
-
   } else if (token.type == 'UniswapLiquidity') {
     return getUniswapLiquidityTokenPrice(Address.fromString(token.id.toString()));
+  } else if (token.type == 'BalancerLiquidity') {
+    return getBalancerLiquidityTokenPrice(Address.fromString(token.id.toString()));
   }
 
   return ZERO_BIG_DECIMAL;

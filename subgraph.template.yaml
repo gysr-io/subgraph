@@ -36,6 +36,10 @@ dataSources:
           file: ./abis/thirdparty/uniswap/Pair.json
         - name: ESDRoot
           file: ./abis/thirdparty/emptysetdollar/Root.json
+        - name: BalancerVault
+          file: ./abis/thirdparty/balancer/Vault.json
+        - name: BalancerWeightedPool
+          file: ./abis/thirdparty/balancer/WeightedPool.json
       eventHandlers:
         - event: Advance(indexed uint256,uint256,uint256)
           handler: handleUpdate
@@ -67,6 +71,10 @@ dataSources:
           file: ./abis/thirdparty/uniswap/Factory.json
         - name: UniswapPair
           file: ./abis/thirdparty/uniswap/Pair.json
+        - name: BalancerVault
+          file: ./abis/thirdparty/balancer/Vault.json
+        - name: BalancerWeightedPool
+          file: ./abis/thirdparty/balancer/WeightedPool.json
       eventHandlers:
         - event: GeyserCreated(indexed address,address)
           handler: handleGeyserV1Created
@@ -104,6 +112,10 @@ dataSources:
           file: ./abis/thirdparty/uniswap/Factory.json
         - name: UniswapPair
           file: ./abis/thirdparty/uniswap/Pair.json
+        - name: BalancerVault
+          file: ./abis/thirdparty/balancer/Vault.json
+        - name: BalancerWeightedPool
+          file: ./abis/thirdparty/balancer/WeightedPool.json
       eventHandlers:
         - event: PoolCreated(indexed address,address)
           handler: handlePoolCreated
@@ -131,6 +143,10 @@ templates:
           file: ./abis/thirdparty/uniswap/Factory.json
         - name: UniswapPair
           file: ./abis/thirdparty/uniswap/Pair.json
+        - name: BalancerVault
+          file: ./abis/thirdparty/balancer/Vault.json
+        - name: BalancerWeightedPool
+          file: ./abis/thirdparty/balancer/WeightedPool.json
       eventHandlers:
         - event: Staked(indexed address,uint256,uint256,bytes)
           handler: handleStaked
@@ -175,6 +191,10 @@ templates:
           file: ./abis/thirdparty/uniswap/Factory.json
         - name: UniswapPair
           file: ./abis/thirdparty/uniswap/Pair.json
+        - name: BalancerVault
+          file: ./abis/thirdparty/balancer/Vault.json
+        - name: BalancerWeightedPool
+          file: ./abis/thirdparty/balancer/WeightedPool.json
       eventHandlers:
         - event: OwnershipTransferred(indexed address,indexed address)
           handler: handleOwnershipTransferred
@@ -205,6 +225,10 @@ templates:
           file: ./abis/thirdparty/uniswap/Factory.json
         - name: UniswapPair
           file: ./abis/thirdparty/uniswap/Pair.json
+        - name: BalancerVault
+          file: ./abis/thirdparty/balancer/Vault.json
+        - name: BalancerWeightedPool
+          file: ./abis/thirdparty/balancer/WeightedPool.json
       eventHandlers:
         - event: RewardsFunded(indexed address,uint256,uint256,uint256)
           handler: handleRewardsFunded
@@ -245,6 +269,10 @@ templates:
           file: ./abis/thirdparty/uniswap/Factory.json
         - name: UniswapPair
           file: ./abis/thirdparty/uniswap/Pair.json
+        - name: BalancerVault
+          file: ./abis/thirdparty/balancer/Vault.json
+        - name: BalancerWeightedPool
+          file: ./abis/thirdparty/balancer/WeightedPool.json
       eventHandlers:
         - event: Staked(indexed address,indexed address,uint256,uint256)
           handler: handleStaked
