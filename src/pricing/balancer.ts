@@ -3,9 +3,10 @@
 import { Address, BigInt, BigDecimal, log } from '@graphprotocol/graph-ts'
 import { BalancerWeightedPool } from '../../generated/templates/GeyserV1/BalancerWeightedPool'
 import { BalancerVault } from '../../generated/templates/GeyserV1/BalancerVault'
+import { ERC20 } from '../../generated/templates/GeyserV1/ERC20'
 import { integerToDecimal } from '../util/common'
 import { ZERO_BIG_DECIMAL, STABLECOINS, STABLECOIN_DECIMALS } from '../util/constants'
-import { Token } from '../../generated/schema'
+import { getTokenPrice } from './uniswap'
 
 // TODO: Add support for more pools other than Weighted Pools.
 
@@ -34,37 +35,38 @@ export function getBalancerLiquidityTokenPrice(address: Address): BigDecimal {
   let totalSupply = integerToDecimal(pool.totalSupply());
 
   // find stable coin
-  let stableCoinPoolIndex: i32 = -1;
-  let foundStableCoin: i32 = -1;
+  let stableCoinPoolIdx: i32 = -1;
+  let stableCoinIdx: i32 = -1;
   for (let i = 0; i < tokenAddresses.length; i++) {
     for (let j = 0; j < STABLECOINS.length; j++) {
       if (Address.fromString(STABLECOINS[j]).toHexString() == tokenAddresses[i].toHexString()) {
-        stableCoinPoolIndex = i;
-        foundStableCoin = j;
+        stableCoinPoolIdx = i;
+        stableCoinIdx = j;
         break;
       }
     }
-    if (stableCoinPoolIndex > -1) {
+    if (stableCoinPoolIdx > -1) {
       break;
     }
   }
 
-  if (stableCoinPoolIndex > -1) {
+  if (stableCoinPoolIdx > -1) {
     // get balance of stable coin
-    let stableBalance = integerToDecimal(tokenBalances[stableCoinPoolIndex], BigInt.fromI32(STABLECOIN_DECIMALS[foundStableCoin] as i32));
+    let stableBalance = integerToDecimal(tokenBalances[stableCoinPoolIdx], BigInt.fromI32(STABLECOIN_DECIMALS[stableCoinIdx] as i32));
     // get stable coin weight
-    let stableWeight = integerToDecimal(weights[stableCoinPoolIndex]);
+    let stableWeight = integerToDecimal(weights[stableCoinPoolIdx]);
     return getPriceFromWeight(stableBalance, stableWeight, BigDecimal.fromString('1'), totalSupply)
   } else {
-    // try to price against a token we have saved
+    // try to price against a token on uniwap
     for (let i = 0; i < tokenAddresses.length; i++) {
-      let pricedToken = Token.load(tokenAddresses[i].toHexString());
-      if (pricedToken === null) {
+      let tokenPrice = getTokenPrice(tokenAddresses[i]);
+      if (tokenPrice == ZERO_BIG_DECIMAL) {
         continue;
       }
-      let pricedTokenBalance = integerToDecimal(tokenBalances[i], pricedToken.decimals);
-      let pricedTokenWeight = integerToDecimal(weights[i]);
-      return getPriceFromWeight(pricedTokenBalance, pricedTokenWeight, pricedToken.price, totalSupply)
+      let tokenContract = ERC20.bind(address);
+      let tokenAmount = integerToDecimal(tokenBalances[i], BigInt.fromI32(tokenContract.decimals()));
+      let tokenWeight = integerToDecimal(weights[i]);
+      return getPriceFromWeight(tokenAmount, tokenWeight, tokenPrice, totalSupply)
     }
   }
 
