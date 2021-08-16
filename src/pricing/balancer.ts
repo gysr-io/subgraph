@@ -57,7 +57,7 @@ export function getBalancerLiquidityTokenPrice(address: Address): BigDecimal {
     let stableWeight = integerToDecimal(weights[stableCoinPoolIdx]);
     return getPriceFromWeight(stableBalance, stableWeight, BigDecimal.fromString('1'), totalSupply)
   } else {
-    // try to price against a token on uniwap
+    // try to price against a token on uniswap
     for (let i = 0; i < tokenAddresses.length; i++) {
       let tokenPrice = getTokenPrice(tokenAddresses[i]);
       if (tokenPrice == ZERO_BIG_DECIMAL) {
