@@ -63,7 +63,7 @@ export function getBalancerLiquidityTokenPrice(address: Address): BigDecimal {
       if (tokenPrice == ZERO_BIG_DECIMAL) {
         continue;
       }
-      let tokenContract = ERC20.bind(address);
+      let tokenContract = ERC20.bind(tokenAddresses[i]);
       let tokenAmount = integerToDecimal(tokenBalances[i], BigInt.fromI32(tokenContract.decimals()));
       let tokenWeight = integerToDecimal(weights[i]);
       return getPriceFromWeight(tokenAmount, tokenWeight, tokenPrice, totalSupply)
