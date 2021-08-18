@@ -36,7 +36,6 @@ export let HIGH_VOLUME_TOKENS: string[] = [
 export let USDT_WETH_PAIR = '{{usdt_weth_address}}';
 export let UNISWAP_FACTORY = '{{uniswap_factory}}';
 export let SUSHI_FACTORY = '{{sushi_factory}}';
-export let MIN_ETH_PRICING = BigDecimal.fromString('5.0');
 export let MIN_USD_PRICING = BigDecimal.fromString('10000.0');
 
 // contract

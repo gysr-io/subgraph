@@ -14,7 +14,6 @@ import {
   UNISWAP_FACTORY,
   SUSHI_FACTORY,
   ZERO_ADDRESS,
-  MIN_ETH_PRICING,
   MIN_USD_PRICING,
   STABLECOIN_DECIMALS
 } from '../util/constants'
@@ -66,54 +65,54 @@ export function getTokenPrice(address: Address): BigDecimal {
   }
 
   // setup
-  let uniswapFactory = UniswapFactory.bind(Address.fromString(UNISWAP_FACTORY));
-  let sushiFactory = UniswapFactory.bind(Address.fromString(SUSHI_FACTORY));
   let zero = Address.fromString(ZERO_ADDRESS);
 
   let stables: string[] = [WETH_ADDRESS];
   stables = stables.concat(STABLECOINS);
+
+  let factories: string[] = [UNISWAP_FACTORY, SUSHI_FACTORY];
+
   let decimals: number[] = [18];
   decimals = decimals.concat(STABLECOIN_DECIMALS);
 
-  // try each stable
-  for (let i = 0; i < stables.length; i++) {
-    // uniswap priority
-    let pairAddress = uniswapFactory.getPair(address, Address.fromString(stables[i]));
+  // try each uniswap factory (or clone)
+  for (let i = 0; i < factories.length; i++) {
+    let factory = UniswapFactory.bind(Address.fromString(factories[i]));
 
-    // sushiswap fallback
-    if (pairAddress == zero) {
-      pairAddress = sushiFactory.getPair(address, Address.fromString(stables[i]));
-    }
+    // try each stable
+    for (let j = 0; j < stables.length; j++) {
+      let pairAddress = factory.getPair(address, Address.fromString(stables[j]));
 
-    if (pairAddress == zero) {
-      continue;
-    }
+      if (pairAddress == zero) {
+        continue;
+      }
 
-    let pair = UniswapPair.bind(pairAddress);
-    let reserves = pair.getReserves();
+      let pair = UniswapPair.bind(pairAddress);
+      let reserves = pair.getReserves();
 
-    let stable: BigDecimal, tokenReserve: BigInt
-    let stableDecimals = BigInt.fromI32(decimals[i] as i32);
-    if (pair.token0() == address) {
-      stable = integerToDecimal(reserves.value1, stableDecimals);
-      tokenReserve = reserves.value0;
-    } else {
-      stable = integerToDecimal(reserves.value0, stableDecimals);
-      tokenReserve = reserves.value1;
-    }
+      let stable: BigDecimal, tokenReserve: BigInt
+      let stableDecimals = BigInt.fromI32(decimals[j] as i32);
+      if (pair.token0() == address) {
+        stable = integerToDecimal(reserves.value1, stableDecimals);
+        tokenReserve = reserves.value0;
+      } else {
+        stable = integerToDecimal(reserves.value0, stableDecimals);
+        tokenReserve = reserves.value1;
+      }
 
-    // convert weth to usd
-    if (i == 0) {
-      let eth = getEthPrice();
-      stable = stable.times(eth);
-    }
+      // convert weth to usd
+      if (j == 0) {
+        let eth = getEthPrice();
+        stable = stable.times(eth);
+      }
 
-    // compute price
-    if (stable.gt(MIN_USD_PRICING)) {
-      let token = ERC20.bind(address);
-      let amount = integerToDecimal(tokenReserve, BigInt.fromI32(token.decimals()));
+      // compute price
+      if (stable.gt(MIN_USD_PRICING)) {
+        let token = ERC20.bind(address);
+        let amount = integerToDecimal(tokenReserve, BigInt.fromI32(token.decimals()));
 
-      return stable.div(amount);
+        return stable.div(amount);
+      }
     }
   }
 
