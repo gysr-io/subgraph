@@ -13,7 +13,7 @@ import { integerToDecimal } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN } from '../util/constants'
 import { getPrice, createNewToken } from '../pricing/token'
 import { updatePool } from '../util/pool'
-import { updatePoolDayData } from '../util/common'
+import { updatePoolDayData, updatePlatform } from '../util/common'
 
 
 export function handleRewardsFunded(event: RewardsFunded): void {
@@ -71,6 +71,7 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   if (!platform._activePools.includes(pool.id)) {
     platform._activePools = platform._activePools.concat([pool.id]);
   }
+  updatePlatform(platform, event.block.timestamp, pool);
 
   // store
   pool.save();

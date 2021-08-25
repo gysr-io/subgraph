@@ -13,7 +13,7 @@ import {
   OwnershipTransferred
 } from '../../generated/templates/GeyserV1/GeyserV1'
 import { Pool, Token, User, Position, Stake, Platform, Transaction, Funding } from '../../generated/schema'
-import { integerToDecimal, createNewUser, createNewPlatform, updatePoolDayData } from '../util/common'
+import { integerToDecimal, createNewUser, createNewPlatform, updatePoolDayData, updatePlatform } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN } from '../util/constants'
 import { getPrice, createNewToken } from '../pricing/token'
 import { updateGeyserV1 } from '../util/geyserv1'
@@ -88,6 +88,9 @@ export function handleStaked(event: Staked): void {
 
   // daily
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
+
+  // update platform pricing
+  updatePlatform(platform, event.block.timestamp, pool);
 
   // store
   stake.save();
@@ -187,6 +190,9 @@ export function handleUnstaked(event: Unstaked): void {
   pool.volume = pool.volume.plus(dollarAmount);
   poolDayData.volume = poolDayData.volume.plus(dollarAmount);
 
+  // update platform pricing
+  updatePlatform(platform, event.block.timestamp, pool);
+
   // store
   user.save();
   pool.save();
@@ -243,6 +249,7 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   if (!platform._activePools.includes(pool.id)) {
     platform._activePools = platform._activePools.concat([pool.id]);
   }
+  updatePlatform(platform, event.block.timestamp, pool);
 
   // store
   pool.save();

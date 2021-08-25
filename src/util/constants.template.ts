@@ -19,6 +19,8 @@ export let STABLECOINS: string[] = [
 ];
 export let STABLECOIN_DECIMALS: number[] = [6, 6, 18];
 
+export let PRICING_PERIOD = BigInt.fromI32(21600);  // 6 hours
+
 export let HIGH_VOLUME_TOKENS: string[] = [
   WETH_ADDRESS,        // weth
   '{{wbtc_address}}',  // wbtc

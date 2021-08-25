@@ -5,49 +5,6 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: Platform
-    network: {{network}}
-    source:
-      #address: "0x0000000000000000000000000000000000000000"
-      address: "0x443D2f2755DB5942601fa062Cc248aAA153313D3"
-      abi: ESDRoot
-      startBlock: {{geyser_factory_v1_start_block}}
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.4
-      language: wasm/assemblyscript
-      entities:
-        - Pool
-        - Platform
-      abis:
-        - name: GeyserV1
-          file: ./abis/GeyserV1.json
-        - name: Pool
-          file: './abis/Pool.json'
-        - name: ERC20StakingModule
-          file: './abis/ERC20StakingModule.json'
-        - name: ERC20BaseRewardModule
-          file: './abis/ERC20BaseRewardModule.json'
-        - name: ERC20
-          file: ./abis/ERC20.json
-        - name: UniswapFactory
-          file: ./abis/thirdparty/uniswap/Factory.json
-        - name: UniswapPair
-          file: ./abis/thirdparty/uniswap/Pair.json
-        - name: ESDRoot
-          file: ./abis/thirdparty/emptysetdollar/Root.json
-        - name: BalancerVault
-          file: ./abis/thirdparty/balancer/Vault.json
-        - name: BalancerWeightedPool
-          file: ./abis/thirdparty/balancer/WeightedPool.json
-      eventHandlers:
-        - event: Advance(indexed uint256,uint256,uint256)
-          handler: handleUpdate
-      #blockHandlers:
-      #  - handler: handleBlock
-      file: ./src/mappings/platform.ts
-
-  - kind: ethereum/contract
     name: GeyserFactoryV1
     network: {{network}}
     source:
