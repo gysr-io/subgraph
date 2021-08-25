@@ -7,7 +7,6 @@ import {
   Unstaked,
   RewardsFunded,
   RewardsDistributed,
-  RewardsUnlocked,
   RewardsExpired,
   GysrSpent,
   OwnershipTransferred
@@ -302,11 +301,6 @@ export function handleOwnershipTransferred(event: OwnershipTransferred): void {
 
   pool.save();
   platform.save();
-}
-
-
-export function handleRewardsUnlocked(event: RewardsUnlocked): void {
-  // todo
 }
 
 

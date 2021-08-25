@@ -115,8 +115,6 @@ templates:
           handler: handleRewardsDistributed
         - event: OwnershipTransferred(indexed address,indexed address)
           handler: handleOwnershipTransferred
-        - event: RewardsUnlocked(uint256,uint256)
-          handler: handleRewardsUnlocked
         - event: RewardsExpired(uint256,uint256,uint256)
           handler: handleRewardsExpired
         - event: GysrSpent(indexed address,uint256)
