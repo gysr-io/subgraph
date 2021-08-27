@@ -5,6 +5,7 @@ enum TokenType {
   Stable
   UniswapLiquidity
   BalancerLiquidity
+  IronSwapLiquidity
 }
 
 type Token @entity {
