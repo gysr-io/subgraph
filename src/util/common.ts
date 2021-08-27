@@ -67,6 +67,11 @@ export function updatePlatform(platform: Platform, timestamp: BigInt, skip: Pool
   let pools = platform._activePools;
   var stale: string[] = [];
 
+  log.info(
+    'Running platform pricing update... ts: {}, pools: {}',
+    [timestamp.toString(), BigInt.fromI32(pools.length).toString()]
+  );
+
   for (let i = 0; i < pools.length; i++) {
     // don't need to price pool that triggered this event
     if (pools[i] == skip.id) {

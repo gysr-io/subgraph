@@ -1,7 +1,7 @@
 {
   "network": "matic",
   "geyser_factory_v1": "0x0000000000000000000000000000000000000000",
-  "geyser_factory_v1_start_block": 16247432,
+  "geyser_factory_v1_start_block": 1000000000,
   "pool_factory": "0x3cF6920b8FCBeA07700CE4A7C2F009Bb785B0742",
   "pool_factory_start_block": 16247432,
   "gysr_address": "0xc48f61a288a08f1b80c2edd74652e1276b6a168c",
