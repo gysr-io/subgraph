@@ -3,7 +3,7 @@
 import { Address, BigInt, BigDecimal, ethereum, log, dataSource } from '@graphprotocol/graph-ts'
 import { ERC20 } from '../../generated/templates/GeyserV1/ERC20'
 import { Token } from '../../generated/schema'
-import { ZERO_BIG_INT, HIGH_VOLUME_TOKENS, STABLECOINS, ZERO_BIG_DECIMAL } from '../util/constants'
+import { ZERO_BIG_INT, STABLECOINS, ZERO_BIG_DECIMAL } from '../util/constants'
 import {
   getTokenPrice,
   isUniswapLiquidityToken,
@@ -59,11 +59,7 @@ export function createNewToken(address: Address): Token {
     token.type = 'Stable';
     log.info('created new token: stablecoin, {}, {}', [token.id, token.symbol]);
 
-  } else if (HIGH_VOLUME_TOKENS.includes(address.toHexString())) {
-    token.type = 'Standard';
-    log.info('created new token: high volume, {}, {}', [token.id, token.symbol])
-
-  } else { //if (address == Address.fromString('0xbEa98c05eEAe2f3bC8c3565Db7551Eb738c8CCAb')) {
+  } else {
     token.type = 'Standard';
     log.info('created new token: standard, {}, {}', [token.id, token.symbol]);
   }

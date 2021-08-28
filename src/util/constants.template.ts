@@ -19,18 +19,7 @@ export let STABLECOINS: string[] = [
 ];
 export let STABLECOIN_DECIMALS: number[] = [6, 6, 18];
 
-export let HIGH_VOLUME_TOKENS: string[] = [
-  WETH_ADDRESS,        // weth
-  '{{wbtc_address}}',  // wbtc
-  '{{uni_address}}',   // uni
-  '{{link_address}}',  // link
-  '{{bnb_address}}',   // bnb
-  '{{snx_address}}',   // snx
-  '{{yfi_address}}',   // yfi
-  '{{comp_address}}',  // comp
-  '{{mkr_address}}',   // mkr
-  '{{grt_address}}',   // grt
-];
+export let PRICING_PERIOD = BigInt.fromI32(21600);  // 6 hours
 
 // uniswap
 export let USDT_WETH_PAIR = '{{usdt_weth_address}}';

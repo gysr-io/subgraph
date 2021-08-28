@@ -151,6 +151,7 @@ type Platform @entity {
 
   # list of actively priced pools
   _activePools: [Pool!]!
+  _updated: BigInt!
 }
 
 enum TransactionType {
