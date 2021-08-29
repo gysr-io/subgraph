@@ -8,11 +8,17 @@ import { integerToDecimal } from '../util/common'
 
 export function isIronSwapLiquidityToken(address: Address): boolean {
   let token = IronSwapToken.bind(address);
-
-  let res = token.try_swap();
-  if (res.reverted) {
+  let res0 = token.try_swap();
+  if (res0.reverted) {
     return false;
   }
+
+  let pool = IronSwap.bind(res0.value);
+  let res1 = pool.try_getVirtualPrice();
+  if (res1.reverted) {
+    return false;
+  }
+
   return true;
 }
 
