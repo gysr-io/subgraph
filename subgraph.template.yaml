@@ -78,6 +78,27 @@ dataSources:
           handler: handlePoolCreated
       file: ./src/mappings/factoryv2.ts
 
+  - kind: ethereum/contract
+    name: PoolMetadata
+    network: {{network}}
+    source:
+      address: "{{pool_metadata}}"
+      abi: PoolMetadata
+      startBlock: {{pool_metadata_start_block}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - Pool
+      abis:
+        - name: PoolMetadata
+          file: ./abis/PoolMetadata.json
+      eventHandlers:
+        - event: Metadata(indexed address,string)
+          handler: handleMetadata
+      file: ./src/mappings/metadata.ts
+
 templates:
   - kind: ethereum/contract
     name: GeyserV1
@@ -94,6 +115,12 @@ templates:
       abis:
         - name: GeyserV1
           file: ./abis/GeyserV1.json
+        - name: Pool
+          file: './abis/Pool.json'
+        - name: ERC20StakingModule
+          file: './abis/ERC20StakingModule.json'
+        - name: ERC20BaseRewardModule
+          file: './abis/ERC20BaseRewardModule.json'
         - name: ERC20
           file: ./abis/ERC20.json
         - name: UniswapFactory
@@ -174,6 +201,8 @@ templates:
           file: ./abis/ERC20StakingModule.json
         - name: ERC20BaseRewardModule
           file: './abis/ERC20BaseRewardModule.json'
+        - name: GeyserV1
+          file: ./abis/GeyserV1.json
         - name: ERC20
           file: ./abis/ERC20.json
         - name: UniswapFactory
@@ -218,6 +247,8 @@ templates:
           file: './abis/ERC20CompetitiveRewardModule.json'
         - name: ERC20FriendlyRewardModule
           file: './abis/ERC20FriendlyRewardModule.json'
+        - name: GeyserV1
+          file: ./abis/GeyserV1.json
         - name: ERC20
           file: ./abis/ERC20.json
         - name: UniswapFactory

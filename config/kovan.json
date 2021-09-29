@@ -13,5 +13,7 @@
   "uniswap_factory": "0x0000000000000000000000000000000000000000",
   "sushi_factory": "0x0000000000000000000000000000000000000000",
   "erc20_competitive_reward_module_factory_address": "0x5c1A02D6CAa8C954Cb30CE2B1a6C02Edd75fc3E3",
-  "erc20_friendly_reward_module_factory_address": "0x88fb2e8951534200411a4D6eBd7d000c225B76F0"
+  "erc20_friendly_reward_module_factory_address": "0x88fb2e8951534200411a4D6eBd7d000c225B76F0",
+  "pool_metadata": "0x7729892e7bd9A2BCcb87Bbc417Daaf486aFB0B2a",
+  "pool_metadata_start_block": 27392009
 }
