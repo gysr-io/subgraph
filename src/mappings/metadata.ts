@@ -16,6 +16,9 @@ export function handleMetadata(event: Metadata): void {
 
   // update pool object
   let pool = Pool.load(event.params.pool.toHexString());
+  pool.name = '';
+  pool.description = '';
+  pool.website = '';
 
   let name = data.get('name');
   if (name) {
