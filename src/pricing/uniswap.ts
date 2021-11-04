@@ -121,27 +121,36 @@ export function getTokenPrice(address: Address): BigDecimal {
 
 
 export function getUniswapLiquidityTokenPrice(address: Address): BigDecimal {
-
   let pair = UniswapPair.bind(address);
 
-  let reserves = pair.getReserves();
-
-  let token0 = ERC20.bind(pair.token0());
-  let token1 = ERC20.bind(pair.token1());
-
-  let price0 = getTokenPrice(token0._address);
-  let price1 = getTokenPrice(token1._address);
-
-  if (price0 == ZERO_BIG_DECIMAL || price1 == ZERO_BIG_DECIMAL) {
+  let totalSupply = integerToDecimal(pair.totalSupply());
+  if (totalSupply == ZERO_BIG_DECIMAL) {
     return ZERO_BIG_DECIMAL;
   }
 
-  let amount0 = integerToDecimal(reserves.value0, BigInt.fromI32(token0.decimals()));
-  let amount1 = integerToDecimal(reserves.value1, BigInt.fromI32(token1.decimals()));
+  let reserves = pair.getReserves();
 
-  let totalReservesUSD = (price0.times(amount0)).plus(price1.times(amount1));
+  // try to price with token 0
+  let token0 = ERC20.bind(pair.token0());
+  let price0 = getTokenPrice(token0._address);
 
-  let totalSupply = integerToDecimal(pair.totalSupply());
+  if (price0.gt(ZERO_BIG_DECIMAL)) {
+    let amount0 = integerToDecimal(reserves.value0, BigInt.fromI32(token0.decimals()));
+    let totalReservesUSD = BigDecimal.fromString('2.0').times(price0.times(amount0));
 
-  return totalReservesUSD.div(totalSupply);
+    return totalReservesUSD.div(totalSupply);
+  }
+
+  // try to price with token 1
+  let token1 = ERC20.bind(pair.token1());
+  let price1 = getTokenPrice(token1._address);
+
+  if (price1.gt(ZERO_BIG_DECIMAL)) {
+    let amount1 = integerToDecimal(reserves.value1, BigInt.fromI32(token1.decimals()));
+    let totalReservesUSD = BigDecimal.fromString('2.0').times(price1.times(amount1));
+
+    return totalReservesUSD.div(totalSupply);
+  }
+
+  return ZERO_BIG_DECIMAL;
 }
