@@ -2,7 +2,7 @@
 
 import { Address, BigDecimal, BigInt, log } from '@graphprotocol/graph-ts';
 import { Platform, User, PoolDayData, Pool, Token } from '../../generated/schema'
-import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, PRICING_PERIOD } from '../util/constants'
+import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, PRICING_PERIOD, PRICING_MIN_TVL } from '../util/constants'
 import { GeyserV1 as GeyserContractV1 } from '../../generated/templates/GeyserV1/GeyserV1'
 import { updateGeyserV1 } from '../util/geyserv1'
 import { updatePool } from '../util/pool'
@@ -103,7 +103,10 @@ export function updatePlatform(platform: Platform, timestamp: BigInt, skip: Pool
     // remove from priced pool list if stale
     if (pool.state == 'Stale') {
       stale.push(pool.id);
-      log.info('Marking pool as stale {}', [pool.id.toString()]);
+      log.info('Removing stale pool from active pricing {}', [pool.id.toString()]);
+    } else if (pool.tvl.lt(PRICING_MIN_TVL)) {
+      stale.push(pool.id);
+      log.info('Removing low TVL pool from active pricing {}', [pool.id.toString()]);
     }
   }
 

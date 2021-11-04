@@ -11,7 +11,7 @@ import { ERC20CompetitiveRewardModule as ERC20CompetitiveRewardModuleContract } 
 import { ERC20FriendlyRewardModule as ERC20FriendlyRewardModuleContract } from '../../generated/templates/ERC20StakingModule/ERC20FriendlyRewardModule'
 import { Pool, Token, User, Position, Stake, Platform, Transaction } from '../../generated/schema'
 import { integerToDecimal, createNewUser, updatePoolDayData, updatePlatform } from '../util/common'
-import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN } from '../util/constants'
+import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, PRICING_MIN_TVL } from '../util/constants'
 import { updatePool } from '../util/pool'
 
 
@@ -79,6 +79,9 @@ export function handleStaked(event: Staked): void {
   pool.updated = event.block.timestamp;
 
   // update platform pricing
+  if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
+    platform._activePools = platform._activePools.concat([pool.id]);
+  }
   updatePlatform(platform, event.block.timestamp, pool);
 
   // store
@@ -208,6 +211,9 @@ export function handleUnstaked(event: Unstaked): void {
   poolDayData.volume = poolDayData.volume.plus(dollarAmount);
 
   // update platform pricing
+  if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
+    platform._activePools = platform._activePools.concat([pool.id]);
+  }
   updatePlatform(platform, event.block.timestamp, pool);
 
   // store
@@ -339,6 +345,9 @@ export function handleClaimed(event: Claimed): void {
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
 
   // update platform pricing
+  if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
+    platform._activePools = platform._activePools.concat([pool.id]);
+  }
   updatePlatform(platform, event.block.timestamp, pool);
 
   // store

@@ -20,6 +20,7 @@ export let STABLECOINS: string[] = [
 export let STABLECOIN_DECIMALS: number[] = [6, 6, 18];
 
 export let PRICING_PERIOD = BigInt.fromI32(21600);  // 6 hours
+export let PRICING_MIN_TVL = BigDecimal.fromString('1000.0');
 
 // uniswap
 export let USDT_WETH_PAIR = '{{usdt_weth_address}}';
