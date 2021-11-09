@@ -24,6 +24,8 @@ dataSources:
           file: ./abis/GeyserV1.json
         - name: ERC20
           file: ./abis/ERC20.json
+        - name: ERC721
+          file: ./abis/ERC721.json
         - name: UniswapFactory
           file: ./abis/thirdparty/uniswap/Factory.json
         - name: UniswapPair
@@ -65,6 +67,8 @@ dataSources:
           file: './abis/ERC20FriendlyRewardModule.json'
         - name: ERC20
           file: ./abis/ERC20.json
+        - name: ERC721
+          file: ./abis/ERC721.json
         - name: UniswapFactory
           file: ./abis/thirdparty/uniswap/Factory.json
         - name: UniswapPair
@@ -123,6 +127,8 @@ templates:
           file: './abis/ERC20BaseRewardModule.json'
         - name: ERC20
           file: ./abis/ERC20.json
+        - name: ERC721
+          file: ./abis/ERC721.json
         - name: UniswapFactory
           file: ./abis/thirdparty/uniswap/Factory.json
         - name: UniswapPair
@@ -169,6 +175,8 @@ templates:
           file: './abis/ERC20BaseRewardModule.json'
         - name: ERC20
           file: ./abis/ERC20.json
+        - name: ERC721
+          file: ./abis/ERC721.json
         - name: UniswapFactory
           file: ./abis/thirdparty/uniswap/Factory.json
         - name: UniswapPair
@@ -205,6 +213,8 @@ templates:
           file: ./abis/GeyserV1.json
         - name: ERC20
           file: ./abis/ERC20.json
+        - name: ERC721
+          file: ./abis/ERC721.json
         - name: UniswapFactory
           file: ./abis/thirdparty/uniswap/Factory.json
         - name: UniswapPair
@@ -251,6 +261,8 @@ templates:
           file: ./abis/GeyserV1.json
         - name: ERC20
           file: ./abis/ERC20.json
+        - name: ERC721
+          file: ./abis/ERC721.json
         - name: UniswapFactory
           file: ./abis/thirdparty/uniswap/Factory.json
         - name: UniswapPair

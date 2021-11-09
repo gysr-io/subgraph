@@ -5,6 +5,7 @@ import { BigDecimal, BigInt, Address } from '@graphprotocol/graph-ts';
 
 export let ZERO_BIG_DECIMAL = BigDecimal.fromString('0');
 export let ZERO_BIG_INT = BigInt.fromI32(0);
+export let ONE_E_18 = (BigInt.fromI32(10).pow(18)).toBigDecimal();
 
 export let WETH_ADDRESS = '{{weth_address}}';
 
@@ -34,3 +35,5 @@ export let INITIAL_SHARES_PER_TOKEN = BigDecimal.fromString('1000000');
 // factories
 export let ERC20_COMPETITIVE_REWARD_MODULE_FACTORY = Address.fromString('{{erc20_competitive_reward_module_factory_address}}');
 export let ERC20_FRIENDLY_REWARD_MODULE_FACTORY = Address.fromString('{{erc20_friendly_reward_module_factory_address}}');
+export let ERC20_STAKING_MODULE_FACTORY = Address.fromString('{{erc20_staking_module_factory_address}}');
+export let ERC721_STAKING_MODULE_FACTORY = Address.fromString('{{erc721_staking_module_factory_address}}');

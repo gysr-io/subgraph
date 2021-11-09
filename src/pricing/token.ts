@@ -11,6 +11,7 @@ import {
   getUniswapLiquidityTokenPrice
 } from '../pricing/uniswap'
 import { getBalancerLiquidityTokenPrice, isBalancerLiquidityToken } from './balancer'
+import { isERC721Token } from './erc721'
 
 
 // factory function to define and populate new token entity
@@ -59,6 +60,10 @@ export function createNewToken(address: Address): Token {
     token.type = 'Stable';
     log.info('created new token: stablecoin, {}, {}', [token.id, token.symbol]);
 
+  } else if (isERC721Token(address)) {
+    token.type = 'ERC721';
+    log.info('created new token: ERC721, {}, {}', [token.id, token.symbol]);
+
   } else {
     token.type = 'Standard';
     log.info('created new token: standard, {}, {}', [token.id, token.symbol]);
@@ -76,7 +81,6 @@ export function getPrice(token: Token): BigDecimal {
   // price token based on type
   if (token.type == 'Stable') {
     return BigDecimal.fromString('1.0');
-
   } else if (token.type == 'Standard') {
     return getTokenPrice(Address.fromString(token.id.toString()));
   } else if (token.type == 'UniswapLiquidity') {

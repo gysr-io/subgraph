@@ -19,7 +19,9 @@ import {
   ZERO_BIG_DECIMAL,
   INITIAL_SHARES_PER_TOKEN,
   ZERO_ADDRESS,
-  ERC20_COMPETITIVE_REWARD_MODULE_FACTORY
+  ERC20_COMPETITIVE_REWARD_MODULE_FACTORY,
+  ERC20_STAKING_MODULE_FACTORY,
+  ONE_E_18
 } from '../util/constants'
 import { createNewToken } from '../pricing/token'
 
@@ -71,20 +73,32 @@ export function handlePoolCreated(event: PoolCreated): void {
   pool.stakingToken = stakingToken.id;
   pool.rewardToken = rewardToken.id;
 
-  // get bonus info and pool type depending
+  // get bonus info and pool type
   let rewardFactory = rewardModuleContract.factory();
   if (rewardFactory == ERC20_COMPETITIVE_REWARD_MODULE_FACTORY) {
     let competitiveContract = ERC20CompetitiveRewardModuleContract.bind(rewardModule)
     pool.timeMultMin = integerToDecimal(competitiveContract.bonusMin());
     pool.timeMultMax = integerToDecimal(competitiveContract.bonusMax());
     pool.timeMultPeriod = competitiveContract.bonusPeriod();
-    pool.poolType = 'GeyserV2'
+    pool.poolType = 'GeyserV2';
+    pool.rewardModuleType = 'ERC20Competitive';
   } else {
     let friendlyContract = ERC20FriendlyRewardModuleContract.bind(rewardModule);
     pool.timeMultMin = integerToDecimal(friendlyContract.vestingStart());
     pool.timeMultMax = BigDecimal.fromString('1');
     pool.timeMultPeriod = friendlyContract.vestingPeriod();
     pool.poolType = 'Fountain'
+    pool.rewardModuleType = 'ERC20Friendly';
+  }
+
+  // staking type
+  let stakingFactory = stakingModuleContract.factory();
+  if (stakingFactory == ERC20_STAKING_MODULE_FACTORY) {
+    pool.stakingModuleType = 'ERC20';
+    pool.stakingSharesPerToken = INITIAL_SHARES_PER_TOKEN;
+  } else {
+    pool.stakingModuleType = 'ERC721';
+    pool.stakingSharesPerToken = ONE_E_18;
   }
 
   pool.createdBlock = event.block.number;
@@ -114,7 +128,6 @@ export function handlePoolCreated(event: PoolCreated): void {
   pool.tvl = ZERO_BIG_DECIMAL;
   pool.apr = ZERO_BIG_DECIMAL;
   pool.usage = ZERO_BIG_DECIMAL;
-  pool.stakingSharesPerToken = INITIAL_SHARES_PER_TOKEN;
   pool.rewardSharesPerToken = INITIAL_SHARES_PER_TOKEN;
   pool.updated = ZERO_BIG_INT;
   pool.volume = ZERO_BIG_DECIMAL;

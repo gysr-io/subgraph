@@ -5,6 +5,7 @@ enum TokenType {
   Stable
   UniswapLiquidity
   BalancerLiquidity
+  ERC721
 }
 
 type Token @entity {
@@ -38,6 +39,18 @@ enum PoolType {
   Fountain
 }
 
+enum StakingModuleType {
+  V1
+  ERC20
+  ERC721
+}
+
+enum RewardModuleType {
+  V1
+  ERC20Competitive
+  ERC20Friendly
+}
+
 type Pool @entity {
   # pool contract address
   id: ID!
@@ -58,6 +71,8 @@ type Pool @entity {
   tags: String!
 
   poolType: PoolType!
+  stakingModuleType: StakingModuleType!
+  rewardModuleType: RewardModuleType!
 
   # stats
   users: BigInt!
