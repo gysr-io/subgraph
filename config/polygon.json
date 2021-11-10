@@ -14,6 +14,6 @@
   "sushi_factory": "0xc35dadb65012ec5796536bd9864ed8773abc74c4",
   "erc20_competitive_reward_module_factory_address": "0x225fbc87C44324aFe99710A0503eF395c81CEB9a",
   "erc20_friendly_reward_module_factory_address": "0xb2e49ED1e552f087695E18F1fabca052694A8042",
-  "pool_metadata": "0x0000000000000000000000000000000000000000",
-  "pool_metadata_start_block": 1000000000
+  "pool_metadata": "0xc74c5fEf7b3F97043246002130006804561Eb5dc",
+  "pool_metadata_start_block": 21215758
 }
