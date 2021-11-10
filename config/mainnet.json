@@ -14,8 +14,8 @@
   "sushi_factory": "0xc0aee478e3658e2610c5f7a4a2e1777ce9e4f2ac",
   "erc20_competitive_reward_module_factory_address": "0x4e06ae5fa48089a69d4ee4ffee9524b06c2b7400",
   "erc20_friendly_reward_module_factory_address": "0x101063f864e91b72a5ce06342afc7ea5d8515398",
-  "erc20_staking_module_factory_address": "0x",
-  "erc721_staking_module_factory_address": "0x",
-  "pool_metadata": "0x0000000000000000000000000000000000000000",
-  "pool_metadata_start_block": 1000000000
+  "erc20_staking_module_factory_address": "0xaef2a7E4CbEB875475cFb1924867B9374569D894",
+  "erc721_staking_module_factory_address": "0x0000000000000000000000000000000000000000",
+  "pool_metadata": "0x087a5575Bd65133C22b78A830a8dc8F366ccF462",
+  "pool_metadata_start_block": 13588005
 }
