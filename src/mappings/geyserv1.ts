@@ -13,7 +13,7 @@ import {
 } from '../../generated/templates/GeyserV1/GeyserV1'
 import { Pool, Token, User, Position, Stake, Platform, Transaction, Funding } from '../../generated/schema'
 import { integerToDecimal, createNewUser, createNewPlatform, updatePoolDayData, updatePlatform } from '../util/common'
-import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN } from '../util/constants'
+import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN, PRICING_MIN_TVL } from '../util/constants'
 import { getPrice, createNewToken } from '../pricing/token'
 import { updateGeyserV1 } from '../util/geyserv1'
 
@@ -89,6 +89,9 @@ export function handleStaked(event: Staked): void {
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
 
   // update platform pricing
+  if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
+    platform._activePools = platform._activePools.concat([pool.id]);
+  }
   updatePlatform(platform, event.block.timestamp, pool);
 
   // store
@@ -190,6 +193,9 @@ export function handleUnstaked(event: Unstaked): void {
   poolDayData.volume = poolDayData.volume.plus(dollarAmount);
 
   // update platform pricing
+  if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
+    platform._activePools = platform._activePools.concat([pool.id]);
+  }
   updatePlatform(platform, event.block.timestamp, pool);
 
   // store
@@ -245,7 +251,7 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp);
 
   // update platform
-  if (!platform._activePools.includes(pool.id)) {
+  if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
     platform._activePools = platform._activePools.concat([pool.id]);
   }
   updatePlatform(platform, event.block.timestamp, pool);

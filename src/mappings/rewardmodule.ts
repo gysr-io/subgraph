@@ -10,7 +10,7 @@ import {
 } from '../../generated/templates/ERC20BaseRewardModule/ERC20BaseRewardModule'
 import { Pool, Token, Platform, Funding, Transaction } from '../../generated/schema'
 import { integerToDecimal } from '../util/common'
-import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN } from '../util/constants'
+import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN, PRICING_MIN_TVL } from '../util/constants'
 import { getPrice, createNewToken } from '../pricing/token'
 import { updatePool } from '../util/pool'
 import { updatePoolDayData, updatePlatform } from '../util/common'
@@ -68,7 +68,7 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp);
 
   // update platform
-  if (!platform._activePools.includes(pool.id)) {
+  if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
     platform._activePools = platform._activePools.concat([pool.id]);
   }
   updatePlatform(platform, event.block.timestamp, pool);

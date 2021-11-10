@@ -84,6 +84,11 @@ type Pool @entity {
   rewardSharesPerToken: BigDecimal!
   updated: BigInt!
   volume: BigDecimal!
+
+  # metadata
+  name: String
+  description: String
+  website: String
 }
 
 type _Schema_
