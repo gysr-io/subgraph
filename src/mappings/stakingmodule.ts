@@ -117,7 +117,7 @@ export function handleUnstaked(event: Unstaked): void {
   let shares = ZERO_BIG_DECIMAL;
   let ts = ZERO_BIG_INT;
   let poolContract = PoolContract.bind(Address.fromString(pool.id));
-  if (pool.poolType == 'GeyserV2') {
+  if (pool.rewardModuleType == 'ERC20Competitive') {
     // competitive
     let rewardContract = ERC20CompetitiveRewardModuleContract.bind(poolContract.rewardModule());
     count = rewardContract.stakeCount(event.params.user).toI32();
@@ -248,7 +248,7 @@ export function handleClaimed(event: Claimed): void {
 
   // note: should encapsulate this behind an interface when we have additional module types
   let poolContract = PoolContract.bind(Address.fromString(pool.id));
-  if (pool.poolType == 'GeyserV2') {
+  if (pool.rewardModuleType == 'ERC20Competitive') {
     // competitive
     let rewardContract = ERC20CompetitiveRewardModuleContract.bind(poolContract.rewardModule());
     let count = rewardContract.stakeCount(event.params.user).toI32();

@@ -80,14 +80,12 @@ export function handlePoolCreated(event: PoolCreated): void {
     pool.timeMultMin = integerToDecimal(competitiveContract.bonusMin());
     pool.timeMultMax = integerToDecimal(competitiveContract.bonusMax());
     pool.timeMultPeriod = competitiveContract.bonusPeriod();
-    pool.poolType = 'GeyserV2';
     pool.rewardModuleType = 'ERC20Competitive';
   } else {
     let friendlyContract = ERC20FriendlyRewardModuleContract.bind(rewardModule);
     pool.timeMultMin = integerToDecimal(friendlyContract.vestingStart());
     pool.timeMultMax = BigDecimal.fromString('1');
     pool.timeMultPeriod = friendlyContract.vestingPeriod();
-    pool.poolType = 'Fountain'
     pool.rewardModuleType = 'ERC20Friendly';
   }
 
@@ -99,6 +97,21 @@ export function handlePoolCreated(event: PoolCreated): void {
   } else {
     pool.stakingModuleType = 'ERC721';
     pool.stakingSharesPerToken = ONE_E_18;
+  }
+
+  // type nickname
+  if (pool.stakingModuleType == 'ERC20') {
+    if (pool.rewardModuleType == 'ERC20Competitive') {
+      pool.poolType = 'GeyserV2';
+    } else {
+      pool.poolType = 'Fountain'
+    }
+  } else {
+    if (pool.rewardModuleType == 'ERC20Friendly') {
+      pool.poolType = 'Aquarium';
+    } else {
+      pool.poolType = 'Unknown';
+    }
   }
 
   pool.createdBlock = event.block.number;

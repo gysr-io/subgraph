@@ -37,6 +37,8 @@ enum PoolType {
   GeyserV1
   GeyserV2
   Fountain
+  Aquarium
+  Unknown
 }
 
 enum StakingModuleType {
