@@ -7,6 +7,7 @@ export let ZERO_BIG_DECIMAL = BigDecimal.fromString('0');
 export let ZERO_BIG_INT = BigInt.fromI32(0);
 export let ONE_E_18 = (BigInt.fromI32(10).pow(18)).toBigDecimal();
 
+export let WRAPPED_NATIVE_ADDRESS = '{{wrapped_native_address}}';
 export let WETH_ADDRESS = '{{weth_address}}';
 
 export let ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
@@ -24,7 +25,8 @@ export let PRICING_PERIOD = BigInt.fromI32(21600);  // 6 hours
 export let PRICING_MIN_TVL = BigDecimal.fromString('1000.0');
 
 // uniswap
-export let USDT_WETH_PAIR = '{{usdt_weth_address}}';
+export let USD_NATIVE_PAIR = '{{usd_native_address}}';
+export let USD_WETH_PAIR = '{{usd_weth_address}}';
 export let UNISWAP_FACTORY = '{{uniswap_factory}}';
 export let SUSHI_FACTORY = '{{sushi_factory}}';
 export let MIN_USD_PRICING = BigDecimal.fromString('10000.0');

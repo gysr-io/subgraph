@@ -8,8 +8,10 @@ import { integerToDecimal } from '../util/common'
 import {
   ZERO_BIG_INT,
   ZERO_BIG_DECIMAL,
+  WRAPPED_NATIVE_ADDRESS,
   WETH_ADDRESS,
-  USDT_WETH_PAIR,
+  USD_NATIVE_PAIR,
+  USD_WETH_PAIR,
   STABLECOINS,
   UNISWAP_FACTORY,
   SUSHI_FACTORY,
@@ -46,12 +48,21 @@ export function getUniswapLiquidityTokenAlias(address: Address): string {
 }
 
 
+export function getNativePrice(): BigDecimal {
+  let pair = UniswapPair.bind(Address.fromString(USD_NATIVE_PAIR));
+  let reserves = pair.getReserves();
+  let wnative = integerToDecimal(reserves.value0)  // wrapped native 18 decimals
+  let usd = integerToDecimal(reserves.value1, BigInt.fromI32(6))  // usd 6 decimals
+  return usd.div(wnative);
+}
+
+
 export function getEthPrice(): BigDecimal {
-  let pair = UniswapPair.bind(Address.fromString(USDT_WETH_PAIR));
+  let pair = UniswapPair.bind(Address.fromString(USD_WETH_PAIR));
   let reserves = pair.getReserves();
   let weth = integerToDecimal(reserves.value0)  // weth 18 decimals
-  let usdt = integerToDecimal(reserves.value1, BigInt.fromI32(6))  // usdt 6 decimals
-  return usdt.div(weth);
+  let usd = integerToDecimal(reserves.value1, BigInt.fromI32(6))  // usd 6 decimals
+  return usd.div(weth);
 }
 
 
@@ -67,13 +78,16 @@ export function getTokenPrice(address: Address): BigDecimal {
   // setup
   let zero = Address.fromString(ZERO_ADDRESS);
 
-  let stables: string[] = [WETH_ADDRESS];
+  let stables: string[] = [WRAPPED_NATIVE_ADDRESS];
+  let decimals: number[] = [18];
+  if (WETH_ADDRESS != ZERO_ADDRESS) {
+    stables.push(WETH_ADDRESS);
+    decimals.push(18);
+  }
   stables = stables.concat(STABLECOINS);
+  decimals = decimals.concat(STABLECOIN_DECIMALS);
 
   let factories: string[] = [UNISWAP_FACTORY, SUSHI_FACTORY];
-
-  let decimals: number[] = [18];
-  decimals = decimals.concat(STABLECOIN_DECIMALS);
 
   // try each uniswap factory (or clone)
   for (let i = 0; i < factories.length; i++) {
@@ -100,8 +114,11 @@ export function getTokenPrice(address: Address): BigDecimal {
         tokenReserve = reserves.value1;
       }
 
-      // convert weth to usd
+      // convert native/weth to usd
       if (j == 0) {
+        let native = getNativePrice();
+        stable = stable.times(native);
+      } else if (stables[j] == WETH_ADDRESS) {
         let eth = getEthPrice();
         stable = stable.times(eth);
       }
