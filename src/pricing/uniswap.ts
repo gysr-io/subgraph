@@ -49,6 +49,7 @@ export function getUniswapLiquidityTokenAlias(address: Address): string {
 
 
 export function getNativePrice(): BigDecimal {
+  // NOTE: if updating this constant address, we assume that the native token is token0
   let pair = UniswapPair.bind(Address.fromString(USD_NATIVE_PAIR));
   let reserves = pair.getReserves();
   let wnative = integerToDecimal(reserves.value0)  // wrapped native 18 decimals
@@ -58,6 +59,7 @@ export function getNativePrice(): BigDecimal {
 
 
 export function getEthPrice(): BigDecimal {
+  // NOTE: if updating this constant address, we assume that weth is token0
   let pair = UniswapPair.bind(Address.fromString(USD_WETH_PAIR));
   let reserves = pair.getReserves();
   let weth = integerToDecimal(reserves.value0)  // weth 18 decimals
@@ -71,6 +73,9 @@ export function getTokenPrice(address: Address): BigDecimal {
   if (STABLECOINS.includes(address.toHexString())) {
     return BigDecimal.fromString('1.0');
   }
+  if (address.toHexString() == WRAPPED_NATIVE_ADDRESS) {
+    return getNativePrice();
+  }
   if (address.toHexString() == WETH_ADDRESS) {
     return getEthPrice();
   }
@@ -80,12 +85,12 @@ export function getTokenPrice(address: Address): BigDecimal {
 
   let stables: string[] = [WRAPPED_NATIVE_ADDRESS];
   let decimals: number[] = [18];
-  if (WETH_ADDRESS != ZERO_ADDRESS) {
-    stables.push(WETH_ADDRESS);
-    decimals.push(18);
-  }
   stables = stables.concat(STABLECOINS);
   decimals = decimals.concat(STABLECOIN_DECIMALS);
+  if (WETH_ADDRESS != ZERO_ADDRESS) {
+    stables = stables.concat([WETH_ADDRESS]);
+    decimals = decimals.concat([18]);
+  }
 
   let factories: string[] = [UNISWAP_FACTORY, SUSHI_FACTORY];
 
@@ -114,11 +119,11 @@ export function getTokenPrice(address: Address): BigDecimal {
         tokenReserve = reserves.value1;
       }
 
-      // convert native/weth to usd
+      // convert native or weth to usd
       if (j == 0) {
         let native = getNativePrice();
         stable = stable.times(native);
-      } else if (stables[j] == WETH_ADDRESS) {
+      } else if (j == 4) {
         let eth = getEthPrice();
         stable = stable.times(eth);
       }
