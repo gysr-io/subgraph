@@ -73,10 +73,15 @@ export function handleStaked(event: Staked): void {
   transaction.earnings = ZERO_BIG_DECIMAL;
   transaction.gysrSpent = ZERO_BIG_DECIMAL;
 
-  // update pricing info
+  // update pool data
   updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp);
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
-  pool.updated = event.block.timestamp;
+
+  // update volume
+  let dollarAmount = transaction.amount.times(stakingToken.price);
+  platform.volume = platform.volume.plus(dollarAmount);
+  pool.volume = pool.volume.plus(dollarAmount);
+  poolDayData.volume = poolDayData.volume.plus(dollarAmount);
 
   // update platform pricing
   if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
@@ -200,15 +205,9 @@ export function handleUnstaked(event: Unstaked): void {
   transaction.earnings = ZERO_BIG_DECIMAL;
   transaction.gysrSpent = ZERO_BIG_DECIMAL;
 
-  // update pricing info
+  // update pool data
   updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp);
-
-  // update volume
-  let dollarAmount = unstakeAmount.times(stakingToken.price);
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
-  platform.volume = platform.volume.plus(dollarAmount);
-  pool.volume = pool.volume.plus(dollarAmount);
-  poolDayData.volume = poolDayData.volume.plus(dollarAmount);
 
   // update platform pricing
   if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {

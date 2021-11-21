@@ -56,7 +56,7 @@ export function handleStaked(event: Staked): void {
   stake.user = user.id;
   stake.pool = pool.id;
 
-  // update pricing info
+  // update pool data
   let contract = GeyserContractV1.bind(event.address);
   updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp);
 
@@ -87,6 +87,12 @@ export function handleStaked(event: Staked): void {
 
   // daily
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
+
+  // update volume
+  let dollarAmount = amount.times(stakingToken.price);
+  platform.volume = platform.volume.plus(dollarAmount);
+  pool.volume = pool.volume.plus(dollarAmount);
+  poolDayData.volume = poolDayData.volume.plus(dollarAmount);
 
   // update platform pricing
   if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
@@ -171,7 +177,7 @@ export function handleUnstaked(event: Unstaked): void {
   transaction.earnings = ZERO_BIG_DECIMAL;
   transaction.gysrSpent = ZERO_BIG_DECIMAL;
 
-  // update pricing info
+  // update pool data
   updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp);
 
   // update position info
@@ -185,12 +191,8 @@ export function handleUnstaked(event: Unstaked): void {
     pool.users = pool.users.minus(BigInt.fromI32(1));
   }
 
-  // update volume
-  let dollarAmount = amount.times(stakingToken.price);
+  // daily
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
-  platform.volume = platform.volume.plus(dollarAmount);
-  pool.volume = pool.volume.plus(dollarAmount);
-  poolDayData.volume = poolDayData.volume.plus(dollarAmount);
 
   // update platform pricing
   if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
