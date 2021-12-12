@@ -11,6 +11,7 @@ import {
   getUniswapLiquidityTokenPrice
 } from '../pricing/uniswap'
 import { getBalancerLiquidityTokenPrice, isBalancerLiquidityToken } from './balancer'
+import { getUmaKpiOptionAlias, isUmaKpiOption } from './uma'
 
 
 // factory function to define and populate new token entity
@@ -58,6 +59,11 @@ export function createNewToken(address: Address): Token {
     token.price = BigDecimal.fromString('1.0');
     token.type = 'Stable';
     log.info('created new token: stablecoin, {}, {}', [token.id, token.symbol]);
+
+  } else if (isUmaKpiOption(address)) {
+    token.alias = getUmaKpiOptionAlias(address);
+    token.type = 'UmaKpiOption';
+    log.info('created new token: UMA KPI Option, {}, {}', [token.id, token.symbol]);
 
   } else {
     token.type = 'Standard';
