@@ -20,7 +20,9 @@ import {
   INITIAL_SHARES_PER_TOKEN,
   ZERO_ADDRESS,
   ERC20_COMPETITIVE_REWARD_MODULE_FACTORY,
+  ERC20_FRIENDLY_REWARD_MODULE_FACTORY,
   ERC20_STAKING_MODULE_FACTORY,
+  ERC721_STAKING_MODULE_FACTORY,
   ONE_E_18
 } from '../util/constants'
 import { createNewToken } from '../pricing/token'
@@ -81,12 +83,15 @@ export function handlePoolCreated(event: PoolCreated): void {
     pool.timeMultMax = integerToDecimal(competitiveContract.bonusMax());
     pool.timeMultPeriod = competitiveContract.bonusPeriod();
     pool.rewardModuleType = 'ERC20Competitive';
-  } else {
+  } else if (rewardFactory == ERC20_FRIENDLY_REWARD_MODULE_FACTORY) {
     let friendlyContract = ERC20FriendlyRewardModuleContract.bind(rewardModule);
     pool.timeMultMin = integerToDecimal(friendlyContract.vestingStart());
     pool.timeMultMax = BigDecimal.fromString('1');
     pool.timeMultPeriod = friendlyContract.vestingPeriod();
     pool.rewardModuleType = 'ERC20Friendly';
+  } else {
+    log.info('unknown reward module type: {}', [rewardFactory.toHexString()]);
+    return;
   }
 
   // staking type
@@ -94,9 +99,12 @@ export function handlePoolCreated(event: PoolCreated): void {
   if (stakingFactory == ERC20_STAKING_MODULE_FACTORY) {
     pool.stakingModuleType = 'ERC20';
     pool.stakingSharesPerToken = INITIAL_SHARES_PER_TOKEN;
-  } else {
+  } else if (stakingFactory == ERC721_STAKING_MODULE_FACTORY) {
     pool.stakingModuleType = 'ERC721';
     pool.stakingSharesPerToken = ONE_E_18;
+  } else {
+    log.info('unknown staking module type: {}', [stakingFactory.toHexString()]);
+    return;
   }
 
   // type nickname

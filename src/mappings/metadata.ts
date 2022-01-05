@@ -16,6 +16,10 @@ export function handleMetadata(event: Metadata): void {
 
   // update pool object
   let pool = Pool.load(event.params.pool.toHexString());
+  if (pool == null) {
+    log.info('unable to find pool: {}', [event.params.pool.toHexString()]);
+    return;
+  }
   pool.name = '';
   pool.description = '';
   pool.website = '';
