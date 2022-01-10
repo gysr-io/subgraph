@@ -61,7 +61,9 @@ export function handleGeyserV1Created(event: GeyserCreated): void {
     + " " + rewardToken.symbol
     + " " + rewardToken.name
   );
-  pool.poolType = 'GeyserV1'
+  pool.poolType = 'GeyserV1';
+  pool.stakingModuleType = 'V1';
+  pool.rewardModuleType = 'V1';
 
   pool.users = ZERO_BIG_INT;
   pool.operations = ZERO_BIG_INT;

@@ -6,6 +6,7 @@ enum TokenType {
   UniswapLiquidity
   BalancerLiquidity
   UmaKpiOption
+  ERC721
 }
 
 type Token @entity {
@@ -37,6 +38,20 @@ enum PoolType {
   GeyserV1
   GeyserV2
   Fountain
+  Aquarium
+  Unknown
+}
+
+enum StakingModuleType {
+  V1
+  ERC20
+  ERC721
+}
+
+enum RewardModuleType {
+  V1
+  ERC20Competitive
+  ERC20Friendly
 }
 
 type Pool @entity {
@@ -59,6 +74,8 @@ type Pool @entity {
   tags: String!
 
   poolType: PoolType!
+  stakingModuleType: StakingModuleType!
+  rewardModuleType: RewardModuleType!
 
   # stats
   users: BigInt!

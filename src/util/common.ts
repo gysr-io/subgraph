@@ -84,7 +84,7 @@ export function updatePlatform(platform: Platform, timestamp: BigInt, skip: Pool
     let rewardToken = Token.load(pool.rewardToken)!;
 
     // update pool
-    if (pool.poolType == 'GeyserV1') {
+    if (pool.stakingModuleType == 'V1') {
       let contract = GeyserContractV1.bind(Address.fromString(pool.id));
       updateGeyserV1(pool, platform!, contract, stakingToken, rewardToken, timestamp);
     } else {

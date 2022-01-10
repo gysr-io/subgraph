@@ -19,7 +19,11 @@ import {
   ZERO_BIG_DECIMAL,
   INITIAL_SHARES_PER_TOKEN,
   ZERO_ADDRESS,
-  ERC20_COMPETITIVE_REWARD_MODULE_FACTORY
+  ERC20_COMPETITIVE_REWARD_MODULE_FACTORY,
+  ERC20_FRIENDLY_REWARD_MODULE_FACTORY,
+  ERC20_STAKING_MODULE_FACTORY,
+  ERC721_STAKING_MODULE_FACTORY,
+  ONE_E_18
 } from '../util/constants'
 import { createNewToken } from '../pricing/token'
 
@@ -71,20 +75,51 @@ export function handlePoolCreated(event: PoolCreated): void {
   pool.stakingToken = stakingToken.id;
   pool.rewardToken = rewardToken.id;
 
-  // get bonus info and pool type depending
+  // get bonus info and pool type
   let rewardFactory = rewardModuleContract.factory();
   if (rewardFactory == ERC20_COMPETITIVE_REWARD_MODULE_FACTORY) {
     let competitiveContract = ERC20CompetitiveRewardModuleContract.bind(rewardModule)
     pool.timeMultMin = integerToDecimal(competitiveContract.bonusMin());
     pool.timeMultMax = integerToDecimal(competitiveContract.bonusMax());
     pool.timeMultPeriod = competitiveContract.bonusPeriod();
-    pool.poolType = 'GeyserV2'
-  } else {
+    pool.rewardModuleType = 'ERC20Competitive';
+  } else if (rewardFactory == ERC20_FRIENDLY_REWARD_MODULE_FACTORY) {
     let friendlyContract = ERC20FriendlyRewardModuleContract.bind(rewardModule);
     pool.timeMultMin = integerToDecimal(friendlyContract.vestingStart());
     pool.timeMultMax = BigDecimal.fromString('1');
     pool.timeMultPeriod = friendlyContract.vestingPeriod();
-    pool.poolType = 'Fountain'
+    pool.rewardModuleType = 'ERC20Friendly';
+  } else {
+    log.info('unknown reward module type: {}', [rewardFactory.toHexString()]);
+    return;
+  }
+
+  // staking type
+  let stakingFactory = stakingModuleContract.factory();
+  if (stakingFactory == ERC20_STAKING_MODULE_FACTORY) {
+    pool.stakingModuleType = 'ERC20';
+    pool.stakingSharesPerToken = INITIAL_SHARES_PER_TOKEN;
+  } else if (stakingFactory == ERC721_STAKING_MODULE_FACTORY) {
+    pool.stakingModuleType = 'ERC721';
+    pool.stakingSharesPerToken = ONE_E_18;
+  } else {
+    log.info('unknown staking module type: {}', [stakingFactory.toHexString()]);
+    return;
+  }
+
+  // type nickname
+  if (pool.stakingModuleType == 'ERC20') {
+    if (pool.rewardModuleType == 'ERC20Competitive') {
+      pool.poolType = 'GeyserV2';
+    } else {
+      pool.poolType = 'Fountain'
+    }
+  } else {
+    if (pool.rewardModuleType == 'ERC20Friendly') {
+      pool.poolType = 'Aquarium';
+    } else {
+      pool.poolType = 'Unknown';
+    }
   }
 
   pool.createdBlock = event.block.number;
@@ -114,7 +149,6 @@ export function handlePoolCreated(event: PoolCreated): void {
   pool.tvl = ZERO_BIG_DECIMAL;
   pool.apr = ZERO_BIG_DECIMAL;
   pool.usage = ZERO_BIG_DECIMAL;
-  pool.stakingSharesPerToken = INITIAL_SHARES_PER_TOKEN;
   pool.rewardSharesPerToken = INITIAL_SHARES_PER_TOKEN;
   pool.updated = ZERO_BIG_INT;
   pool.volume = ZERO_BIG_DECIMAL;
