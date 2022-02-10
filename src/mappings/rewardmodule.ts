@@ -52,7 +52,10 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   funding.end = end;
   funding.originalAmount = integerToDecimal(event.params.amount, rewardToken.decimals);
   funding.shares = integerToDecimal(event.params.shares, rewardToken.decimals);
-  funding.sharesPerSecond = funding.shares.div(duration.toBigDecimal());
+  funding.sharesPerSecond = ZERO_BIG_DECIMAL;
+  if (duration.gt(ZERO_BIG_INT)) {
+    funding.sharesPerSecond = funding.shares.div(duration.toBigDecimal());
+  }
   funding.cleaned = false;
   funding.save(); // save before pricing
 

@@ -29,7 +29,7 @@ export let USD_NATIVE_PAIR = '{{usd_native_address}}';
 export let USD_WETH_PAIR = '{{usd_weth_address}}';
 export let UNISWAP_FACTORY = '{{uniswap_factory}}';
 export let SUSHI_FACTORY = '{{sushi_factory}}';
-export let MIN_USD_PRICING = BigDecimal.fromString('10000.0');
+export let MIN_USD_PRICING = BigDecimal.fromString('2000.0');
 
 // contract
 export let INITIAL_SHARES_PER_TOKEN = BigDecimal.fromString('1000000');
