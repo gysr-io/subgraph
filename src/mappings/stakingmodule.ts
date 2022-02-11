@@ -234,10 +234,6 @@ export function handleClaimed(event: Claimed): void {
   let rewardToken = Token.load(pool.rewardToken)!;
   let platform = Platform.load(ZERO_ADDRESS)!;
 
-  if (pool.id == "0x4458f4ebae26760c6f90b34857efdaf80647d34b"){
-    log.info('handle claimed - a: {}, {}, {}, {}', [event.transaction.hash.toHexString(), event.params.user.toHexString(), event.params.amount.toHexString(), event.params.shares.toHexString()]);
-  }
-
   // load user
   let user = User.load(event.params.user.toHexString());
 
@@ -252,15 +248,11 @@ export function handleClaimed(event: Claimed): void {
   // note: should encapsulate this behind an interface when we have additional module types
   let poolContract = PoolContract.bind(Address.fromString(pool.id));
   if (pool.rewardModuleType == 'ERC20Competitive') {
-    if (pool.id == "0x4458f4ebae26760c6f90b34857efdaf80647d34b"){
-      log.info('handle claimed - competitive', []);
-    }
-
     // competitive
     let rewardContract = ERC20CompetitiveRewardModuleContract.bind(poolContract.rewardModule());
     let count = rewardContract.stakeCount(event.params.user).toI32();
 
-    if (count == stakes.length) {
+    if (count == stakes.length && count > 0) {
       // update timestamp for last position
       let s = rewardContract.stakes(event.params.user, BigInt.fromI32(count - 1));
       let stake = Stake.load(stakes[count - 1]);
@@ -290,31 +282,17 @@ export function handleClaimed(event: Claimed): void {
     }
 
   } else {
-    if (pool.id == "0x4458f4ebae26760c6f90b34857efdaf80647d34b"){
-      log.info('handle claimed - friendly', []);
-    }
-
     // friendly
     let rewardContract = ERC20FriendlyRewardModuleContract.bind(poolContract.rewardModule());
     let count = rewardContract.stakeCount(event.params.user).toI32();
 
-    if (pool.id == "0x4458f4ebae26760c6f90b34857efdaf80647d34b"){
-      log.info('handle claimed count: {}', [count.toString()]);
-    }
-
-    if (count == stakes.length) {
-      if (pool.id == "0x4458f4ebae26760c6f90b34857efdaf80647d34b"){
-        log.info('handle claimed - just last', []);
-      }
+    if (count == stakes.length && count > 0) {
       // get info for updated last position
       let s = rewardContract.stakes(event.params.user, BigInt.fromI32(count - 1));
       let stake = Stake.load(stakes[count - 1]);
       stake.timestamp = s.value4;
       stake.save();
     } else {
-      if (pool.id == "0x4458f4ebae26760c6f90b34857efdaf80647d34b"){
-        log.info('handle claimed - rebuilding stakes list', []);
-      }
       // rebuild stakes list
       for (let i = 0; i < stakes.length; i++) {
         store.remove('Stake', stakes[i]);
@@ -342,18 +320,10 @@ export function handleClaimed(event: Claimed): void {
   position.stakes = stakes;
   // overall shares cannot change here
 
-  if (pool.id == "0x4458f4ebae26760c6f90b34857efdaf80647d34b"){
-    log.info('handle claimed - updated position', []);
-  }
-
   // update general info
   user.operations = user.operations.plus(BigInt.fromI32(1));
   pool.operations = pool.operations.plus(BigInt.fromI32(1));
   platform.operations = platform.operations.plus(BigInt.fromI32(1));
-
-  if (pool.id == "0x4458f4ebae26760c6f90b34857efdaf80647d34b"){
-    log.info('handle claimed - updated general ops', []);
-  }
 
   // create new claim transaction
   let transaction = new Transaction(event.transaction.hash.toHexString());
@@ -364,10 +334,6 @@ export function handleClaimed(event: Claimed): void {
   transaction.amount = integerToDecimal(event.params.amount, stakingToken.decimals);
   transaction.earnings = ZERO_BIG_DECIMAL;
   transaction.gysrSpent = ZERO_BIG_DECIMAL;
-
-  if (pool.id == "0x4458f4ebae26760c6f90b34857efdaf80647d34b"){
-    log.info('handle claimed - created transaction', []);
-  }
 
   // update pricing info
   updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp);
@@ -382,10 +348,6 @@ export function handleClaimed(event: Claimed): void {
     platform._activePools = platform._activePools.concat([pool.id]);
   }
   updatePlatform(platform, event.block.timestamp, pool);
-
-  if (pool.id == "0x4458f4ebae26760c6f90b34857efdaf80647d34b"){
-    log.info('handle claimed - finished pricing', []);
-  }
 
   // store
   user.save();
