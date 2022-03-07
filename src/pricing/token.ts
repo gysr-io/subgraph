@@ -13,6 +13,7 @@ import {
 import { getBalancerLiquidityTokenPrice, isBalancerLiquidityToken } from './balancer'
 import { getUmaKpiOptionAlias, isUmaKpiOption } from './uma'
 import { isERC721Token } from './erc721'
+import { isGUniLiquidityToken, getGUniLiquidityTokenAlias, getGUniLiquidityTokenPrice } from './guni'
 
 
 // factory function to define and populate new token entity
@@ -70,6 +71,11 @@ export function createNewToken(address: Address): Token {
     token.type = 'ERC721';
     log.info('created new token: ERC721, {}, {}', [token.id, token.symbol]);
 
+  } else if (isGUniLiquidityToken(address)) {
+    token.alias = getGUniLiquidityTokenAlias(address);
+    token.type = 'GUniLiquidity';
+    log.info('created new token: ERC721, {}, {}', [token.id, token.symbol]);
+
   } else {
     token.type = 'Standard';
     log.info('created new token: standard, {}, {}', [token.id, token.symbol]);
@@ -93,6 +99,8 @@ export function getPrice(token: Token): BigDecimal {
     return getUniswapLiquidityTokenPrice(Address.fromString(token.id.toString()));
   } else if (token.type == 'BalancerLiquidity') {
     return getBalancerLiquidityTokenPrice(Address.fromString(token.id.toString()));
+  } else if (token.type == 'GUniLiquidity') {
+    return getGUniLiquidityTokenPrice(Address.fromString(token.id.toString()));
   }
 
   return ZERO_BIG_DECIMAL;
