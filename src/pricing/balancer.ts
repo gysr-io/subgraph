@@ -20,7 +20,7 @@ export function isBalancerLiquidityToken(address: Address): boolean {
   return true;
 }
 
-export function getBalancerLiquidityTokenPrice(address: Address): BigDecimal {
+export function getBalancerLiquidityTokenPrice(address: Address, block: BigInt): BigDecimal {
   // get contracts
   let pool = BalancerWeightedPool.bind(address);
   let vaultId = pool.getVault();
@@ -59,7 +59,7 @@ export function getBalancerLiquidityTokenPrice(address: Address): BigDecimal {
   } else {
     // try to price against a token on uniswap
     for (let i = 0; i < tokenAddresses.length; i++) {
-      let tokenPrice = getTokenPrice(tokenAddresses[i]);
+      let tokenPrice = getTokenPrice(tokenAddresses[i], block);
       if (tokenPrice == ZERO_BIG_DECIMAL) {
         continue;
       }

@@ -1,5 +1,5 @@
 specVersion: 0.0.2
-description: GYSR is a generalized, configurable, and 100% decentralized platform for yield farming
+description: GYSR is an open platform for on-chain incentives
 repository: https://github.com/gysr-io/gysr-subgraph
 schema:
   file: ./schema.graphql
@@ -30,6 +30,10 @@ dataSources:
           file: ./abis/thirdparty/uniswap/Factory.json
         - name: UniswapPair
           file: ./abis/thirdparty/uniswap/Pair.json
+        - name: UniswapFactoryV3
+          file: ./abis/thirdparty/uniswap/FactoryV3.json
+        - name: UniswapPoolV3
+          file: ./abis/thirdparty/uniswap/PoolV3.json
         - name: BalancerVault
           file: ./abis/thirdparty/balancer/Vault.json
         - name: BalancerWeightedPool
@@ -79,6 +83,10 @@ dataSources:
           file: ./abis/thirdparty/uniswap/Factory.json
         - name: UniswapPair
           file: ./abis/thirdparty/uniswap/Pair.json
+        - name: UniswapFactoryV3
+          file: ./abis/thirdparty/uniswap/FactoryV3.json
+        - name: UniswapPoolV3
+          file: ./abis/thirdparty/uniswap/PoolV3.json
         - name: BalancerVault
           file: ./abis/thirdparty/balancer/Vault.json
         - name: BalancerWeightedPool
@@ -145,6 +153,10 @@ templates:
           file: ./abis/thirdparty/uniswap/Factory.json
         - name: UniswapPair
           file: ./abis/thirdparty/uniswap/Pair.json
+        - name: UniswapFactoryV3
+          file: ./abis/thirdparty/uniswap/FactoryV3.json
+        - name: UniswapPoolV3
+          file: ./abis/thirdparty/uniswap/PoolV3.json
         - name: BalancerVault
           file: ./abis/thirdparty/balancer/Vault.json
         - name: BalancerWeightedPool
@@ -199,6 +211,10 @@ templates:
           file: ./abis/thirdparty/uniswap/Factory.json
         - name: UniswapPair
           file: ./abis/thirdparty/uniswap/Pair.json
+        - name: UniswapFactoryV3
+          file: ./abis/thirdparty/uniswap/FactoryV3.json
+        - name: UniswapPoolV3
+          file: ./abis/thirdparty/uniswap/PoolV3.json
         - name: BalancerVault
           file: ./abis/thirdparty/balancer/Vault.json
         - name: BalancerWeightedPool
@@ -243,6 +259,10 @@ templates:
           file: ./abis/thirdparty/uniswap/Factory.json
         - name: UniswapPair
           file: ./abis/thirdparty/uniswap/Pair.json
+        - name: UniswapFactoryV3
+          file: ./abis/thirdparty/uniswap/FactoryV3.json
+        - name: UniswapPoolV3
+          file: ./abis/thirdparty/uniswap/PoolV3.json
         - name: BalancerVault
           file: ./abis/thirdparty/balancer/Vault.json
         - name: BalancerWeightedPool
@@ -297,6 +317,10 @@ templates:
           file: ./abis/thirdparty/uniswap/Factory.json
         - name: UniswapPair
           file: ./abis/thirdparty/uniswap/Pair.json
+        - name: UniswapFactoryV3
+          file: ./abis/thirdparty/uniswap/FactoryV3.json
+        - name: UniswapPoolV3
+          file: ./abis/thirdparty/uniswap/PoolV3.json
         - name: BalancerVault
           file: ./abis/thirdparty/balancer/Vault.json
         - name: BalancerWeightedPool

@@ -1,12 +1,13 @@
 // pricing for uniswap traded tokens and uniswap LP tokens
 
-import { Address, BigInt, BigDecimal, log } from '@graphprotocol/graph-ts'
+import { Address, BigInt, BigDecimal, log, ethereum, dataSource } from '@graphprotocol/graph-ts'
 import { UniswapFactory } from '../../generated/templates/GeyserV1/UniswapFactory'
 import { UniswapPair } from '../../generated/templates/GeyserV1/UniswapPair'
+import { UniswapFactoryV3 } from '../../generated/templates/GeyserV1/UniswapFactoryV3'
+import { UniswapPoolV3 } from '../../generated/templates/GeyserV1/UniswapPoolV3'
 import { ERC20 } from '../../generated/templates/GeyserV1/ERC20'
 import { integerToDecimal } from '../util/common'
 import {
-  ZERO_BIG_INT,
   ZERO_BIG_DECIMAL,
   WRAPPED_NATIVE_ADDRESS,
   WETH_ADDRESS,
@@ -15,6 +16,8 @@ import {
   STABLECOINS,
   UNISWAP_FACTORY,
   SUSHI_FACTORY,
+  UNISWAP_FACTORY_V3,
+  UNISWAP_FACTORY_V3_START_BLOCK,
   ZERO_ADDRESS,
   MIN_USD_PRICING,
   STABLECOIN_DECIMALS
@@ -68,7 +71,7 @@ export function getEthPrice(): BigDecimal {
 }
 
 
-export function getTokenPrice(address: Address): BigDecimal {
+export function getTokenPrice(address: Address, block: BigInt): BigDecimal {
   // early exit for stables
   if (STABLECOINS.includes(address.toHexString())) {
     return BigDecimal.fromString('1.0');
@@ -138,11 +141,49 @@ export function getTokenPrice(address: Address): BigDecimal {
     }
   }
 
+  // try uniswap v3 pricing
+  if (block < UNISWAP_FACTORY_V3_START_BLOCK) {
+    return ZERO_BIG_DECIMAL;
+  }
+  let factory = UniswapFactoryV3.bind(Address.fromString(UNISWAP_FACTORY_V3));
+  let fees: number[] = [3000, 10000, 500];
+
+  // try each stable and fee tier
+  for (let i = 0; i < stables.length; i++) {
+    for (let j = 0; j < fees.length; j++) {
+      let poolAddress = factory.getPool(address, Address.fromString(stables[i]), fees[j] as i32);
+
+      if (poolAddress == zero) {
+        continue;
+      }
+
+      let pool = UniswapPoolV3.bind(poolAddress);
+      let slot0 = pool.slot0();
+      let sqrtPriceX96 = slot0.value0;
+      let price = (sqrtPriceX96.times(sqrtPriceX96).toBigDecimal()).div(
+        BigInt.fromI32(2).pow(96 * 2).toBigDecimal() // effective bit shift >> (96*2)
+      );
+
+      let stable = BigDecimal.fromString('1.0');
+      if (i == 0) {
+        stable = getNativePrice();
+      } else if (j == 4) {
+        stable = getEthPrice();
+      }
+
+      if (pool.token1() == address) {
+        price = BigDecimal.fromString('1.0').div(price);
+      }
+
+      return price.times(stable);
+    }
+  }
+
   return ZERO_BIG_DECIMAL;
 }
 
 
-export function getUniswapLiquidityTokenPrice(address: Address): BigDecimal {
+export function getUniswapLiquidityTokenPrice(address: Address, block: BigInt): BigDecimal {
   let pair = UniswapPair.bind(address);
 
   let totalSupply = integerToDecimal(pair.totalSupply());
@@ -154,7 +195,7 @@ export function getUniswapLiquidityTokenPrice(address: Address): BigDecimal {
 
   // try to price with token 0
   let token0 = ERC20.bind(pair.token0());
-  let price0 = getTokenPrice(token0._address);
+  let price0 = getTokenPrice(token0._address, block);
 
   if (price0.gt(ZERO_BIG_DECIMAL)) {
     let amount0 = integerToDecimal(reserves.value0, BigInt.fromI32(token0.decimals()));
@@ -165,7 +206,7 @@ export function getUniswapLiquidityTokenPrice(address: Address): BigDecimal {
 
   // try to price with token 1
   let token1 = ERC20.bind(pair.token1());
-  let price1 = getTokenPrice(token1._address);
+  let price1 = getTokenPrice(token1._address, block);
 
   if (price1.gt(ZERO_BIG_DECIMAL)) {
     let amount1 = integerToDecimal(reserves.value1, BigInt.fromI32(token1.decimals()));

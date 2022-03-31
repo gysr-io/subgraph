@@ -62,19 +62,19 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   pool.fundings = pool.fundings.concat([funding.id])
 
   // update pricing info
-  stakingToken.price = getPrice(stakingToken!);
+  stakingToken.price = getPrice(stakingToken!, event.block.number);
   stakingToken.updated = event.block.timestamp;
-  rewardToken.price = getPrice(rewardToken!);
+  rewardToken.price = getPrice(rewardToken!, event.block.number);
   rewardToken.updated = event.block.timestamp;
 
   // update pool pricing
-  updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp);
+  updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp, event.block.number);
 
   // update platform
   if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
     platform._activePools = platform._activePools.concat([pool.id]);
   }
-  updatePlatform(platform, event.block.timestamp, pool);
+  updatePlatform(platform, event.block.timestamp, event.block.number, pool);
 
   // store
   pool.save();
@@ -105,7 +105,7 @@ export function handleGysrSpent(event: GysrSpent): void {
   if (gysr === null) {
     gysr = createNewToken(Address.fromString(GYSR_TOKEN));
   }
-  gysr.price = getPrice(gysr!);
+  gysr.price = getPrice(gysr!, event.block.number);
   gysr.updated = event.block.timestamp;
 
   let dollarAmount = amount.times(gysr.price);
@@ -132,7 +132,7 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
   pool.distributed = pool.distributed.plus(amount);
 
   // pricing for volume
-  let dollarAmount = amount.times(getPrice(token));
+  let dollarAmount = amount.times(getPrice(token, event.block.number)); //  TODO - can we just use the stored price?
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
   platform.volume = platform.volume.plus(dollarAmount);
   pool.volume = pool.volume.plus(dollarAmount);

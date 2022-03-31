@@ -84,7 +84,7 @@ export function createNewToken(address: Address): Token {
   return token;
 }
 
-export function getPrice(token: Token): BigDecimal {
+export function getPrice(token: Token, block: BigInt): BigDecimal {
   // only price tokens on mainnet
   if (dataSource.network() != 'mainnet' && dataSource.network() != 'matic') {
     return BigDecimal.fromString('1.0');
@@ -94,13 +94,13 @@ export function getPrice(token: Token): BigDecimal {
   if (token.type == 'Stable') {
     return BigDecimal.fromString('1.0');
   } else if (token.type == 'Standard') {
-    return getTokenPrice(Address.fromString(token.id.toString()));
+    return getTokenPrice(Address.fromString(token.id.toString()), block);
   } else if (token.type == 'UniswapLiquidity') {
-    return getUniswapLiquidityTokenPrice(Address.fromString(token.id.toString()));
+    return getUniswapLiquidityTokenPrice(Address.fromString(token.id.toString()), block);
   } else if (token.type == 'BalancerLiquidity') {
-    return getBalancerLiquidityTokenPrice(Address.fromString(token.id.toString()));
+    return getBalancerLiquidityTokenPrice(Address.fromString(token.id.toString()), block);
   } else if (token.type == 'GUniLiquidity') {
-    return getGUniLiquidityTokenPrice(Address.fromString(token.id.toString()));
+    return getGUniLiquidityTokenPrice(Address.fromString(token.id.toString()), block);
   }
 
   return ZERO_BIG_DECIMAL;

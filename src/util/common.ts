@@ -58,7 +58,7 @@ export function updatePoolDayData(pool: Pool, timestamp: number): PoolDayData {
 }
 
 
-export function updatePlatform(platform: Platform, timestamp: BigInt, skip: Pool): boolean {
+export function updatePlatform(platform: Platform, timestamp: BigInt, block: BigInt, skip: Pool): boolean {
   // skip if pricing period has not elapsed
   if (timestamp.minus(platform._updated).lt(PRICING_PERIOD)) {
     return false;
@@ -86,9 +86,9 @@ export function updatePlatform(platform: Platform, timestamp: BigInt, skip: Pool
     // update pool
     if (pool.stakingModuleType == 'V1') {
       let contract = GeyserContractV1.bind(Address.fromString(pool.id));
-      updateGeyserV1(pool, platform!, contract, stakingToken, rewardToken, timestamp);
+      updateGeyserV1(pool, platform!, contract, stakingToken, rewardToken, timestamp, block);
     } else {
-      updatePool(pool, platform!, stakingToken, rewardToken, timestamp);
+      updatePool(pool, platform!, stakingToken, rewardToken, timestamp, block);
     }
 
     // update pool day snapshot
