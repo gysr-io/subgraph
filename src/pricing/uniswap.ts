@@ -126,18 +126,21 @@ export function getTokenPrice(address: Address, block: BigInt): BigDecimal {
       if (j == 0) {
         let native = getNativePrice();
         stable = stable.times(native);
-      } else if (j == 4) {
+      } else if (j == 5) {
         let eth = getEthPrice();
         stable = stable.times(eth);
       }
 
-      // compute price
-      if (stable.gt(MIN_USD_PRICING)) {
-        let token = ERC20.bind(address);
-        let amount = integerToDecimal(tokenReserve, BigInt.fromI32(token.decimals()));
-
-        return stable.div(amount);
+      if (stable.lt(MIN_USD_PRICING)) {
+        continue;
       }
+
+      // compute price
+      let token = ERC20.bind(address);
+      let amount = integerToDecimal(tokenReserve, BigInt.fromI32(token.decimals()));
+
+      return stable.div(amount);
+
     }
   }
 
@@ -146,7 +149,7 @@ export function getTokenPrice(address: Address, block: BigInt): BigDecimal {
     return ZERO_BIG_DECIMAL;
   }
   let factory = UniswapFactoryV3.bind(Address.fromString(UNISWAP_FACTORY_V3));
-  let fees: number[] = [3000, 10000, 500];
+  let fees: number[] = [3000, 10000]; // 500];
 
   // try each stable and fee tier
   for (let i = 0; i < stables.length; i++) {
@@ -157,6 +160,20 @@ export function getTokenPrice(address: Address, block: BigInt): BigDecimal {
         continue;
       }
 
+      let stablePrice = BigDecimal.fromString('1.0');
+      if (i == 0) {
+        stablePrice = getNativePrice();
+      } else if (j == 5) {
+        stablePrice = getEthPrice();
+      }
+
+      let stableERC20 = ERC20.bind(Address.fromString(stables[i]));
+      let stableAmount = integerToDecimal(stableERC20.balanceOf(poolAddress), BigInt.fromI32(decimals[j] as i32));
+      if ((stableAmount.times(stablePrice)).lt(MIN_USD_PRICING)) {
+        continue;
+      }
+
+      // compute price
       let pool = UniswapPoolV3.bind(poolAddress);
       let slot0 = pool.slot0();
       let sqrtPriceX96 = slot0.value0;
@@ -164,18 +181,11 @@ export function getTokenPrice(address: Address, block: BigInt): BigDecimal {
         BigInt.fromI32(2).pow(96 * 2).toBigDecimal() // effective bit shift >> (96*2)
       );
 
-      let stable = BigDecimal.fromString('1.0');
-      if (i == 0) {
-        stable = getNativePrice();
-      } else if (j == 4) {
-        stable = getEthPrice();
-      }
-
       if (pool.token1() == address) {
         price = BigDecimal.fromString('1.0').div(price);
       }
 
-      return price.times(stable);
+      return price.times(stablePrice);
     }
   }
 
