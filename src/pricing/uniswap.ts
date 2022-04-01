@@ -1,6 +1,6 @@
 // pricing for uniswap traded tokens and uniswap LP tokens
 
-import { Address, BigInt, BigDecimal, log, ethereum, dataSource } from '@graphprotocol/graph-ts'
+import { Address, BigInt, BigDecimal, log } from '@graphprotocol/graph-ts'
 import { UniswapFactory } from '../../generated/templates/GeyserV1/UniswapFactory'
 import { UniswapPair } from '../../generated/templates/GeyserV1/UniswapPair'
 import { UniswapFactoryV3 } from '../../generated/templates/GeyserV1/UniswapFactoryV3'
