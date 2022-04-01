@@ -252,7 +252,7 @@ export function handleClaimed(event: Claimed): void {
     let rewardContract = ERC20CompetitiveRewardModuleContract.bind(poolContract.rewardModule());
     let count = rewardContract.stakeCount(event.params.user).toI32();
 
-    if (count == stakes.length) {
+    if (count == stakes.length && count > 0) {
       // update timestamp for last position
       let s = rewardContract.stakes(event.params.user, BigInt.fromI32(count - 1));
       let stake = Stake.load(stakes[count - 1]);
@@ -286,7 +286,7 @@ export function handleClaimed(event: Claimed): void {
     let rewardContract = ERC20FriendlyRewardModuleContract.bind(poolContract.rewardModule());
     let count = rewardContract.stakeCount(event.params.user).toI32();
 
-    if (count == stakes.length) {
+    if (count == stakes.length && count > 0) {
       // get info for updated last position
       let s = rewardContract.stakes(event.params.user, BigInt.fromI32(count - 1));
       let stake = Stake.load(stakes[count - 1]);
@@ -300,7 +300,7 @@ export function handleClaimed(event: Claimed): void {
       stakes = [];
       for (let i = 0; i < count; i++) {
         let s = rewardContract.stakes(event.params.user, BigInt.fromI32(i));
-        let stakeId = positionId + '_' + s.value4.toString();
+        let stakeId = positionId + '_' + i.toString();
 
         let stake = new Stake(stakeId);
         stake.position = position.id;
