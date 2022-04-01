@@ -7,6 +7,7 @@ enum TokenType {
   BalancerLiquidity
   UmaKpiOption
   ERC721
+  GUniLiquidity
 }
 
 type Token @entity {

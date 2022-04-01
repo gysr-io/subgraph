@@ -16,15 +16,16 @@ export function updatePool(
   platform: Platform,
   stakingToken: Token,
   rewardToken: Token,
-  timestamp: BigInt
+  timestamp: BigInt,
+  block: BigInt
 ): void {
   let contract = PoolContract.bind(Address.fromString(pool.id));
   let rewardContract = ERC20BaseRewardModuleContract.bind(contract.rewardModule());
 
   // tokens
-  stakingToken.price = getPrice(stakingToken!);
+  stakingToken.price = getPrice(stakingToken!, block);
   stakingToken.updated = timestamp;
-  rewardToken.price = getPrice(rewardToken!);
+  rewardToken.price = getPrice(rewardToken!, block);
   rewardToken.updated = timestamp;
 
   // token amounts

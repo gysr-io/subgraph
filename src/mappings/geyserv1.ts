@@ -58,7 +58,7 @@ export function handleStaked(event: Staked): void {
 
   // update pool data
   let contract = GeyserContractV1.bind(event.address);
-  updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp);
+  updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp, event.block.number);
 
   // amount and shares
   let amount = integerToDecimal(event.params.amount, stakingToken.decimals);
@@ -98,7 +98,7 @@ export function handleStaked(event: Staked): void {
   if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
     platform._activePools = platform._activePools.concat([pool.id]);
   }
-  updatePlatform(platform, event.block.timestamp, pool);
+  updatePlatform(platform, event.block.timestamp, event.block.number, pool);
 
   // store
   stake.save();
@@ -178,7 +178,7 @@ export function handleUnstaked(event: Unstaked): void {
   transaction.gysrSpent = ZERO_BIG_DECIMAL;
 
   // update pool data
-  updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp);
+  updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp, event.block.number);
 
   // update position info
   let shares = amount.times(pool.stakingSharesPerToken);
@@ -198,7 +198,7 @@ export function handleUnstaked(event: Unstaked): void {
   if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
     platform._activePools = platform._activePools.concat([pool.id]);
   }
-  updatePlatform(platform, event.block.timestamp, pool);
+  updatePlatform(platform, event.block.timestamp, event.block.number, pool);
 
   // store
   user.save();
@@ -250,13 +250,13 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   pool.fundings = pool.fundings.concat([funding.id])
 
   // update pricing info
-  updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp);
+  updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp, event.block.number);
 
   // update platform
   if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
     platform._activePools = platform._activePools.concat([pool.id]);
   }
-  updatePlatform(platform, event.block.timestamp, pool);
+  updatePlatform(platform, event.block.timestamp, event.block.number, pool);
 
   // store
   pool.save();
@@ -274,7 +274,7 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
   let amount = integerToDecimal(event.params.amount, token.decimals);
   pool.distributed = pool.distributed.plus(amount);
 
-  let dollarAmount = amount.times(getPrice(token));
+  let dollarAmount = amount.times(getPrice(token, event.block.number)); //  TODO - can we just use the stored price?
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
   platform.volume = platform.volume.plus(dollarAmount);
   pool.volume = pool.volume.plus(dollarAmount);
@@ -350,7 +350,7 @@ export function handleGysrSpent(event: GysrSpent): void {
   if (gysr === null) {
     gysr = createNewToken(Address.fromString(GYSR_TOKEN));
   }
-  gysr.price = getPrice(gysr!);
+  gysr.price = getPrice(gysr!, event.block.number);
   gysr.updated = event.block.timestamp;
 
   let dollarAmount = amount.times(gysr.price);
