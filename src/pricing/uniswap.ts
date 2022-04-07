@@ -9,6 +9,7 @@ import { ERC20 } from '../../generated/templates/GeyserV1/ERC20'
 import { integerToDecimal } from '../util/common'
 import {
   ZERO_BIG_DECIMAL,
+  ZERO_BIG_INT,
   WRAPPED_NATIVE_ADDRESS,
   WETH_ADDRESS,
   USD_NATIVE_PAIR,
@@ -163,18 +164,23 @@ export function getTokenPrice(address: Address, block: BigInt): BigDecimal {
       let stablePrice = BigDecimal.fromString('1.0');
       if (i == 0) {
         stablePrice = getNativePrice();
-      } else if (j == 5) {
+      } else if (i == 5) {
         stablePrice = getEthPrice();
       }
 
       let stableERC20 = ERC20.bind(Address.fromString(stables[i]));
-      let stableAmount = integerToDecimal(stableERC20.balanceOf(poolAddress), BigInt.fromI32(decimals[j] as i32));
+      let stableAmount = integerToDecimal(stableERC20.balanceOf(poolAddress), BigInt.fromI32(decimals[i] as i32));
       if ((stableAmount.times(stablePrice)).lt(MIN_USD_PRICING)) {
         continue;
       }
 
-      // compute price
       let pool = UniswapPoolV3.bind(poolAddress);
+
+      if (pool.liquidity() == ZERO_BIG_INT) {
+        continue;
+      }
+
+      // compute price
       let slot0 = pool.slot0();
       let sqrtPriceX96 = slot0.value0;
       let price = (sqrtPriceX96.times(sqrtPriceX96).toBigDecimal()).div(
@@ -184,6 +190,15 @@ export function getTokenPrice(address: Address, block: BigInt): BigDecimal {
       if (pool.token1() == address) {
         price = BigDecimal.fromString('1.0').div(price);
       }
+
+      let token = ERC20.bind(address);
+      price = price
+        .times(BigInt.fromI32(10).pow(token.decimals() as u8).toBigDecimal())
+        .div(BigInt.fromI32(10).pow(decimals[i] as u8).toBigDecimal());
+
+      //log.info("pricing debug {} @ {} with v3 {} {} {}",
+      //  [address.toHexString(), (price.times(stablePrice)).toString(), i.toString(), j.toString(), (stableAmount.times(stablePrice)).toString()]
+      //);
 
       return price.times(stablePrice);
     }
