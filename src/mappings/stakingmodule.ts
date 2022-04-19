@@ -74,7 +74,7 @@ export function handleStaked(event: Staked): void {
   transaction.gysrSpent = ZERO_BIG_DECIMAL;
 
   // update pool data
-  updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp, event.block.number);
+  updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp);
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
 
   // update volume
@@ -85,9 +85,10 @@ export function handleStaked(event: Staked): void {
 
   // update platform pricing
   if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
+    log.info('Adding pool to active pricing {}', [pool.id.toString()]);
     platform._activePools = platform._activePools.concat([pool.id]);
   }
-  updatePlatform(platform, event.block.timestamp, event.block.number, pool);
+  updatePlatform(platform, event.block.timestamp, pool);
 
   // store
   stake.save();
@@ -206,14 +207,15 @@ export function handleUnstaked(event: Unstaked): void {
   transaction.gysrSpent = ZERO_BIG_DECIMAL;
 
   // update pool data
-  updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp, event.block.number);
+  updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp);
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
 
   // update platform pricing
   if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
+    log.info('Adding pool to active pricing {}', [pool.id.toString()]);
     platform._activePools = platform._activePools.concat([pool.id]);
   }
-  updatePlatform(platform, event.block.timestamp, event.block.number, pool);
+  updatePlatform(platform, event.block.timestamp, pool);
 
   // store
   user.save();
@@ -336,7 +338,7 @@ export function handleClaimed(event: Claimed): void {
   transaction.gysrSpent = ZERO_BIG_DECIMAL;
 
   // update pricing info
-  updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp, event.block.number);
+  updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp);
 
   // not considering claim amount in volume
 
@@ -347,7 +349,7 @@ export function handleClaimed(event: Claimed): void {
   if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
     platform._activePools = platform._activePools.concat([pool.id]);
   }
-  updatePlatform(platform, event.block.timestamp, event.block.number, pool);
+  updatePlatform(platform, event.block.timestamp, pool);
 
   // store
   user.save();

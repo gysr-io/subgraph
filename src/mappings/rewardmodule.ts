@@ -68,13 +68,14 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   rewardToken.updated = event.block.timestamp;
 
   // update pool pricing
-  updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp, event.block.number);
+  updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp);
 
   // update platform
   if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
+    log.info('Adding pool to active pricing {}', [pool.id.toString()]);
     platform._activePools = platform._activePools.concat([pool.id]);
   }
-  updatePlatform(platform, event.block.timestamp, event.block.number, pool);
+  updatePlatform(platform, event.block.timestamp, pool);
 
   // store
   pool.save();

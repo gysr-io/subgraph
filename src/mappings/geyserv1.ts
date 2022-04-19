@@ -58,7 +58,7 @@ export function handleStaked(event: Staked): void {
 
   // update pool data
   let contract = GeyserContractV1.bind(event.address);
-  updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp, event.block.number);
+  updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp);
 
   // amount and shares
   let amount = integerToDecimal(event.params.amount, stakingToken.decimals);
@@ -98,7 +98,7 @@ export function handleStaked(event: Staked): void {
   if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
     platform._activePools = platform._activePools.concat([pool.id]);
   }
-  updatePlatform(platform, event.block.timestamp, event.block.number, pool);
+  updatePlatform(platform, event.block.timestamp, pool);
 
   // store
   stake.save();
@@ -178,7 +178,7 @@ export function handleUnstaked(event: Unstaked): void {
   transaction.gysrSpent = ZERO_BIG_DECIMAL;
 
   // update pool data
-  updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp, event.block.number);
+  updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp);
 
   // update position info
   let shares = amount.times(pool.stakingSharesPerToken);
@@ -198,7 +198,7 @@ export function handleUnstaked(event: Unstaked): void {
   if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
     platform._activePools = platform._activePools.concat([pool.id]);
   }
-  updatePlatform(platform, event.block.timestamp, event.block.number, pool);
+  updatePlatform(platform, event.block.timestamp, pool);
 
   // store
   user.save();
@@ -250,13 +250,14 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   pool.fundings = pool.fundings.concat([funding.id])
 
   // update pricing info
-  updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp, event.block.number);
+  updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, event.block.timestamp);
 
   // update platform
   if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
+    log.info('Adding pool to active pricing {}', [pool.id.toString()]);
     platform._activePools = platform._activePools.concat([pool.id]);
   }
-  updatePlatform(platform, event.block.timestamp, event.block.number, pool);
+  updatePlatform(platform, event.block.timestamp, pool);
 
   // store
   pool.save();

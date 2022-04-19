@@ -35,7 +35,7 @@ export function getGUniLiquidityTokenAlias(address: Address): string {
 }
 
 
-export function getGUniLiquidityTokenPrice(address: Address, block: BigInt): BigDecimal {
+export function getGUniLiquidityTokenPrice(address: Address, timestamp: BigInt): BigDecimal {
   let pool = GUniPool.bind(address);
 
   let reserves = pool.getUnderlyingBalances();
@@ -43,8 +43,8 @@ export function getGUniLiquidityTokenPrice(address: Address, block: BigInt): Big
   let token0 = ERC20.bind(pool.token0());
   let token1 = ERC20.bind(pool.token1());
 
-  let price0 = getTokenPrice(token0._address, block);
-  let price1 = getTokenPrice(token1._address, block);
+  let price0 = getTokenPrice(token0._address, timestamp);
+  let price1 = getTokenPrice(token1._address, timestamp);
 
   if (price0 == ZERO_BIG_DECIMAL || price1 == ZERO_BIG_DECIMAL) {
     return ZERO_BIG_DECIMAL;

@@ -23,8 +23,9 @@ type Token @entity {
   alias: String!
   type: TokenType!
 
-  # stats
+  # pricing
   price: BigDecimal!
+  path: String!
   updated: BigInt!
 }
 

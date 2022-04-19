@@ -31,7 +31,7 @@ export let USD_WETH_PAIR = '{{usd_weth_address}}';
 export let UNISWAP_FACTORY = '{{uniswap_factory}}';
 export let SUSHI_FACTORY = '{{sushi_factory}}';
 export let UNISWAP_FACTORY_V3 = '{{uniswap_factory_v3}}';
-export let UNISWAP_FACTORY_V3_START_BLOCK = BigInt.fromI32(parseInt('{{uniswap_factory_v3_start_block}}') as i32);
+export let UNISWAP_FACTORY_V3_START_TIME = BigInt.fromI32(parseInt('{{uniswap_factory_v3_start_time}}') as i32);
 export let MIN_USD_PRICING = BigDecimal.fromString('10000.0');
 
 // contract

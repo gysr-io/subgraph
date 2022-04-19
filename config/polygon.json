@@ -16,7 +16,7 @@
   "uniswap_factory": "0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32",
   "sushi_factory": "0xc35dadb65012ec5796536bd9864ed8773abc74c4",
   "uniswap_factory_v3": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
-  "uniswap_factory_v3_start_block": 22757547,
+  "uniswap_factory_v3_start_time": 1640021988,
   "erc20_competitive_reward_module_factory_address": "0x225fbc87C44324aFe99710A0503eF395c81CEB9a",
   "erc20_friendly_reward_module_factory_address": "0xb2e49ED1e552f087695E18F1fabca052694A8042",
   "erc20_staking_module_factory_address": "0xB425aB121d357473259eAe4EFC038e4B113DB12E",

@@ -15,13 +15,12 @@ export function updateGeyserV1(
   contract: GeyserContractV1,
   stakingToken: Token,
   rewardToken: Token,
-  timestamp: BigInt,
-  block: BigInt
+  timestamp: BigInt
 ): void {
   // tokens
-  stakingToken.price = getPrice(stakingToken!, block);
+  stakingToken.price = getPrice(stakingToken!, timestamp);
   stakingToken.updated = timestamp;
-  rewardToken.price = getPrice(rewardToken!, block);
+  rewardToken.price = getPrice(rewardToken!, timestamp);
   rewardToken.updated = timestamp;
 
   // token amounts
