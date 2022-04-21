@@ -275,7 +275,7 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
   let amount = integerToDecimal(event.params.amount, token.decimals);
   pool.distributed = pool.distributed.plus(amount);
 
-  let dollarAmount = amount.times(getPrice(token, event.block.number)); //  TODO - can we just use the stored price?
+  let dollarAmount = amount.times(getPrice(token, event.block.timestamp));
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
   platform.volume = platform.volume.plus(dollarAmount);
   pool.volume = pool.volume.plus(dollarAmount);
@@ -351,7 +351,7 @@ export function handleGysrSpent(event: GysrSpent): void {
   if (gysr === null) {
     gysr = createNewToken(Address.fromString(GYSR_TOKEN));
   }
-  gysr.price = getPrice(gysr!, event.block.number);
+  gysr.price = getPrice(gysr!, event.block.timestamp);
   gysr.updated = event.block.timestamp;
 
   let dollarAmount = amount.times(gysr.price);

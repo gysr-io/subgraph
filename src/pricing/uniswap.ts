@@ -73,28 +73,49 @@ export function getEthPrice(): BigDecimal {
 }
 
 
-export function getTokenPrice(address: Address, timestamp: BigInt): BigDecimal {
+var cache = new Map<Address, BigDecimal>()
+
+
+export function getTokenPrice(address: Address, decimals: BigInt, hint: String, timestamp: BigInt): BigDecimal {
+
+  // if (cache.size > 0) {
+  //   log.info("cache size: {}", [BigInt.fromI32(cache.size).toString()]);
+  // }
+
+  if (cache.has(address)) {
+    // log.info("pricing debug value cached... addr: {} price: {}, ts: {}",
+    //   [address.toHexString(), cache.get(address).toString(), timestamp.toString()]
+    // );
+    return cache.get(address);
+  }
+
   // early exit for stables
   if (STABLECOINS.includes(address.toHexString())) {
     return BigDecimal.fromString('1.0');
   }
   if (address.toHexString() == WRAPPED_NATIVE_ADDRESS) {
-    return getNativePrice();
+    let price = getNativePrice();
+    cache.set(address, price);
+    return price;
   }
   if (address.toHexString() == WETH_ADDRESS) {
-    return getEthPrice();
+    let price = getEthPrice();
+    cache.set(address, price);
+    return price;
   }
+
+  // TODO try previous pricing hint first
 
   // setup
   let zero = Address.fromString(ZERO_ADDRESS);
 
   let stables: string[] = [WRAPPED_NATIVE_ADDRESS];
-  let decimals: number[] = [18];
+  let stableDecimals: number[] = [18];
   stables = stables.concat(STABLECOINS);
-  decimals = decimals.concat(STABLECOIN_DECIMALS);
+  stableDecimals = stableDecimals.concat(STABLECOIN_DECIMALS);
   if (WETH_ADDRESS != ZERO_ADDRESS) {
     stables = stables.concat([WETH_ADDRESS]);
-    decimals = decimals.concat([18]);
+    stableDecimals = stableDecimals.concat([18]);
   }
 
   let factories: string[] = [UNISWAP_FACTORY, SUSHI_FACTORY];
@@ -115,12 +136,11 @@ export function getTokenPrice(address: Address, timestamp: BigInt): BigDecimal {
       let reserves = pair.getReserves();
 
       let stable: BigDecimal, tokenReserve: BigInt
-      let stableDecimals = BigInt.fromI32(decimals[j] as i32);
       if (pair.token0() == address) {
-        stable = integerToDecimal(reserves.value1, stableDecimals);
+        stable = integerToDecimal(reserves.value1, BigInt.fromI32(stableDecimals[j] as i32));
         tokenReserve = reserves.value0;
       } else {
-        stable = integerToDecimal(reserves.value0, stableDecimals);
+        stable = integerToDecimal(reserves.value0, BigInt.fromI32(stableDecimals[j] as i32));
         tokenReserve = reserves.value1;
       }
 
@@ -138,12 +158,13 @@ export function getTokenPrice(address: Address, timestamp: BigInt): BigDecimal {
       }
 
       // compute price
-      let token = ERC20.bind(address);
-      let amount = integerToDecimal(tokenReserve, BigInt.fromI32(token.decimals()));
+      let amount = integerToDecimal(tokenReserve, decimals);
       let price = stable.div(amount);
 
-      return price;
+      // cache price
+      cache.set(address, price);
 
+      return price; // hint = 'univ2:' + factories[i] + ':' + stables[j];
     }
   }
 
@@ -171,7 +192,7 @@ export function getTokenPrice(address: Address, timestamp: BigInt): BigDecimal {
       }
 
       let stableERC20 = ERC20.bind(Address.fromString(stables[i]));
-      let stableAmount = integerToDecimal(stableERC20.balanceOf(poolAddress), BigInt.fromI32(decimals[i] as i32));
+      let stableAmount = integerToDecimal(stableERC20.balanceOf(poolAddress), BigInt.fromI32(stableDecimals[i] as i32));
       if ((stableAmount.times(stablePrice)).lt(MIN_USD_PRICING)) {
         continue;
       }
@@ -193,10 +214,9 @@ export function getTokenPrice(address: Address, timestamp: BigInt): BigDecimal {
         price = BigDecimal.fromString('1.0').div(price);
       }
 
-      let token = ERC20.bind(address);
       price = price
-        .times(BigInt.fromI32(10).pow(token.decimals() as u8).toBigDecimal())
-        .div(BigInt.fromI32(10).pow(decimals[i] as u8).toBigDecimal());
+        .times(BigInt.fromI32(10).pow(decimals.toI32() as u8).toBigDecimal())
+        .div(BigInt.fromI32(10).pow(stableDecimals[i] as u8).toBigDecimal());
 
       price = price.times(stablePrice);
 
@@ -204,7 +224,10 @@ export function getTokenPrice(address: Address, timestamp: BigInt): BigDecimal {
       //  [address.toHexString(), price.toString(), i.toString(), j.toString(), (stableAmount.times(stablePrice)).toString()]
       //);
 
-      return price;
+      // cache price
+      cache.set(address, price);
+
+      return price; // 'univ3:' + stables[i] + ':' + BigInt.fromI32(fees[j] as i32).toString();
     }
   }
 
@@ -224,10 +247,11 @@ export function getUniswapLiquidityTokenPrice(address: Address, timestamp: BigIn
 
   // try to price with token 0
   let token0 = ERC20.bind(pair.token0());
-  let price0 = getTokenPrice(token0._address, timestamp);
+  let decimals0 = BigInt.fromI32(token0.decimals());
+  let price0 = getTokenPrice(token0._address, decimals0, "", timestamp);
 
   if (price0.gt(ZERO_BIG_DECIMAL)) {
-    let amount0 = integerToDecimal(reserves.value0, BigInt.fromI32(token0.decimals()));
+    let amount0 = integerToDecimal(reserves.value0, decimals0);
     let totalReservesUSD = BigDecimal.fromString('2.0').times(price0.times(amount0));
 
     return totalReservesUSD.div(totalSupply);
@@ -235,10 +259,11 @@ export function getUniswapLiquidityTokenPrice(address: Address, timestamp: BigIn
 
   // try to price with token 1
   let token1 = ERC20.bind(pair.token1());
-  let price1 = getTokenPrice(token1._address, timestamp);
+  let decimals1 = BigInt.fromI32(token1.decimals());
+  let price1 = getTokenPrice(token1._address, decimals1, "", timestamp);
 
   if (price1.gt(ZERO_BIG_DECIMAL)) {
-    let amount1 = integerToDecimal(reserves.value1, BigInt.fromI32(token1.decimals()));
+    let amount1 = integerToDecimal(reserves.value1, decimals1);
     let totalReservesUSD = BigDecimal.fromString('2.0').times(price1.times(amount1));
 
     return totalReservesUSD.div(totalSupply);

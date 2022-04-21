@@ -43,15 +43,18 @@ export function getGUniLiquidityTokenPrice(address: Address, timestamp: BigInt):
   let token0 = ERC20.bind(pool.token0());
   let token1 = ERC20.bind(pool.token1());
 
-  let price0 = getTokenPrice(token0._address, timestamp);
-  let price1 = getTokenPrice(token1._address, timestamp);
+  let decimals0 = BigInt.fromI32(token0.decimals());
+  let decimals1 = BigInt.fromI32(token1.decimals());
+
+  let price0 = getTokenPrice(token0._address, decimals0, "", timestamp);
+  let price1 = getTokenPrice(token1._address, decimals1, "", timestamp);
 
   if (price0 == ZERO_BIG_DECIMAL || price1 == ZERO_BIG_DECIMAL) {
     return ZERO_BIG_DECIMAL;
   }
 
-  let amount0 = integerToDecimal(reserves.value0, BigInt.fromI32(token0.decimals()));
-  let amount1 = integerToDecimal(reserves.value1, BigInt.fromI32(token1.decimals()));
+  let amount0 = integerToDecimal(reserves.value0, decimals0);
+  let amount1 = integerToDecimal(reserves.value1, decimals1);
 
   let totalReservesUSD = (price0.times(amount0)).plus(price1.times(amount1));
 

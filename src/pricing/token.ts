@@ -28,7 +28,7 @@ export function createNewToken(address: Address): Token {
   token.decimals = BigInt.fromI32(0);
   token.totalSupply = BigInt.fromI32(0);
   token.price = ZERO_BIG_DECIMAL;
-  token.path = '';
+  token.hint = '';
   token.updated = ZERO_BIG_INT;
 
   let resName = tokenContract.try_name();
@@ -92,17 +92,22 @@ export function getPrice(token: Token, timestamp: BigInt): BigDecimal {
   }
 
   // price token based on type
+  let price = ZERO_BIG_DECIMAL;
   if (token.type == 'Stable') {
-    return BigDecimal.fromString('1.0');
+    price = BigDecimal.fromString('1.0');
   } else if (token.type == 'Standard') {
-    return getTokenPrice(Address.fromString(token.id.toString()), timestamp);
+    price = getTokenPrice(Address.fromString(token.id.toString()), token.decimals, token.hint, timestamp);
   } else if (token.type == 'UniswapLiquidity') {
-    return getUniswapLiquidityTokenPrice(Address.fromString(token.id.toString()), timestamp);
+    price = getUniswapLiquidityTokenPrice(Address.fromString(token.id.toString()), timestamp);
   } else if (token.type == 'BalancerLiquidity') {
-    return getBalancerLiquidityTokenPrice(Address.fromString(token.id.toString()), timestamp);
+    price = getBalancerLiquidityTokenPrice(Address.fromString(token.id.toString()), timestamp);
   } else if (token.type == 'GUniLiquidity') {
-    return getGUniLiquidityTokenPrice(Address.fromString(token.id.toString()), timestamp);
+    price = getGUniLiquidityTokenPrice(Address.fromString(token.id.toString()), timestamp);
   }
 
-  return ZERO_BIG_DECIMAL;
+  // cache price
+  token.price = price;
+  // token.hint = '';
+
+  return price;
 }

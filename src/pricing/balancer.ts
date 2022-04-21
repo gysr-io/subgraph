@@ -59,12 +59,13 @@ export function getBalancerLiquidityTokenPrice(address: Address, timestamp: BigI
   } else {
     // try to price against a token on uniswap
     for (let i = 0; i < tokenAddresses.length; i++) {
-      let tokenPrice = getTokenPrice(tokenAddresses[i], timestamp);
+      let tokenContract = ERC20.bind(tokenAddresses[i]);
+      let tokenDecimals = BigInt.fromI32(tokenContract.decimals());
+      let tokenPrice = getTokenPrice(tokenAddresses[i], tokenDecimals, "", timestamp);
       if (tokenPrice == ZERO_BIG_DECIMAL) {
         continue;
       }
-      let tokenContract = ERC20.bind(tokenAddresses[i]);
-      let tokenAmount = integerToDecimal(tokenBalances[i], BigInt.fromI32(tokenContract.decimals()));
+      let tokenAmount = integerToDecimal(tokenBalances[i], tokenDecimals);
       let tokenWeight = integerToDecimal(weights[i]);
       return getPriceFromWeight(tokenAmount, tokenWeight, tokenPrice, totalSupply)
     }

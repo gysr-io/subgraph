@@ -25,7 +25,7 @@ type Token @entity {
 
   # pricing
   price: BigDecimal!
-  path: String!
+  hint: String!
   updated: BigInt!
 }
 
