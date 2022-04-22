@@ -18,9 +18,9 @@ export function updateGeyserV1(
   timestamp: BigInt
 ): void {
   // tokens
-  stakingToken.price = getPrice(stakingToken!, timestamp);
+  stakingToken.price = getPrice(stakingToken, timestamp);
   stakingToken.updated = timestamp;
-  rewardToken.price = getPrice(rewardToken!, timestamp);
+  rewardToken.price = getPrice(rewardToken, timestamp);
   rewardToken.updated = timestamp;
 
   // token amounts

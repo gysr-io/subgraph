@@ -54,7 +54,7 @@ export function updatePoolDayData(pool: Pool, timestamp: number): PoolDayData {
   poolDayData.apr = pool.apr;
   poolDayData.usage = pool.usage;
 
-  return poolDayData!;
+  return poolDayData;
 }
 
 
@@ -86,9 +86,9 @@ export function updatePlatform(platform: Platform, timestamp: BigInt, skip: Pool
     // update pool
     if (pool.stakingModuleType == 'V1') {
       let contract = GeyserContractV1.bind(Address.fromString(pool.id));
-      updateGeyserV1(pool, platform!, contract, stakingToken, rewardToken, timestamp);
+      updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, timestamp);
     } else {
-      updatePool(pool, platform!, stakingToken, rewardToken, timestamp);
+      updatePool(pool, platform, stakingToken, rewardToken, timestamp);
     }
 
     // update pool day snapshot
@@ -103,15 +103,15 @@ export function updatePlatform(platform: Platform, timestamp: BigInt, skip: Pool
     // remove from priced pool list if stale
     if (pool.state == 'Stale') {
       stale.push(pool.id);
-      log.info('Removing stale pool from active pricing {}', [pool.id.toString()]);
+      log.info('Removing stale pool from active pricing {} ({})', [pool.id.toString(), timestamp.toString()]);
     } else if (pool.tvl.lt(PRICING_MIN_TVL)) {
       stale.push(pool.id);
-      log.info('Removing low TVL pool from active pricing {}', [pool.id.toString()]);
+      log.info('Removing low TVL pool from active pricing {} ({})', [pool.id.toString(), timestamp.toString()]);
     }
   }
 
   if (stale.length) {
-    platform._activePools = pools.filter((x) => !stale.includes(x));
+    //platform._activePools = pools.filter((x) => !stale.includes(x));
   }
   platform._updated = timestamp;
   return true;

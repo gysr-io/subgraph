@@ -8,13 +8,10 @@ import { ZERO_ADDRESS } from '../util/constants'
 
 
 export function handleOwnershipTransferred(event: OwnershipTransferred): void {
-  let pool = Pool.load(event.address.toHexString());
-  let newOwner = User.load(event.params.newOwner.toHexString());
-  let platform = Platform.load(ZERO_ADDRESS);
-  if (platform === null) {
-    platform = createNewPlatform();
-  }
+  let pool = Pool.load(event.address.toHexString())!;
+  let platform = Platform.load(ZERO_ADDRESS)!;
 
+  let newOwner = User.load(event.params.newOwner.toHexString());
   if (newOwner == null) {
     newOwner = createNewUser(event.params.newOwner);
     platform.users = platform.users.plus(BigInt.fromI32(1));

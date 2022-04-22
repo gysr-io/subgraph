@@ -27,7 +27,7 @@ export function updatePricing(
   let next = BigInt.fromI32(10).times(timestamp);
   let rate = ZERO_BIG_DECIMAL;
   for (let i = 0; i < fundings.length; i++) {
-    let funding = Funding.load(fundings[i]);
+    let funding = Funding.load(fundings[i])!;
     // active
     if (funding.start.le(timestamp) && funding.end.gt(timestamp) && !active) {
       active = true;

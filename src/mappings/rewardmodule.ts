@@ -84,7 +84,7 @@ export function handleRewardsFunded(event: RewardsFunded): void {
 export function handleGysrSpent(event: GysrSpent): void {
   let contract = ERC20BaseRewardModuleContract.bind(event.address);
   let pool = Pool.load(contract.owner().toHexString())!;
-  let platform = Platform.load(ZERO_ADDRESS);
+  let platform = Platform.load(ZERO_ADDRESS)!;
 
   // update gysr spent on unstake transaction
   let transaction = new Transaction(event.transaction.hash.toHexString());
@@ -100,7 +100,7 @@ export function handleGysrSpent(event: GysrSpent): void {
   if (gysr === null) {
     gysr = createNewToken(Address.fromString(GYSR_TOKEN));
   }
-  gysr.price = getPrice(gysr!, event.block.timestamp);
+  gysr.price = getPrice(gysr, event.block.timestamp);
   gysr.updated = event.block.timestamp;
 
   let dollarAmount = amount.times(gysr.price);
@@ -121,7 +121,7 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
   let contract = ERC20BaseRewardModuleContract.bind(event.address);
   let pool = Pool.load(contract.owner().toHexString())!;
   let token = Token.load(pool.rewardToken)!;
-  let platform = Platform.load(ZERO_ADDRESS);
+  let platform = Platform.load(ZERO_ADDRESS)!;
 
   let amount = integerToDecimal(event.params.amount, token.decimals);
   pool.distributed = pool.distributed.plus(amount);
@@ -146,13 +146,13 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
 
 export function handleRewardsExpired(event: RewardsExpired): void {
   let contract = ERC20BaseRewardModuleContract.bind(event.address);
-  let pool = Pool.load(contract.owner().toHexString());
-  let rewardToken = Token.load(pool.rewardToken);
+  let pool = Pool.load(contract.owner().toHexString())!;
+  let rewardToken = Token.load(pool.rewardToken)!;
   let amount = integerToDecimal(event.params.amount, rewardToken.decimals);
 
   let fundings = pool.fundings;
   for (let i = 0; i < fundings.length; i++) {
-    let funding = Funding.load(fundings[i]);
+    let funding = Funding.load(fundings[i])!;
 
     // mark expired funding as cleaned
     if (funding.start.equals(event.params.timestamp)

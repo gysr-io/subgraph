@@ -121,11 +121,11 @@ export function handleUnstaked(event: Unstaked): void {
   let platform = Platform.load(ZERO_ADDRESS)!;
 
   // load user
-  let user = User.load(event.params.user.toHexString());
+  let user = User.load(event.params.user.toHexString())!;
 
   // load position
   let positionId = pool.id + '_' + user.id;
-  let position = Position.load(positionId);
+  let position = Position.load(positionId)!;
 
   // get share info from contract
   let contract = GeyserContractV1.bind(event.address);
@@ -146,7 +146,7 @@ export function handleUnstaked(event: Unstaked): void {
       continue;
     }
     // update remaining trailing stake
-    let stake = Stake.load(stakes[i]);
+    let stake = Stake.load(stakes[i])!;
 
     // get data to update object from contract
     let stakeStruct = contract.userStakes(event.params.user, BigInt.fromI32(i));
@@ -270,7 +270,7 @@ export function handleRewardsFunded(event: RewardsFunded): void {
 export function handleRewardsDistributed(event: RewardsDistributed): void {
   let pool = Pool.load(event.address.toHexString())!;
   let token = Token.load(pool.rewardToken)!;
-  let platform = Platform.load(ZERO_ADDRESS);
+  let platform = Platform.load(ZERO_ADDRESS)!;
 
   let amount = integerToDecimal(event.params.amount, token.decimals);
   pool.distributed = pool.distributed.plus(amount);
@@ -293,13 +293,10 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
 
 
 export function handleOwnershipTransferred(event: OwnershipTransferred): void {
-  let pool = Pool.load(event.address.toHexString());
-  let newOwner = User.load(event.params.newOwner.toHexString());
-  let platform = Platform.load(ZERO_ADDRESS);
-  if (platform === null) {
-    platform = createNewPlatform();
-  }
+  let pool = Pool.load(event.address.toHexString())!;
+  let platform = Platform.load(ZERO_ADDRESS)!;
 
+  let newOwner = User.load(event.params.newOwner.toHexString());
   if (newOwner == null) {
     newOwner = createNewUser(event.params.newOwner);
     platform.users = platform.users.plus(BigInt.fromI32(1));
@@ -314,13 +311,13 @@ export function handleOwnershipTransferred(event: OwnershipTransferred): void {
 
 
 export function handleRewardsExpired(event: RewardsExpired): void {
-  let pool = Pool.load(event.address.toHexString());
-  let rewardToken = Token.load(pool.rewardToken);
+  let pool = Pool.load(event.address.toHexString())!;
+  let rewardToken = Token.load(pool.rewardToken)!;
   let amount = integerToDecimal(event.params.amount, rewardToken.decimals);
 
   let fundings = pool.fundings;
   for (let i = 0; i < fundings.length; i++) {
-    let funding = Funding.load(fundings[i]);
+    let funding = Funding.load(fundings[i])!;
 
     // mark expired funding as cleaned
     if (funding.start.equals(event.params.start)
@@ -344,14 +341,14 @@ export function handleGysrSpent(event: GysrSpent): void {
   pool.gysrSpent = pool.gysrSpent.plus(amount);
 
   // update platform total GYSR spent
-  let platform = Platform.load(ZERO_ADDRESS);
+  let platform = Platform.load(ZERO_ADDRESS)!;
   platform.gysrSpent = platform.gysrSpent.plus(amount);
 
   let gysr = Token.load(GYSR_TOKEN);
   if (gysr === null) {
     gysr = createNewToken(Address.fromString(GYSR_TOKEN));
   }
-  gysr.price = getPrice(gysr!, event.block.timestamp);
+  gysr.price = getPrice(gysr, event.block.timestamp);
   gysr.updated = event.block.timestamp;
 
   let dollarAmount = amount.times(gysr.price);

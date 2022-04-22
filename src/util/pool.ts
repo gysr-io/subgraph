@@ -22,9 +22,9 @@ export function updatePool(
   let rewardContract = ERC20BaseRewardModuleContract.bind(contract.rewardModule());
 
   // tokens
-  stakingToken.price = getPrice(stakingToken!, timestamp);
+  stakingToken.price = getPrice(stakingToken, timestamp);
   stakingToken.updated = timestamp;
-  rewardToken.price = getPrice(rewardToken!, timestamp);
+  rewardToken.price = getPrice(rewardToken, timestamp);
   rewardToken.updated = timestamp;
 
   // token amounts

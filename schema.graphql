@@ -189,14 +189,14 @@ type Transaction @entity {
   # tx hash
   id: ID!
 
-  type: TransactionType!
-  timestamp: BigInt!
-  pool: Pool!
-  user: User!
+  type: TransactionType
+  timestamp: BigInt
+  pool: Pool
+  user: User
 
-  amount: BigDecimal!
-  earnings: BigDecimal!
-  gysrSpent: BigDecimal!
+  amount: BigDecimal
+  earnings: BigDecimal
+  gysrSpent: BigDecimal
 }
 
 type Funding @entity {
