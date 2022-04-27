@@ -12,7 +12,7 @@ import { ZERO_BIG_DECIMAL, STABLECOINS, STABLECOIN_DECIMALS } from '../util/cons
 export function isGUniLiquidityToken(address: Address): boolean {
   let pool = GUniPool.bind(address);
 
-  let res0 = pool.try_gelatoFeeBPS();
+  let res0 = pool.try_gelatoRebalanceBPS();
   if (res0.reverted) {
     return false;
   }
