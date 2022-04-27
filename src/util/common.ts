@@ -100,18 +100,21 @@ export function updatePlatform(platform: Platform, timestamp: BigInt, skip: Pool
     rewardToken.save();
     poolDayData.save();
 
-    // remove from priced pool list if stale
-    if (pool.state == 'Stale') {
-      stale.push(pool.id);
-      log.info('Removing stale pool from active pricing {} ({})', [pool.id.toString(), timestamp.toString()]);
-    } else if (pool.tvl.lt(PRICING_MIN_TVL)) {
+    // remove low TVL pools from priced list
+    // note: no longer removing "stale" pools to support use cases with recurring zero duration funding
+    if (pool.tvl.lt(PRICING_MIN_TVL)) {
       stale.push(pool.id);
       log.info('Removing low TVL pool from active pricing {} ({})', [pool.id.toString(), timestamp.toString()]);
     }
   }
 
   if (stale.length) {
-    //platform._activePools = pools.filter((x) => !stale.includes(x));
+    let filtered: string[] = [];
+    for (let i = 0; i < pools.length; i++) {
+      if (stale.includes(pools[i])) continue
+      filtered.push(pools[i]);
+    }
+    platform._activePools = filtered;
   }
   platform._updated = timestamp;
   return true;
