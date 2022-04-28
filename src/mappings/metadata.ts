@@ -45,5 +45,10 @@ export function handleMetadata(event: Metadata): void {
 
   // write out
   pool.save();
-  log.info('set metadata for pool: {}, {}, {}, {}', [pool.id, event.params.data, pool.name!, pool.description!]);
+  log.info('set metadata for pool: {}, {}, {}, {}', [
+    pool.id,
+    event.params.data,
+    pool.name ? pool.name! : 'null',
+    pool.description ? pool.description! : 'null'
+  ]);
 }
