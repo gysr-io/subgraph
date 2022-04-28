@@ -13,12 +13,35 @@ import { getTokenPrice, Price } from './uniswap'
 export function isBalancerLiquidityToken(address: Address): boolean {
   let pool = BalancerWeightedPool.bind(address);
 
-  let res = pool.try_getNormalizedWeights();
-  if (res.reverted) {
+  let res0 = pool.try_getNormalizedWeights();
+  if (res0.reverted) {
+    return false;
+  }
+  let res1 = pool.try_getVault();
+  if (res1.reverted) {
     return false;
   }
   return true;
 }
+
+
+export function getBalancerLiquidityTokenUnderlying(address: Address): Array<string> {
+  let pool = BalancerWeightedPool.bind(address);
+  let vaultId = pool.getVault();
+  let vault = BalancerVault.bind(vaultId);
+  let poolId = pool.getPoolId();
+
+  let poolTokens = vault.getPoolTokens(poolId);
+  let tokenAddresses = poolTokens.value0;
+
+  let underlying: string[] = [];
+  for (let i = 0; i < tokenAddresses.length; i++) {
+    underlying.push(tokenAddresses[i].toHexString());
+  }
+
+  return underlying;
+}
+
 
 export function getBalancerLiquidityTokenPrice(address: Address, hint: String, timestamp: BigInt): Price {
   // get contracts

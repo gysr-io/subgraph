@@ -62,6 +62,15 @@ export function getUniswapLiquidityTokenAlias(address: Address): string {
 }
 
 
+export function getUniswapLiquidityTokenUnderlying(address: Address): Array<string> {
+  let pair = UniswapPair.bind(address);
+  let token0 = pair.token0();
+  let token1 = pair.token1();
+
+  return [token0.toHexString(), token1.toHexString()];
+}
+
+
 export function getNativePrice(): BigDecimal {
   // NOTE: if updating this constant address, we assume that the native token is token0
   let pair = UniswapPair.bind(Address.fromString(USD_NATIVE_PAIR));

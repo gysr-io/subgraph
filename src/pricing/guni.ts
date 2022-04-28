@@ -35,6 +35,16 @@ export function getGUniLiquidityTokenAlias(address: Address): string {
 }
 
 
+export function getGUniLiquidityTokenUnderlying(address: Address): Array<string> {
+  let pool = GUniPool.bind(address);
+
+  let token0 = pool.token0();
+  let token1 = pool.token1();
+
+  return [token0.toHexString(), token1.toHexString()];
+}
+
+
 export function getGUniLiquidityTokenPrice(address: Address, hint: String, timestamp: BigInt): Price {
   let pool = GUniPool.bind(address);
 

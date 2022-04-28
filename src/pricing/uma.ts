@@ -37,6 +37,15 @@ export function getUmaKpiOptionAlias(address: Address): string {
 }
 
 
+export function getUmaKpiOptionUnderlying(address: Address): Array<string> {
+  let token = UMASyntheticToken.bind(address);
+  let lsp = UMALongShortPair.bind(token.getMember(ZERO_BIG_INT));
+  let collateral = lsp.collateralToken();
+
+  return [collateral.toHexString()];
+}
+
+
 export function getUmaKpiOptionPrice(address: Address): BigDecimal {
   // TODO
   return ZERO_BIG_DECIMAL;

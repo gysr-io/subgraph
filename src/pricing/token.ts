@@ -9,12 +9,13 @@ import {
   isUniswapLiquidityToken,
   getUniswapLiquidityTokenAlias,
   getUniswapLiquidityTokenPrice,
-  Price
+  Price,
+  getUniswapLiquidityTokenUnderlying
 } from '../pricing/uniswap'
-import { getBalancerLiquidityTokenPrice, isBalancerLiquidityToken } from './balancer'
-import { getUmaKpiOptionAlias, isUmaKpiOption } from './uma'
+import { getBalancerLiquidityTokenPrice, getBalancerLiquidityTokenUnderlying, isBalancerLiquidityToken } from './balancer'
+import { getUmaKpiOptionAlias, getUmaKpiOptionUnderlying, isUmaKpiOption } from './uma'
 import { isERC721Token } from './erc721'
-import { isGUniLiquidityToken, getGUniLiquidityTokenAlias, getGUniLiquidityTokenPrice } from './guni'
+import { isGUniLiquidityToken, getGUniLiquidityTokenAlias, getGUniLiquidityTokenPrice, getGUniLiquidityTokenUnderlying } from './guni'
 
 
 // factory function to define and populate new token entity
@@ -52,10 +53,12 @@ export function createNewToken(address: Address): Token {
   // token type
   if (isUniswapLiquidityToken(address)) {
     token.alias = getUniswapLiquidityTokenAlias(address);
+    token.underlying = getUniswapLiquidityTokenUnderlying(address);
     token.type = 'UniswapLiquidity';
     log.info('created new token: Uniswap LP, {}, {}', [token.id, token.alias]);
 
   } else if (isBalancerLiquidityToken(address)) {
+    token.underlying = getBalancerLiquidityTokenUnderlying(address);
     token.type = 'BalancerLiquidity';
     log.info('created new token: Balancer Weighted LP, {}, {}', [token.id, token.symbol]);
 
@@ -66,6 +69,7 @@ export function createNewToken(address: Address): Token {
 
   } else if (isUmaKpiOption(address)) {
     token.alias = getUmaKpiOptionAlias(address);
+    token.underlying = getUmaKpiOptionUnderlying(address);
     token.type = 'UmaKpiOption';
     log.info('created new token: UMA KPI Option, {}, {}', [token.id, token.symbol]);
 
@@ -75,12 +79,22 @@ export function createNewToken(address: Address): Token {
 
   } else if (isGUniLiquidityToken(address)) {
     token.alias = getGUniLiquidityTokenAlias(address);
+    token.underlying = getGUniLiquidityTokenUnderlying(address);
     token.type = 'GUniLiquidity';
     log.info('created new token: ERC721, {}, {}', [token.id, token.symbol]);
 
   } else {
     token.type = 'Standard';
     log.info('created new token: standard, {}, {}', [token.id, token.symbol]);
+  }
+
+  // ensure each underlying token already exists
+  for (let i = 0; i < token.underlying.length; i++) {
+    let u = Token.load(token.underlying[i]);
+    if (u === null) {
+      u = createNewToken(Address.fromString(token.underlying[i]));
+      u.save();
+    }
   }
 
   return token;
