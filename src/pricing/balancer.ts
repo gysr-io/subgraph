@@ -6,7 +6,7 @@ import { BalancerVault } from '../../generated/templates/GeyserV1/BalancerVault'
 import { ERC20 } from '../../generated/templates/GeyserV1/ERC20'
 import { integerToDecimal } from '../util/common'
 import { ZERO_BIG_DECIMAL, STABLECOINS, STABLECOIN_DECIMALS } from '../util/constants'
-import { getTokenPrice } from './uniswap'
+import { getTokenPrice, Price } from './uniswap'
 
 // TODO: Add support for more pools other than Weighted Pools.
 
@@ -20,7 +20,7 @@ export function isBalancerLiquidityToken(address: Address): boolean {
   return true;
 }
 
-export function getBalancerLiquidityTokenPrice(address: Address, timestamp: BigInt): BigDecimal {
+export function getBalancerLiquidityTokenPrice(address: Address, hint: String, timestamp: BigInt): Price {
   // get contracts
   let pool = BalancerWeightedPool.bind(address);
   let vaultId = pool.getVault();
@@ -55,23 +55,32 @@ export function getBalancerLiquidityTokenPrice(address: Address, timestamp: BigI
     let stableBalance = integerToDecimal(tokenBalances[stableCoinPoolIdx], BigInt.fromI32(STABLECOIN_DECIMALS[stableCoinIdx] as i32));
     // get stable coin weight
     let stableWeight = integerToDecimal(weights[stableCoinPoolIdx]);
-    return getPriceFromWeight(stableBalance, stableWeight, BigDecimal.fromString('1'), totalSupply)
+    return new Price(getPriceFromWeight(stableBalance, stableWeight, BigDecimal.fromString('1'), totalSupply), stableCoinPoolIdx.toString() + '/stable')
   } else {
+    // parse hint
+    let tokenHint: String = '';
+    let tokenHintIdx: i32 = -1
+    let parts = hint.split('/');
+    if (parts.length == 2) {
+      tokenHint = parts[1];
+      tokenHintIdx = BigInt.fromString(parts[0]).toI32();
+    }
+
     // try to price against a token on uniswap
     for (let i = 0; i < tokenAddresses.length; i++) {
       let tokenContract = ERC20.bind(tokenAddresses[i]);
       let tokenDecimals = BigInt.fromI32(tokenContract.decimals());
-      let tokenPrice = getTokenPrice(tokenAddresses[i], tokenDecimals, "", timestamp);
-      if (tokenPrice == ZERO_BIG_DECIMAL) {
+      let tokenPrice = getTokenPrice(tokenAddresses[i], tokenDecimals, i == tokenHintIdx ? tokenHint : '', timestamp);
+      if (tokenPrice.price == ZERO_BIG_DECIMAL) {
         continue;
       }
       let tokenAmount = integerToDecimal(tokenBalances[i], tokenDecimals);
       let tokenWeight = integerToDecimal(weights[i]);
-      return getPriceFromWeight(tokenAmount, tokenWeight, tokenPrice, totalSupply)
+      return new Price(getPriceFromWeight(tokenAmount, tokenWeight, tokenPrice.price, totalSupply), i.toString() + "/" + tokenPrice.hint);
     }
   }
 
-  return ZERO_BIG_DECIMAL;
+  return new Price(ZERO_BIG_DECIMAL, '');
 }
 
 function getPriceFromWeight(tokenBalance: BigDecimal, tokenWeight: BigDecimal, tokenPrice: BigDecimal, totalSupply: BigDecimal): BigDecimal {

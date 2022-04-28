@@ -8,7 +8,8 @@ import {
   getTokenPrice,
   isUniswapLiquidityToken,
   getUniswapLiquidityTokenAlias,
-  getUniswapLiquidityTokenPrice
+  getUniswapLiquidityTokenPrice,
+  Price
 } from '../pricing/uniswap'
 import { getBalancerLiquidityTokenPrice, isBalancerLiquidityToken } from './balancer'
 import { getUmaKpiOptionAlias, isUmaKpiOption } from './uma'
@@ -92,22 +93,22 @@ export function getPrice(token: Token, timestamp: BigInt): BigDecimal {
   }
 
   // price token based on type
-  let price = ZERO_BIG_DECIMAL;
+  let price = new Price(ZERO_BIG_DECIMAL, '');
   if (token.type == 'Stable') {
-    price = BigDecimal.fromString('1.0');
+    price = new Price(BigDecimal.fromString('1.0'), 'stable');
   } else if (token.type == 'Standard') {
     price = getTokenPrice(Address.fromString(token.id.toString()), token.decimals, token.hint, timestamp);
   } else if (token.type == 'UniswapLiquidity') {
-    price = getUniswapLiquidityTokenPrice(Address.fromString(token.id.toString()), timestamp);
+    price = getUniswapLiquidityTokenPrice(Address.fromString(token.id.toString()), token.hint, timestamp);
   } else if (token.type == 'BalancerLiquidity') {
-    price = getBalancerLiquidityTokenPrice(Address.fromString(token.id.toString()), timestamp);
+    price = getBalancerLiquidityTokenPrice(Address.fromString(token.id.toString()), token.hint, timestamp);
   } else if (token.type == 'GUniLiquidity') {
-    price = getGUniLiquidityTokenPrice(Address.fromString(token.id.toString()), timestamp);
+    price = getGUniLiquidityTokenPrice(Address.fromString(token.id.toString()), token.hint, timestamp);
   }
 
   // cache price
-  token.price = price;
-  // token.hint = '';
+  token.price = price.price;
+  token.hint = price.hint.toString();
 
-  return price;
+  return price.price;
 }

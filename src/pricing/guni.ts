@@ -4,7 +4,7 @@ import { Address, BigInt, BigDecimal, log, Bytes } from '@graphprotocol/graph-ts
 import { GUniPool } from '../../generated/templates/GeyserV1/GUniPool'
 import { ERC20 } from '../../generated/templates/GeyserV1/ERC20'
 import { integerToDecimal } from '../util/common'
-import { getTokenPrice } from './uniswap'
+import { getTokenPrice, Price } from './uniswap'
 import { ZERO_BIG_DECIMAL, STABLECOINS, STABLECOIN_DECIMALS } from '../util/constants'
 
 
@@ -35,7 +35,7 @@ export function getGUniLiquidityTokenAlias(address: Address): string {
 }
 
 
-export function getGUniLiquidityTokenPrice(address: Address, timestamp: BigInt): BigDecimal {
+export function getGUniLiquidityTokenPrice(address: Address, hint: String, timestamp: BigInt): Price {
   let pool = GUniPool.bind(address);
 
   let reserves = pool.getUnderlyingBalances();
@@ -46,22 +46,30 @@ export function getGUniLiquidityTokenPrice(address: Address, timestamp: BigInt):
   let decimals0 = BigInt.fromI32(token0.decimals());
   let decimals1 = BigInt.fromI32(token1.decimals());
 
-  let price0 = getTokenPrice(token0._address, decimals0, "", timestamp);
-  let price1 = getTokenPrice(token1._address, decimals1, "", timestamp);
+  let hint0: String = '', hint1: String = '';
+  let parts = hint.split('/');
+  if (parts.length == 2) {
+    hint0 = parts[0];
+    hint1 = parts[1];
+  }
 
-  if (price0 == ZERO_BIG_DECIMAL || price1 == ZERO_BIG_DECIMAL) {
-    return ZERO_BIG_DECIMAL;
+  let price0 = getTokenPrice(token0._address, decimals0, hint0, timestamp);
+  let price1 = getTokenPrice(token1._address, decimals1, hint1, timestamp);
+  hint = price0.hint + '/' + price1.hint;
+
+  if (price0.price == ZERO_BIG_DECIMAL || price1.price == ZERO_BIG_DECIMAL) {
+    return new Price(ZERO_BIG_DECIMAL, hint);
   }
 
   let amount0 = integerToDecimal(reserves.value0, decimals0);
   let amount1 = integerToDecimal(reserves.value1, decimals1);
 
-  let totalReservesUSD = (price0.times(amount0)).plus(price1.times(amount1));
+  let totalReservesUSD = (price0.price.times(amount0)).plus(price1.price.times(amount1));
 
   let totalSupply = integerToDecimal(pool.totalSupply());
   if (totalSupply == ZERO_BIG_DECIMAL) {
-    return ZERO_BIG_DECIMAL;
+    return new Price(ZERO_BIG_DECIMAL, hint);
   }
 
-  return totalReservesUSD.div(totalSupply);
+  return new Price(totalReservesUSD.div(totalSupply), hint);
 }
