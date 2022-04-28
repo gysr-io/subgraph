@@ -15,11 +15,17 @@ export function updatePricing(
 ): void {
 
   // usd amounts
+  platform.tvl = platform.tvl.minus(pool.tvl);
+  platform.staked = platform.staked.minus(pool.stakedUSD);
+  platform.rewards = platform.rewards.minus(pool.rewardsUSD);
+
   pool.stakedUSD = pool.staked.times(stakingToken.price);
   pool.rewardsUSD = pool.rewards.times(rewardToken.price);
-  let previousPoolValue = pool.tvl;
   pool.tvl = pool.stakedUSD.plus(pool.rewardsUSD);
-  platform.tvl = platform.tvl.plus(pool.stakedUSD).plus(pool.rewardsUSD).minus(previousPoolValue);
+
+  platform.tvl = platform.tvl.plus(pool.tvl);
+  platform.staked = platform.staked.plus(pool.stakedUSD);
+  platform.rewards = platform.rewards.plus(pool.rewardsUSD);
 
   // fundings
   let fundings = pool.fundings;

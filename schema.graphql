@@ -170,6 +170,8 @@ type Platform @entity {
   id: ID!
 
   tvl: BigDecimal!
+  staked: BigDecimal!
+  rewards: BigDecimal!
   users: BigInt!
   operations: BigInt!
   pools: BigInt!
