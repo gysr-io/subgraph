@@ -24,17 +24,19 @@ export function updateGeyserV1(
   rewardToken.updated = timestamp;
 
   // token amounts
-  pool.staked = integerToDecimal(contract.totalStaked(), stakingToken.decimals);
-  pool.rewards = integerToDecimal(contract.totalLocked(), rewardToken.decimals).plus(
+  let totalStaked = contract.totalStaked();
+  let totalLocked = contract.totalLocked();
+  pool.staked = integerToDecimal(totalStaked, stakingToken.decimals);
+  pool.rewards = integerToDecimal(totalLocked, rewardToken.decimals).plus(
     integerToDecimal(contract.totalUnlocked(), rewardToken.decimals)
   );
 
   // share/amount rate
-  let stakingSharesPerToken = contract.totalStaked().gt(ZERO_BIG_INT)
-    ? contract.totalStakingShares().toBigDecimal().div(contract.totalStaked().toBigDecimal())
+  let stakingSharesPerToken = totalStaked.gt(ZERO_BIG_INT)
+    ? contract.totalStakingShares().toBigDecimal().div(totalStaked.toBigDecimal())
     : INITIAL_SHARES_PER_TOKEN;
-  let rewardSharesPerToken = contract.totalLocked().gt(ZERO_BIG_INT)
-    ? contract.totalLockedShares().toBigDecimal().div(contract.totalLocked().toBigDecimal())
+  let rewardSharesPerToken = totalLocked.gt(ZERO_BIG_INT)
+    ? contract.totalLockedShares().toBigDecimal().div(totalLocked.toBigDecimal())
     : INITIAL_SHARES_PER_TOKEN;
 
   pool.stakingSharesPerToken = stakingSharesPerToken;

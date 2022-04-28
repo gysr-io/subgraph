@@ -74,6 +74,8 @@ export function handlePoolCreated(event: PoolCreated): void {
   pool.owner = user.id;
   pool.stakingToken = stakingToken.id;
   pool.rewardToken = rewardToken.id;
+  pool.stakingModule = stakingModule.toHexString();
+  pool.rewardModule = rewardModule.toHexString();
 
   // reward type
   let rewardFactory = rewardModuleContract.factory();

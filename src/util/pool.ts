@@ -19,7 +19,7 @@ export function updatePool(
   timestamp: BigInt
 ): void {
   let contract = PoolContract.bind(Address.fromString(pool.id));
-  let rewardContract = ERC20BaseRewardModuleContract.bind(contract.rewardModule());
+  let rewardContract = ERC20BaseRewardModuleContract.bind(Address.fromString(pool.rewardModule));
 
   // tokens
   stakingToken.price = getPrice(stakingToken, timestamp);
@@ -33,7 +33,7 @@ export function updatePool(
 
   // staking shares/amount rate
   if (pool.stakingModuleType == 'ERC20') {
-    let stakingContract = ERC20StakingModuleContract.bind(contract.stakingModule());
+    let stakingContract = ERC20StakingModuleContract.bind(Address.fromString(pool.stakingModule));
 
     let stakingSharesPerToken = pool.staked.gt(ZERO_BIG_DECIMAL)
       ? integerToDecimal(stakingContract.totalShares(), stakingToken.decimals).div(pool.staked)
