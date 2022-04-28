@@ -228,8 +228,8 @@ templates:
         - name: GUniPool
           file: ./abis/thirdparty/gelato/GUniPool.json
       eventHandlers:
-        - event: OwnershipTransferred(indexed address,indexed address)
-          handler: handleOwnershipTransferred
+        - event: ControlTransferred(indexed address,indexed address)
+          handler: handleControlTransferred
       file: ./src/mappings/pool.ts
 
   - kind: ethereum/contract

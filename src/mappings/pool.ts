@@ -1,19 +1,19 @@
 // V2 Pool event handling and mapping
 
 import { Address, BigInt, log, store } from '@graphprotocol/graph-ts'
-import { OwnershipTransferred } from '../../generated/templates/Pool/Pool'
+import { ControlTransferred } from '../../generated/templates/Pool/Pool'
 import { Pool, User, Platform } from '../../generated/schema'
 import { createNewUser, createNewPlatform } from '../util/common'
 import { ZERO_ADDRESS } from '../util/constants'
 
 
-export function handleOwnershipTransferred(event: OwnershipTransferred): void {
+export function handleControlTransferred(event: ControlTransferred): void {
   let pool = Pool.load(event.address.toHexString())!;
   let platform = Platform.load(ZERO_ADDRESS)!;
 
-  let newOwner = User.load(event.params.newOwner.toHexString());
+  let newOwner = User.load(event.params.newController.toHexString());
   if (newOwner == null) {
-    newOwner = createNewUser(event.params.newOwner);
+    newOwner = createNewUser(event.params.newController);
     platform.users = platform.users.plus(BigInt.fromI32(1));
     newOwner.save()
   }
