@@ -10,7 +10,7 @@
   "usdc_address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
   "usdt_address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
   "dai_address": "0x6b175474e89094c44da98b954eedeac495271d0f",
-  "frax_address": "0x853d955aCEf822Db058eb8505911ED77F175b99e",
+  "frax_address": "0x853d955acef822db058eb8505911ed77f175b99e",
   "usd_native_address": "0x0d4a11d5eeaac28ec3f61d100daf4d40471f1852",
   "usd_weth_address": "0x0000000000000000000000000000000000000000",
   "uniswap_factory": "0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f",
