@@ -33,7 +33,11 @@ export function getUmaKpiOptionAlias(address: Address): string {
   let lsp = UMALongShortPair.bind(token.getMember(ZERO_BIG_INT));
   let collateral = ERC20.bind(lsp.collateralToken());
 
-  return collateral.symbol()
+  let res = collateral.try_symbol();
+  if (res.reverted) {
+    return '';
+  }
+  return res.value;
 }
 
 

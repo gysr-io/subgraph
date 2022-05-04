@@ -30,7 +30,17 @@ export function getGUniLiquidityTokenAlias(address: Address): string {
   let token0 = ERC20.bind(pool.token0());
   let token1 = ERC20.bind(pool.token1());
 
-  let alias = token0.symbol() + '-' + token1.symbol();
+  let symbol0 = '', symbol1 = '';
+  let res0 = token0.try_symbol();
+  if (!res0.reverted) {
+    symbol0 = res0.value;
+  }
+  let res1 = token1.try_symbol();
+  if (!res1.reverted) {
+    symbol1 = res1.value;
+  }
+
+  let alias = symbol0 + '-' + symbol1;
   return alias;
 }
 
