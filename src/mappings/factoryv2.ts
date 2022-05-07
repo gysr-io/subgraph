@@ -19,10 +19,10 @@ import {
   ZERO_BIG_DECIMAL,
   INITIAL_SHARES_PER_TOKEN,
   ZERO_ADDRESS,
-  ERC20_COMPETITIVE_REWARD_MODULE_FACTORY,
-  ERC20_FRIENDLY_REWARD_MODULE_FACTORY,
-  ERC20_STAKING_MODULE_FACTORY,
-  ERC721_STAKING_MODULE_FACTORY,
+  ERC20_COMPETITIVE_REWARD_MODULE_FACTORIES,
+  ERC20_FRIENDLY_REWARD_MODULE_FACTORIES,
+  ERC20_STAKING_MODULE_FACTORIES,
+  ERC721_STAKING_MODULE_FACTORIES,
   ONE_E_18
 } from '../util/constants'
 import { createNewToken } from '../pricing/token'
@@ -74,16 +74,18 @@ export function handlePoolCreated(event: PoolCreated): void {
   pool.owner = user.id;
   pool.stakingToken = stakingToken.id;
   pool.rewardToken = rewardToken.id;
+  pool.stakingModule = stakingModule.toHexString();
+  pool.rewardModule = rewardModule.toHexString();
 
-  // get bonus info and pool type
+  // reward type
   let rewardFactory = rewardModuleContract.factory();
-  if (rewardFactory == ERC20_COMPETITIVE_REWARD_MODULE_FACTORY) {
+  if (ERC20_COMPETITIVE_REWARD_MODULE_FACTORIES.includes(rewardFactory)) {
     let competitiveContract = ERC20CompetitiveRewardModuleContract.bind(rewardModule)
     pool.timeMultMin = integerToDecimal(competitiveContract.bonusMin());
     pool.timeMultMax = integerToDecimal(competitiveContract.bonusMax());
     pool.timeMultPeriod = competitiveContract.bonusPeriod();
     pool.rewardModuleType = 'ERC20Competitive';
-  } else if (rewardFactory == ERC20_FRIENDLY_REWARD_MODULE_FACTORY) {
+  } else if (ERC20_FRIENDLY_REWARD_MODULE_FACTORIES.includes(rewardFactory)) {
     let friendlyContract = ERC20FriendlyRewardModuleContract.bind(rewardModule);
     pool.timeMultMin = integerToDecimal(friendlyContract.vestingStart());
     pool.timeMultMax = BigDecimal.fromString('1');
@@ -96,10 +98,10 @@ export function handlePoolCreated(event: PoolCreated): void {
 
   // staking type
   let stakingFactory = stakingModuleContract.factory();
-  if (stakingFactory == ERC20_STAKING_MODULE_FACTORY) {
+  if (ERC20_STAKING_MODULE_FACTORIES.includes(stakingFactory)) {
     pool.stakingModuleType = 'ERC20';
     pool.stakingSharesPerToken = INITIAL_SHARES_PER_TOKEN;
-  } else if (stakingFactory == ERC721_STAKING_MODULE_FACTORY) {
+  } else if (ERC721_STAKING_MODULE_FACTORIES.includes(stakingFactory)) {
     pool.stakingModuleType = 'ERC721';
     pool.stakingSharesPerToken = ONE_E_18;
   } else {

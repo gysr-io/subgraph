@@ -22,9 +22,11 @@ type Token @entity {
 
   alias: String!
   type: TokenType!
+  underlying: [Token!]!
 
-  # stats
+  # pricing
   price: BigDecimal!
+  hint: String!
   updated: BigInt!
 }
 
@@ -77,6 +79,8 @@ type Pool @entity {
   poolType: PoolType!
   stakingModuleType: StakingModuleType!
   rewardModuleType: RewardModuleType!
+  stakingModule: String!
+  rewardModule: String!
 
   # stats
   users: BigInt!
@@ -167,6 +171,8 @@ type Platform @entity {
   id: ID!
 
   tvl: BigDecimal!
+  staked: BigDecimal!
+  rewards: BigDecimal!
   users: BigInt!
   operations: BigInt!
   pools: BigInt!
@@ -188,14 +194,14 @@ type Transaction @entity {
   # tx hash
   id: ID!
 
-  type: TransactionType!
-  timestamp: BigInt!
-  pool: Pool!
-  user: User!
+  type: TransactionType
+  timestamp: BigInt
+  pool: Pool
+  user: User
 
-  amount: BigDecimal!
-  earnings: BigDecimal!
-  gysrSpent: BigDecimal!
+  amount: BigDecimal
+  earnings: BigDecimal
+  gysrSpent: BigDecimal
 }
 
 type Funding @entity {

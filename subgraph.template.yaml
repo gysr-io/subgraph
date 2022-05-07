@@ -1,5 +1,7 @@
-specVersion: 0.0.2
+specVersion: 0.0.4
 description: GYSR is an open platform for on-chain incentives
+features:
+  - fullTextSearch
 repository: https://github.com/gysr-io/gysr-subgraph
 schema:
   file: ./schema.graphql
@@ -13,7 +15,7 @@ dataSources:
       startBlock: {{geyser_factory_v1_start_block}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - Pool
@@ -58,7 +60,7 @@ dataSources:
       startBlock: {{pool_factory_start_block}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - Pool
@@ -111,7 +113,7 @@ dataSources:
       startBlock: {{pool_metadata_start_block}}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - Pool
@@ -131,7 +133,7 @@ templates:
       abi: GeyserV1
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - Pool
@@ -191,7 +193,7 @@ templates:
       abi: Pool
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - Pool
@@ -226,8 +228,8 @@ templates:
         - name: GUniPool
           file: ./abis/thirdparty/gelato/GUniPool.json
       eventHandlers:
-        - event: OwnershipTransferred(indexed address,indexed address)
-          handler: handleOwnershipTransferred
+        - event: ControlTransferred(indexed address,indexed address)
+          handler: handleControlTransferred
       file: ./src/mappings/pool.ts
 
   - kind: ethereum/contract
@@ -237,7 +239,7 @@ templates:
       abi: ERC20BaseRewardModule
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - Pool
@@ -291,7 +293,7 @@ templates:
       abi: ERC20StakingModule
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
         - Pool

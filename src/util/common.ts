@@ -54,11 +54,11 @@ export function updatePoolDayData(pool: Pool, timestamp: number): PoolDayData {
   poolDayData.apr = pool.apr;
   poolDayData.usage = pool.usage;
 
-  return poolDayData!;
+  return poolDayData;
 }
 
 
-export function updatePlatform(platform: Platform, timestamp: BigInt, block: BigInt, skip: Pool): boolean {
+export function updatePlatform(platform: Platform, timestamp: BigInt, skip: Pool): boolean {
   // skip if pricing period has not elapsed
   if (timestamp.minus(platform._updated).lt(PRICING_PERIOD)) {
     return false;
@@ -86,9 +86,9 @@ export function updatePlatform(platform: Platform, timestamp: BigInt, block: Big
     // update pool
     if (pool.stakingModuleType == 'V1') {
       let contract = GeyserContractV1.bind(Address.fromString(pool.id));
-      updateGeyserV1(pool, platform!, contract, stakingToken, rewardToken, timestamp, block);
+      updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, timestamp);
     } else {
-      updatePool(pool, platform!, stakingToken, rewardToken, timestamp, block);
+      updatePool(pool, platform, stakingToken, rewardToken, timestamp);
     }
 
     // update pool day snapshot
@@ -100,18 +100,21 @@ export function updatePlatform(platform: Platform, timestamp: BigInt, block: Big
     rewardToken.save();
     poolDayData.save();
 
-    // remove from priced pool list if stale
-    if (pool.state == 'Stale') {
+    // remove low TVL pools from priced list
+    // note: no longer removing "stale" pools to support use cases with recurring zero duration funding
+    if (pool.tvl.lt(PRICING_MIN_TVL)) {
       stale.push(pool.id);
-      log.info('Removing stale pool from active pricing {}', [pool.id.toString()]);
-    } else if (pool.tvl.lt(PRICING_MIN_TVL)) {
-      stale.push(pool.id);
-      log.info('Removing low TVL pool from active pricing {}', [pool.id.toString()]);
+      log.info('Removing low TVL pool from active pricing {} ({})', [pool.id.toString(), timestamp.toString()]);
     }
   }
 
   if (stale.length) {
-    platform._activePools = pools.filter((x) => !stale.includes(x));
+    let filtered: string[] = [];
+    for (let i = 0; i < pools.length; i++) {
+      if (stale.includes(pools[i])) continue
+      filtered.push(pools[i]);
+    }
+    platform._activePools = filtered;
   }
   platform._updated = timestamp;
   return true;

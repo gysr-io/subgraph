@@ -61,20 +61,15 @@ export function handleRewardsFunded(event: RewardsFunded): void {
 
   pool.fundings = pool.fundings.concat([funding.id])
 
-  // update pricing info
-  stakingToken.price = getPrice(stakingToken!, event.block.number);
-  stakingToken.updated = event.block.timestamp;
-  rewardToken.price = getPrice(rewardToken!, event.block.number);
-  rewardToken.updated = event.block.timestamp;
-
   // update pool pricing
-  updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp, event.block.number);
+  updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp);
 
   // update platform
   if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
+    log.info('Adding pool to active pricing {}', [pool.id.toString()]);
     platform._activePools = platform._activePools.concat([pool.id]);
   }
-  updatePlatform(platform, event.block.timestamp, event.block.number, pool);
+  updatePlatform(platform, event.block.timestamp, pool);
 
   // store
   pool.save();
@@ -89,7 +84,7 @@ export function handleRewardsFunded(event: RewardsFunded): void {
 export function handleGysrSpent(event: GysrSpent): void {
   let contract = ERC20BaseRewardModuleContract.bind(event.address);
   let pool = Pool.load(contract.owner().toHexString())!;
-  let platform = Platform.load(ZERO_ADDRESS);
+  let platform = Platform.load(ZERO_ADDRESS)!;
 
   // update gysr spent on unstake transaction
   let transaction = new Transaction(event.transaction.hash.toHexString());
@@ -105,7 +100,7 @@ export function handleGysrSpent(event: GysrSpent): void {
   if (gysr === null) {
     gysr = createNewToken(Address.fromString(GYSR_TOKEN));
   }
-  gysr.price = getPrice(gysr!, event.block.number);
+  gysr.price = getPrice(gysr, event.block.timestamp);
   gysr.updated = event.block.timestamp;
 
   let dollarAmount = amount.times(gysr.price);
@@ -126,13 +121,13 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
   let contract = ERC20BaseRewardModuleContract.bind(event.address);
   let pool = Pool.load(contract.owner().toHexString())!;
   let token = Token.load(pool.rewardToken)!;
-  let platform = Platform.load(ZERO_ADDRESS);
+  let platform = Platform.load(ZERO_ADDRESS)!;
 
   let amount = integerToDecimal(event.params.amount, token.decimals);
   pool.distributed = pool.distributed.plus(amount);
 
   // pricing for volume
-  let dollarAmount = amount.times(getPrice(token, event.block.number)); //  TODO - can we just use the stored price?
+  let dollarAmount = amount.times(getPrice(token, event.block.timestamp));
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
   platform.volume = platform.volume.plus(dollarAmount);
   pool.volume = pool.volume.plus(dollarAmount);
@@ -151,13 +146,13 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
 
 export function handleRewardsExpired(event: RewardsExpired): void {
   let contract = ERC20BaseRewardModuleContract.bind(event.address);
-  let pool = Pool.load(contract.owner().toHexString());
-  let rewardToken = Token.load(pool.rewardToken);
+  let pool = Pool.load(contract.owner().toHexString())!;
+  let rewardToken = Token.load(pool.rewardToken)!;
   let amount = integerToDecimal(event.params.amount, rewardToken.decimals);
 
   let fundings = pool.fundings;
   for (let i = 0; i < fundings.length; i++) {
-    let funding = Funding.load(fundings[i]);
+    let funding = Funding.load(fundings[i])!;
 
     // mark expired funding as cleaned
     if (funding.start.equals(event.params.timestamp)

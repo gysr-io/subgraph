@@ -8,12 +8,14 @@ import {
   getTokenPrice,
   isUniswapLiquidityToken,
   getUniswapLiquidityTokenAlias,
-  getUniswapLiquidityTokenPrice
+  getUniswapLiquidityTokenPrice,
+  Price,
+  getUniswapLiquidityTokenUnderlying
 } from '../pricing/uniswap'
-import { getBalancerLiquidityTokenPrice, isBalancerLiquidityToken } from './balancer'
-import { getUmaKpiOptionAlias, isUmaKpiOption } from './uma'
+import { getBalancerLiquidityTokenPrice, getBalancerLiquidityTokenUnderlying, isBalancerLiquidityToken } from './balancer'
+import { getUmaKpiOptionAlias, getUmaKpiOptionUnderlying, isUmaKpiOption } from './uma'
 import { isERC721Token } from './erc721'
-import { isGUniLiquidityToken, getGUniLiquidityTokenAlias, getGUniLiquidityTokenPrice } from './guni'
+import { isGUniLiquidityToken, getGUniLiquidityTokenAlias, getGUniLiquidityTokenPrice, getGUniLiquidityTokenUnderlying } from './guni'
 
 
 // factory function to define and populate new token entity
@@ -28,6 +30,7 @@ export function createNewToken(address: Address): Token {
   token.decimals = BigInt.fromI32(0);
   token.totalSupply = BigInt.fromI32(0);
   token.price = ZERO_BIG_DECIMAL;
+  token.hint = '';
   token.updated = ZERO_BIG_INT;
 
   let resName = tokenContract.try_name();
@@ -50,10 +53,12 @@ export function createNewToken(address: Address): Token {
   // token type
   if (isUniswapLiquidityToken(address)) {
     token.alias = getUniswapLiquidityTokenAlias(address);
+    token.underlying = getUniswapLiquidityTokenUnderlying(address);
     token.type = 'UniswapLiquidity';
     log.info('created new token: Uniswap LP, {}, {}', [token.id, token.alias]);
 
   } else if (isBalancerLiquidityToken(address)) {
+    token.underlying = getBalancerLiquidityTokenUnderlying(address);
     token.type = 'BalancerLiquidity';
     log.info('created new token: Balancer Weighted LP, {}, {}', [token.id, token.symbol]);
 
@@ -64,6 +69,7 @@ export function createNewToken(address: Address): Token {
 
   } else if (isUmaKpiOption(address)) {
     token.alias = getUmaKpiOptionAlias(address);
+    token.underlying = getUmaKpiOptionUnderlying(address);
     token.type = 'UmaKpiOption';
     log.info('created new token: UMA KPI Option, {}, {}', [token.id, token.symbol]);
 
@@ -73,6 +79,7 @@ export function createNewToken(address: Address): Token {
 
   } else if (isGUniLiquidityToken(address)) {
     token.alias = getGUniLiquidityTokenAlias(address);
+    token.underlying = getGUniLiquidityTokenUnderlying(address);
     token.type = 'GUniLiquidity';
     log.info('created new token: ERC721, {}, {}', [token.id, token.symbol]);
 
@@ -81,27 +88,41 @@ export function createNewToken(address: Address): Token {
     log.info('created new token: standard, {}, {}', [token.id, token.symbol]);
   }
 
+  // ensure each underlying token already exists
+  for (let i = 0; i < token.underlying.length; i++) {
+    let u = Token.load(token.underlying[i]);
+    if (u === null) {
+      u = createNewToken(Address.fromString(token.underlying[i]));
+      u.save();
+    }
+  }
+
   return token;
 }
 
-export function getPrice(token: Token, block: BigInt): BigDecimal {
+export function getPrice(token: Token, timestamp: BigInt): BigDecimal {
   // only price tokens on mainnet
   if (dataSource.network() != 'mainnet' && dataSource.network() != 'matic') {
     return BigDecimal.fromString('1.0');
   }
 
   // price token based on type
+  let price = new Price(ZERO_BIG_DECIMAL, '');
   if (token.type == 'Stable') {
-    return BigDecimal.fromString('1.0');
+    price = new Price(BigDecimal.fromString('1.0'), 'stable');
   } else if (token.type == 'Standard') {
-    return getTokenPrice(Address.fromString(token.id.toString()), block);
+    price = getTokenPrice(Address.fromString(token.id.toString()), token.decimals, token.hint, timestamp);
   } else if (token.type == 'UniswapLiquidity') {
-    return getUniswapLiquidityTokenPrice(Address.fromString(token.id.toString()), block);
+    price = getUniswapLiquidityTokenPrice(Address.fromString(token.id.toString()), token.hint, timestamp);
   } else if (token.type == 'BalancerLiquidity') {
-    return getBalancerLiquidityTokenPrice(Address.fromString(token.id.toString()), block);
+    price = getBalancerLiquidityTokenPrice(Address.fromString(token.id.toString()), token.hint, timestamp);
   } else if (token.type == 'GUniLiquidity') {
-    return getGUniLiquidityTokenPrice(Address.fromString(token.id.toString()), block);
+    price = getGUniLiquidityTokenPrice(Address.fromString(token.id.toString()), token.hint, timestamp);
   }
 
-  return ZERO_BIG_DECIMAL;
+  // cache price
+  token.price = price.price;
+  token.hint = price.hint.toString();
+
+  return price.price;
 }

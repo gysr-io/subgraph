@@ -1,4 +1,4 @@
-// V2 Pool Factory event handling and mapping
+// pool metadata contract handling
 
 import { log, json, Bytes } from '@graphprotocol/graph-ts'
 import { Metadata } from '../../generated/PoolMetadata/PoolMetadata'
@@ -26,18 +26,29 @@ export function handleMetadata(event: Metadata): void {
 
   let name = data.get('name');
   if (name) {
-    pool.name = name.toString();
+    if (!name.isNull()) {
+      pool.name = name.toString();
+    }
   }
   let description = data.get('description');
   if (description) {
-    pool.description = description.toString();
+    if (!description.isNull()) {
+      pool.description = description.toString();
+    }
   }
   let website = data.get('website');
   if (website) {
-    pool.website = website.toString();
+    if (!website.isNull()) {
+      pool.website = website.toString();
+    }
   }
 
   // write out
   pool.save();
-  log.info('set metadata for pool: {}, {}, {}, {}', [pool.id, event.params.data, pool.name, pool.description]);
+  log.info('set metadata for pool: {}, {}, {}, {}', [
+    pool.id,
+    event.params.data,
+    pool.name ? pool.name! : 'null',
+    pool.description ? pool.description! : 'null'
+  ]);
 }
