@@ -14,6 +14,7 @@ import {
   WRAPPED_NATIVE_ADDRESS,
   WETH_ADDRESS,
   USD_NATIVE_PAIR,
+  USD_NATIVE_PAIR_V3,
   USD_WETH_PAIR,
   STABLECOINS,
   UNISWAP_FACTORY,
@@ -82,6 +83,30 @@ export function getUniswapLiquidityTokenUnderlying(address: Address): Array<stri
 
 
 export function getNativePrice(): BigDecimal {
+  // prefer uniswap v3 if defined
+  if (USD_NATIVE_PAIR_V3 != ZERO_ADDRESS) {
+    // NOTE: if updating this constant address, we assume that the native token is token0
+    let pool = UniswapPoolV3.bind(Address.fromString(USD_NATIVE_PAIR_V3));
+
+    // if (pool.liquidity() == ZERO_BIG_INT) {
+    //   return ZERO_BIG_DECIMAL;
+    // }
+
+    // compute price
+    let slot0 = pool.slot0();
+    let sqrtPriceX96 = slot0.value0;
+    let price = (sqrtPriceX96.times(sqrtPriceX96).toBigDecimal()).div(
+      BigInt.fromI32(2).pow(96 * 2).toBigDecimal() // effective bit shift >> (96*2)
+    );
+    // price = BigDecimal.fromString('1.0').div(price); // assuming native is token0
+    // no need to adjust decimals, weth and dai both 18
+    // price = price
+    //   .times(BigInt.fromI32(10).pow(decimals.toI32() as u8).toBigDecimal())
+    //   .div(BigInt.fromI32(10).pow(stableDecimals.toI32() as u8).toBigDecimal());
+
+    return price;
+  }
+
   // NOTE: if updating this constant address, we assume that the native token is token0
   let pair = UniswapPair.bind(Address.fromString(USD_NATIVE_PAIR));
   let reserves = pair.getReserves();
@@ -182,6 +207,7 @@ export function getTokenPrice(address: Address, decimals: BigInt, hint: String, 
 
   // try each uniswap factory (or clone)
   for (let i = 0; i < factories.length; i++) {
+    if (factories[i] == ZERO_ADDRESS) continue;
     let factory = UniswapFactory.bind(Address.fromString(factories[i]));
 
     // try each stable

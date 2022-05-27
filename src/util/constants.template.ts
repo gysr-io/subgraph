@@ -27,6 +27,7 @@ export let PRICING_MIN_TVL = BigDecimal.fromString('1000.0');
 
 // uniswap
 export let USD_NATIVE_PAIR = '{{usd_native_address}}';
+export let USD_NATIVE_PAIR_V3 = '{{usd_native_address_v3}}';
 export let USD_WETH_PAIR = '{{usd_weth_address}}';
 export let UNISWAP_FACTORY = '{{uniswap_factory}}';
 export let SUSHI_FACTORY = '{{sushi_factory}}';
