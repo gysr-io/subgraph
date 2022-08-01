@@ -278,6 +278,7 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
   let dollarAmount = amount.times(getPrice(token, event.block.timestamp));
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
   platform.volume = platform.volume.plus(dollarAmount);
+  platform.rewardsVolume = platform.rewardsVolume.plus(dollarAmount);
   pool.volume = pool.volume.plus(dollarAmount);
   poolDayData.volume = poolDayData.volume.plus(dollarAmount);
 
