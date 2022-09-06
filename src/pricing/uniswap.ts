@@ -88,21 +88,13 @@ export function getNativePrice(): BigDecimal {
     // NOTE: if updating this constant address, we assume that the native token is token0
     let pool = UniswapPoolV3.bind(Address.fromString(USD_NATIVE_PAIR_V3));
 
-    // if (pool.liquidity() == ZERO_BIG_INT) {
-    //   return ZERO_BIG_DECIMAL;
-    // }
-
     // compute price
     let slot0 = pool.slot0();
     let sqrtPriceX96 = slot0.value0;
     let price = (sqrtPriceX96.times(sqrtPriceX96).toBigDecimal()).div(
       BigInt.fromI32(2).pow(96 * 2).toBigDecimal() // effective bit shift >> (96*2)
     );
-    // price = BigDecimal.fromString('1.0').div(price); // assuming native is token0
-    // no need to adjust decimals, weth and dai both 18
-    // price = price
-    //   .times(BigInt.fromI32(10).pow(decimals.toI32() as u8).toBigDecimal())
-    //   .div(BigInt.fromI32(10).pow(stableDecimals.toI32() as u8).toBigDecimal());
+    // NOTE: currently assuming both 18 decimals
 
     return price;
   }
