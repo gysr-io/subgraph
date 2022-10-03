@@ -74,9 +74,9 @@ dataSources:
         - name: ERC20BaseRewardModule
           file: './abis/ERC20BaseRewardModule.json'
         - name: ERC20CompetitiveRewardModule
-          file: './abis/ERC20CompetitiveRewardModule.json'
+          file: './abis/ERC20CompetitiveRewardModuleV2.json'
         - name: ERC20FriendlyRewardModule
-          file: './abis/ERC20FriendlyRewardModule.json'
+          file: './abis/ERC20FriendlyRewardModuleV2.json'
         - name: ERC20
           file: ./abis/ERC20.json
         - name: ERC721
@@ -305,10 +305,14 @@ templates:
           file: ./abis/ERC20StakingModule.json
         - name: ERC20BaseRewardModule
           file: './abis/ERC20BaseRewardModule.json'
-        - name: ERC20CompetitiveRewardModule
-          file: './abis/ERC20CompetitiveRewardModule.json'
-        - name: ERC20FriendlyRewardModule
-          file: './abis/ERC20FriendlyRewardModule.json'
+        - name: ERC20CompetitiveRewardModuleV2
+          file: './abis/ERC20CompetitiveRewardModuleV2.json'
+        - name: ERC20CompetitiveRewardModuleV3
+          file: './abis/ERC20CompetitiveRewardModuleV3.json'
+        - name: ERC20FriendlyRewardModuleV2
+          file: './abis/ERC20FriendlyRewardModuleV2.json'
+        - name: ERC20FriendlyRewardModuleV3
+          file: './abis/ERC20FriendlyRewardModuleV3.json'
         - name: GeyserV1
           file: ./abis/GeyserV1.json
         - name: ERC20

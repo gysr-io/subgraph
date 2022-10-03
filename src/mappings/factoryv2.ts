@@ -1,4 +1,4 @@
-// V2 Pool Factory event handling and mapping
+// V2 and V3 Pool Factory event handling and mapping
 
 import { BigDecimal, BigInt, log } from '@graphprotocol/graph-ts'
 import { PoolCreated } from '../../generated/PoolFactory/PoolFactory'
@@ -19,8 +19,10 @@ import {
   ZERO_BIG_DECIMAL,
   INITIAL_SHARES_PER_TOKEN,
   ZERO_ADDRESS,
-  ERC20_COMPETITIVE_REWARD_MODULE_FACTORIES,
-  ERC20_FRIENDLY_REWARD_MODULE_FACTORIES,
+  ERC20_COMPETITIVE_REWARD_MODULE_FACTORIES_V2,
+  ERC20_COMPETITIVE_REWARD_MODULE_FACTORIES_V3,
+  ERC20_FRIENDLY_REWARD_MODULE_FACTORIES_V2,
+  ERC20_FRIENDLY_REWARD_MODULE_FACTORIES_V3,
   ERC20_STAKING_MODULE_FACTORIES,
   ERC721_STAKING_MODULE_FACTORIES,
   ONE_E_18
@@ -79,18 +81,30 @@ export function handlePoolCreated(event: PoolCreated): void {
 
   // reward type
   let rewardFactory = rewardModuleContract.factory();
-  if (ERC20_COMPETITIVE_REWARD_MODULE_FACTORIES.includes(rewardFactory)) {
+  if (ERC20_COMPETITIVE_REWARD_MODULE_FACTORIES_V2.includes(rewardFactory)) {
     let competitiveContract = ERC20CompetitiveRewardModuleContract.bind(rewardModule)
     pool.timeMultMin = integerToDecimal(competitiveContract.bonusMin());
     pool.timeMultMax = integerToDecimal(competitiveContract.bonusMax());
     pool.timeMultPeriod = competitiveContract.bonusPeriod();
-    pool.rewardModuleType = 'ERC20Competitive';
-  } else if (ERC20_FRIENDLY_REWARD_MODULE_FACTORIES.includes(rewardFactory)) {
+    pool.rewardModuleType = 'ERC20CompetitiveV2';
+  } else if (ERC20_COMPETITIVE_REWARD_MODULE_FACTORIES_V3.includes(rewardFactory)) {
+    let competitiveContract = ERC20CompetitiveRewardModuleContract.bind(rewardModule)
+    pool.timeMultMin = integerToDecimal(competitiveContract.bonusMin());
+    pool.timeMultMax = integerToDecimal(competitiveContract.bonusMax());
+    pool.timeMultPeriod = competitiveContract.bonusPeriod();
+    pool.rewardModuleType = 'ERC20CompetitiveV3';
+  } else if (ERC20_FRIENDLY_REWARD_MODULE_FACTORIES_V2.includes(rewardFactory)) {
     let friendlyContract = ERC20FriendlyRewardModuleContract.bind(rewardModule);
     pool.timeMultMin = integerToDecimal(friendlyContract.vestingStart());
     pool.timeMultMax = BigDecimal.fromString('1');
     pool.timeMultPeriod = friendlyContract.vestingPeriod();
-    pool.rewardModuleType = 'ERC20Friendly';
+    pool.rewardModuleType = 'ERC20FriendlyV2';
+  } else if (ERC20_FRIENDLY_REWARD_MODULE_FACTORIES_V3.includes(rewardFactory)) {
+    let friendlyContract = ERC20FriendlyRewardModuleContract.bind(rewardModule);
+    pool.timeMultMin = integerToDecimal(friendlyContract.vestingStart());
+    pool.timeMultMax = BigDecimal.fromString('1');
+    pool.timeMultPeriod = friendlyContract.vestingPeriod();
+    pool.rewardModuleType = 'ERC20FriendlyV3';
   } else {
     log.info('unknown reward module type: {}', [rewardFactory.toHexString()]);
     return;
@@ -111,13 +125,13 @@ export function handlePoolCreated(event: PoolCreated): void {
 
   // type nickname
   if (pool.stakingModuleType == 'ERC20') {
-    if (pool.rewardModuleType == 'ERC20Competitive') {
+    if (pool.rewardModuleType == 'ERC20CompetitiveV2' || pool.rewardModuleType == 'ERC20CompetitiveV3') {
       pool.poolType = 'GeyserV2';
     } else {
       pool.poolType = 'Fountain'
     }
   } else {
-    if (pool.rewardModuleType == 'ERC20Friendly') {
+    if (pool.rewardModuleType == 'ERC20FriendlyV2' || pool.rewardModuleType == 'ERC20FriendlyV3') {
       pool.poolType = 'Aquarium';
     } else {
       pool.poolType = 'Unknown';
@@ -161,7 +175,7 @@ export function handlePoolCreated(event: PoolCreated): void {
   user.save();
   platform.save();
 
-  log.info('created new v2 pool: {}, {}, {}, {}', [pool.id, pool.poolType, stakingToken.symbol, rewardToken.symbol]);
+  log.info('created new v2/v3 pool: {}, {}, {}, {}', [pool.id, pool.poolType, stakingToken.symbol, rewardToken.symbol]);
 
   // create template event handler
   PoolTemplate.create(event.params.pool);
