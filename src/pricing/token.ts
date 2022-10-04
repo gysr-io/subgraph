@@ -3,7 +3,7 @@
 import { Address, BigInt, BigDecimal, ethereum, log, dataSource } from '@graphprotocol/graph-ts'
 import { ERC20 } from '../../generated/templates/GeyserV1/ERC20'
 import { Token } from '../../generated/schema'
-import { ZERO_BIG_INT, STABLECOINS, ZERO_BIG_DECIMAL } from '../util/constants'
+import { ZERO_BIG_INT, STABLECOINS, ZERO_BIG_DECIMAL, WRAPPED_NATIVE_ADDRESS, ZERO_ADDRESS } from '../util/constants'
 import {
   getTokenPrice,
   isUniswapLiquidityToken,
@@ -101,8 +101,8 @@ export function createNewToken(address: Address): Token {
 }
 
 export function getPrice(token: Token, timestamp: BigInt): BigDecimal {
-  // only price tokens on mainnet
-  if (dataSource.network() != 'mainnet' && dataSource.network() != 'matic') {
+  // skip pricing on testnet
+  if (WRAPPED_NATIVE_ADDRESS == ZERO_ADDRESS) {
     return BigDecimal.fromString('1.0');
   }
 

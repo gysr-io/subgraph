@@ -178,6 +178,7 @@ type Platform @entity {
   pools: BigInt!
   gysrSpent: BigDecimal!
   volume: BigDecimal!
+  rewardsVolume: BigDecimal!
 
   # list of actively priced pools
   _activePools: [Pool!]!

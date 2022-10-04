@@ -12,6 +12,7 @@
   "dai_address": "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063",
   "frax_address": "0x45c32fa6df82ead1e2ef74d17b76547eddfaff89",
   "usd_native_address": "0x6e7a5fafcec6bb1e78bae2a1f0b612012bf14827",
+  "usd_native_address_v3": "0x0000000000000000000000000000000000000000",
   "usd_weth_address": "0xf6422b997c7f54d1c6a6e103bcb1499eea0a7046",
   "uniswap_factory": "0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32",
   "sushi_factory": "0xc35dadb65012ec5796536bd9864ed8773abc74c4",

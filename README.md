@@ -13,7 +13,7 @@ https://thegraph.com/explorer/subgraph/gysr-io/gysr
 
 Both **Node.js** and **npm** are required for package management and deployment. See instructions
 for installation [here](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm). This
-codebase has been tested with `nvm: v0.37.x`, `Node.js: v10.x`, and `npm: v6.x`.
+codebase has been tested with `nvm: v0.37.x`, `Node.js: v14.x`, and `npm: v6.x`.
 
 To install node packages and other dependencies:
 ```
