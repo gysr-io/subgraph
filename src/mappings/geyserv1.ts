@@ -23,7 +23,7 @@ export function handleStaked(event: Staked): void {
   let pool = Pool.load(event.address.toHexString())!;
   let stakingToken = Token.load(pool.stakingToken)!;
   let rewardToken = Token.load(pool.rewardToken)!;
-  let platform = Platform.load(ZERO_ADDRESS)!;
+  let platform = Platform.load(ZERO_ADDRESS.toHexString())!;
 
   // load or create user
   let user = User.load(event.params.user.toHexString());
@@ -118,7 +118,7 @@ export function handleUnstaked(event: Unstaked): void {
   let pool = Pool.load(event.address.toHexString())!;
   let stakingToken = Token.load(pool.stakingToken)!;
   let rewardToken = Token.load(pool.rewardToken)!;
-  let platform = Platform.load(ZERO_ADDRESS)!;
+  let platform = Platform.load(ZERO_ADDRESS.toHexString())!;
 
   // load user
   let user = User.load(event.params.user.toHexString())!;
@@ -215,7 +215,7 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   let pool = Pool.load(event.address.toHexString())!;
   let stakingToken = Token.load(pool.stakingToken)!;
   let rewardToken = Token.load(pool.rewardToken)!;
-  let platform = Platform.load(ZERO_ADDRESS)!;
+  let platform = Platform.load(ZERO_ADDRESS.toHexString())!;
 
   let contract = GeyserContractV1.bind(event.address);
 
@@ -270,7 +270,7 @@ export function handleRewardsFunded(event: RewardsFunded): void {
 export function handleRewardsDistributed(event: RewardsDistributed): void {
   let pool = Pool.load(event.address.toHexString())!;
   let token = Token.load(pool.rewardToken)!;
-  let platform = Platform.load(ZERO_ADDRESS)!;
+  let platform = Platform.load(ZERO_ADDRESS.toHexString())!;
 
   let amount = integerToDecimal(event.params.amount, token.decimals);
   pool.distributed = pool.distributed.plus(amount);
@@ -295,7 +295,7 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
 
 export function handleOwnershipTransferred(event: OwnershipTransferred): void {
   let pool = Pool.load(event.address.toHexString())!;
-  let platform = Platform.load(ZERO_ADDRESS)!;
+  let platform = Platform.load(ZERO_ADDRESS.toHexString())!;
 
   let newOwner = User.load(event.params.newOwner.toHexString());
   if (newOwner == null) {
@@ -342,12 +342,12 @@ export function handleGysrSpent(event: GysrSpent): void {
   pool.gysrSpent = pool.gysrSpent.plus(amount);
 
   // update platform total GYSR spent
-  let platform = Platform.load(ZERO_ADDRESS)!;
+  let platform = Platform.load(ZERO_ADDRESS.toHexString())!;
   platform.gysrSpent = platform.gysrSpent.plus(amount);
 
-  let gysr = Token.load(GYSR_TOKEN);
+  let gysr = Token.load(GYSR_TOKEN.toHexString());
   if (gysr === null) {
-    gysr = createNewToken(Address.fromString(GYSR_TOKEN));
+    gysr = createNewToken(GYSR_TOKEN);
   }
   gysr.price = getPrice(gysr, event.block.timestamp);
   gysr.updated = event.block.timestamp;

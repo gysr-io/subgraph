@@ -21,7 +21,7 @@ export function handleStaked(event: Staked): void {
   let pool = Pool.load(contract.owner().toHexString())!;
   let stakingToken = Token.load(pool.stakingToken)!;
   let rewardToken = Token.load(pool.rewardToken)!;
-  let platform = Platform.load(ZERO_ADDRESS)!;
+  let platform = Platform.load(ZERO_ADDRESS.toHexString())!;
 
   // load or create user
   let user = User.load(event.params.user.toHexString());
@@ -109,7 +109,7 @@ export function handleUnstaked(event: Unstaked): void {
   let pool = Pool.load(contract.owner().toHexString())!;
   let stakingToken = Token.load(pool.stakingToken)!;
   let rewardToken = Token.load(pool.rewardToken)!;
-  let platform = Platform.load(ZERO_ADDRESS)!;
+  let platform = Platform.load(ZERO_ADDRESS.toHexString())!;
 
   // load user
   let user = User.load(event.params.user.toHexString())!;
@@ -234,7 +234,7 @@ export function handleClaimed(event: Claimed): void {
   let pool = Pool.load(contract.owner().toHexString())!;
   let stakingToken = Token.load(pool.stakingToken)!;
   let rewardToken = Token.load(pool.rewardToken)!;
-  let platform = Platform.load(ZERO_ADDRESS)!;
+  let platform = Platform.load(ZERO_ADDRESS.toHexString())!;
 
   // load user
   let user = User.load(event.params.user.toHexString())!;

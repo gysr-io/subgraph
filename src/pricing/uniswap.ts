@@ -86,7 +86,7 @@ export function getNativePrice(): BigDecimal {
   // prefer uniswap v3 if defined
   if (USD_NATIVE_PAIR_V3 != ZERO_ADDRESS) {
     // NOTE: if updating this constant address, we assume that the native token is token0
-    let pool = UniswapPoolV3.bind(Address.fromString(USD_NATIVE_PAIR_V3));
+    let pool = UniswapPoolV3.bind(USD_NATIVE_PAIR_V3);
 
     // compute price
     let slot0 = pool.slot0();
@@ -100,7 +100,7 @@ export function getNativePrice(): BigDecimal {
   }
 
   // NOTE: if updating this constant address, we assume that the native token is token0
-  let pair = UniswapPair.bind(Address.fromString(USD_NATIVE_PAIR));
+  let pair = UniswapPair.bind(USD_NATIVE_PAIR);
   let reserves = pair.getReserves();
   let wnative = integerToDecimal(reserves.value0)  // wrapped native 18 decimals
   let usd = integerToDecimal(reserves.value1, BigInt.fromI32(6))  // usd 6 decimals
@@ -110,7 +110,7 @@ export function getNativePrice(): BigDecimal {
 
 export function getEthPrice(): BigDecimal {
   // NOTE: if updating this constant address, we assume that weth is token0
-  let pair = UniswapPair.bind(Address.fromString(USD_WETH_PAIR));
+  let pair = UniswapPair.bind(USD_WETH_PAIR);
   let reserves = pair.getReserves();
   let weth = integerToDecimal(reserves.value0)  // weth 18 decimals
   let usd = integerToDecimal(reserves.value1, BigInt.fromI32(6))  // usd 6 decimals
@@ -135,24 +135,22 @@ export function getTokenPrice(address: Address, decimals: BigInt, hint: String, 
   }
 
   // early exit for stables
-  if (STABLECOINS.includes(address.toHexString())) {
+  if (STABLECOINS.includes(address)) {
     return new Price(BigDecimal.fromString('1.0'), 'stable');
   }
-  if (address.toHexString() == WRAPPED_NATIVE_ADDRESS) {
+  if (address == WRAPPED_NATIVE_ADDRESS) {
     let price = getNativePrice();
     cache.set(address, price);
     return new Price(price, 'native');
   }
-  if (address.toHexString() == WETH_ADDRESS) {
+  if (address == WETH_ADDRESS) {
     let price = getEthPrice();
     cache.set(address, price);
     return new Price(price, 'eth');
   }
 
   // stables
-  let zero = Address.fromString(ZERO_ADDRESS);
-
-  let stables: string[] = [WRAPPED_NATIVE_ADDRESS];
+  let stables: Address[] = [WRAPPED_NATIVE_ADDRESS];
   let stableDecimals: number[] = [18];
   stables = stables.concat(STABLECOINS);
   stableDecimals = stableDecimals.concat(STABLECOIN_DECIMALS);
@@ -172,7 +170,7 @@ export function getTokenPrice(address: Address, decimals: BigInt, hint: String, 
       price = _getPriceUniV2(
         address,
         decimals,
-        Address.fromString(stables[idx]),
+        stables[idx],
         BigInt.fromI32(stableDecimals[idx] as i32),
         Address.fromString(parts[2])
       );
@@ -181,7 +179,7 @@ export function getTokenPrice(address: Address, decimals: BigInt, hint: String, 
       price = _getPriceUniV3(
         address,
         decimals,
-        Address.fromString(stables[idx]),
+        stables[idx],
         BigInt.fromI32(stableDecimals[idx] as i32),
         Address.fromString(parts[2])
       );
@@ -195,25 +193,25 @@ export function getTokenPrice(address: Address, decimals: BigInt, hint: String, 
     //log.info("pricing hint debug failed {} {} {}", [address.toHexString(), hint.toString(), idx.toString()]);
   }
 
-  let factories: string[] = [UNISWAP_FACTORY, SUSHI_FACTORY];
+  let factories: Address[] = [UNISWAP_FACTORY, SUSHI_FACTORY];
 
   // try each uniswap factory (or clone)
   for (let i = 0; i < factories.length; i++) {
     if (factories[i] == ZERO_ADDRESS) continue;
-    let factory = UniswapFactory.bind(Address.fromString(factories[i]));
+    let factory = UniswapFactory.bind(factories[i]);
 
     // try each stable
     for (let j = 0; j < stables.length; j++) {
-      let poolAddress = factory.getPair(address, Address.fromString(stables[j]));
+      let poolAddress = factory.getPair(address, stables[j]);
 
-      if (poolAddress == zero) {
+      if (poolAddress == ZERO_ADDRESS) {
         continue;
       }
 
       let price = _getPriceUniV2(
         address,
         decimals,
-        Address.fromString(stables[j]),
+        stables[j],
         BigInt.fromI32(stableDecimals[j] as i32),
         poolAddress
       );
@@ -233,22 +231,22 @@ export function getTokenPrice(address: Address, decimals: BigInt, hint: String, 
   if (timestamp < UNISWAP_FACTORY_V3_START_TIME) {
     return new Price(ZERO_BIG_DECIMAL, '');
   }
-  let factory = UniswapFactoryV3.bind(Address.fromString(UNISWAP_FACTORY_V3));
+  let factory = UniswapFactoryV3.bind(UNISWAP_FACTORY_V3);
   let fees: number[] = [3000, 10000]; // 500];
 
   // try each stable and fee tier
   for (let i = 0; i < stables.length; i++) {
     for (let j = 0; j < fees.length; j++) {
-      let poolAddress = factory.getPool(address, Address.fromString(stables[i]), fees[j] as i32);
+      let poolAddress = factory.getPool(address, stables[i], fees[j] as i32);
 
-      if (poolAddress == zero) {
+      if (poolAddress == ZERO_ADDRESS) {
         continue;
       }
 
       let price = _getPriceUniV3(
         address,
         decimals,
-        Address.fromString(stables[i]),
+        stables[i],
         BigInt.fromI32(stableDecimals[i] as i32),
         poolAddress
       );
@@ -291,10 +289,10 @@ function _getPriceUniV2(address: Address, decimals: BigInt, stableAddress: Addre
   }
 
   // convert native or weth to usd
-  if (stableAddress == Address.fromString(WRAPPED_NATIVE_ADDRESS)) {
+  if (stableAddress == WRAPPED_NATIVE_ADDRESS) {
     let native = getNativePrice();
     stable = stable.times(native);
-  } else if (stableAddress == Address.fromString(WETH_ADDRESS)) {
+  } else if (stableAddress == WETH_ADDRESS) {
     let eth = getEthPrice();
     stable = stable.times(eth);
   }
@@ -313,9 +311,9 @@ function _getPriceUniV2(address: Address, decimals: BigInt, stableAddress: Addre
 function _getPriceUniV3(address: Address, decimals: BigInt, stableAddress: Address, stableDecimals: BigInt, poolAddress: Address): BigDecimal {
 
   let stablePrice = BigDecimal.fromString('1.0');
-  if (stableAddress == Address.fromString(WRAPPED_NATIVE_ADDRESS)) {
+  if (stableAddress == WRAPPED_NATIVE_ADDRESS) {
     stablePrice = getNativePrice();
-  } else if (stableAddress == Address.fromString(WETH_ADDRESS)) {
+  } else if (stableAddress == WETH_ADDRESS) {
     stablePrice = getEthPrice();
   }
 

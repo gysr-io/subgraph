@@ -32,7 +32,7 @@ export function handleGeyserV1Created(event: GeyserCreated): void {
   }
 
   // platform
-  let platform = Platform.load(ZERO_ADDRESS);
+  let platform = Platform.load(ZERO_ADDRESS.toHexString());
 
   if (platform === null) {
     platform = createNewPlatform();

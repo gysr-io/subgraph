@@ -7,18 +7,18 @@ export let ZERO_BIG_DECIMAL = BigDecimal.fromString('0');
 export let ZERO_BIG_INT = BigInt.fromI32(0);
 export let ONE_E_18 = (BigInt.fromI32(10).pow(18)).toBigDecimal();
 
-export let WRAPPED_NATIVE_ADDRESS = '{{wrapped_native_address}}';
-export let WETH_ADDRESS = '{{weth_address}}';
+export let WRAPPED_NATIVE_ADDRESS = Address.fromString('{{wrapped_native_address}}');
+export let WETH_ADDRESS = Address.fromString('{{weth_address}}');
 
-export let ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+export let ZERO_ADDRESS = Address.fromString('0x0000000000000000000000000000000000000000');
 
-export let GYSR_TOKEN = '{{gysr_address}}';
+export let GYSR_TOKEN = Address.fromString('{{gysr_address}}');
 
-export let STABLECOINS: string[] = [
-  '{{usdc_address}}',
-  '{{usdt_address}}',
-  '{{dai_address}}',
-  '{{frax_address}}'
+export let STABLECOINS: Address[] = [
+  Address.fromString('{{usdc_address}}'),
+  Address.fromString('{{usdt_address}}'),
+  Address.fromString('{{dai_address}}'),
+  Address.fromString('{{frax_address}}')
 ];
 export let STABLECOIN_DECIMALS: number[] = [6, 6, 18, 18];
 
@@ -26,12 +26,12 @@ export let PRICING_PERIOD = BigInt.fromI32(21600);  // 6 hours
 export let PRICING_MIN_TVL = BigDecimal.fromString('1000.0');
 
 // uniswap
-export let USD_NATIVE_PAIR = '{{usd_native_address}}';
-export let USD_NATIVE_PAIR_V3 = '{{usd_native_address_v3}}';
-export let USD_WETH_PAIR = '{{usd_weth_address}}';
-export let UNISWAP_FACTORY = '{{uniswap_factory}}';
-export let SUSHI_FACTORY = '{{sushi_factory}}';
-export let UNISWAP_FACTORY_V3 = '{{uniswap_factory_v3}}';
+export let USD_NATIVE_PAIR = Address.fromString('{{usd_native_address}}');
+export let USD_NATIVE_PAIR_V3 = Address.fromString('{{usd_native_address_v3}}');
+export let USD_WETH_PAIR = Address.fromString('{{usd_weth_address}}');
+export let UNISWAP_FACTORY = Address.fromString('{{uniswap_factory}}');
+export let SUSHI_FACTORY = Address.fromString('{{sushi_factory}}');
+export let UNISWAP_FACTORY_V3 = Address.fromString('{{uniswap_factory_v3}}');
 export let UNISWAP_FACTORY_V3_START_TIME = BigInt.fromI32(parseInt('{{uniswap_factory_v3_start_time}}') as i32);
 export let MIN_USD_PRICING = BigDecimal.fromString('10000.0');
 
