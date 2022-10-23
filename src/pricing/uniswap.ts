@@ -13,9 +13,13 @@ import {
   ZERO_BIG_INT,
   WRAPPED_NATIVE_ADDRESS,
   WETH_ADDRESS,
+  GYSR_TOKEN,
   USD_NATIVE_PAIR,
   USD_NATIVE_PAIR_V3,
   USD_WETH_PAIR,
+  GYSR_NATIVE_PAIR,
+  GYSR_NATIVE_PAIR_V3,
+  GYSR_NATIVE_V3_START_TIME,
   STABLECOINS,
   UNISWAP_FACTORY,
   SUSHI_FACTORY,
@@ -118,6 +122,14 @@ export function getEthPrice(): BigDecimal {
 }
 
 
+export function getGysrPrice(timestamp: BigInt): BigDecimal {
+  if (GYSR_NATIVE_PAIR_V3 != ZERO_ADDRESS && timestamp.gt(GYSR_NATIVE_V3_START_TIME)) {
+    return _getPriceUniV3(GYSR_TOKEN, BigInt.fromI32(18), WRAPPED_NATIVE_ADDRESS, BigInt.fromI32(18), GYSR_NATIVE_PAIR_V3, false);
+  }
+  return _getPriceUniV2(GYSR_TOKEN, BigInt.fromI32(18), WRAPPED_NATIVE_ADDRESS, BigInt.fromI32(18), GYSR_NATIVE_PAIR, false);
+}
+
+
 var cache = new Map<Address, BigDecimal>()
 
 
@@ -147,6 +159,11 @@ export function getTokenPrice(address: Address, decimals: BigInt, hint: String, 
     let price = getEthPrice();
     cache.set(address, price);
     return new Price(price, 'eth');
+  }
+  if (address == GYSR_TOKEN) {
+    let price = getGysrPrice(timestamp);
+    cache.set(address, price);
+    return new Price(price, 'gysr');
   }
 
   // stables
@@ -271,7 +288,14 @@ export function getTokenPrice(address: Address, decimals: BigInt, hint: String, 
 
 
 
-function _getPriceUniV2(address: Address, decimals: BigInt, stableAddress: Address, stableDecimals: BigInt, poolAddress: Address): BigDecimal {
+function _getPriceUniV2(
+  address: Address,
+  decimals: BigInt,
+  stableAddress: Address,
+  stableDecimals: BigInt,
+  poolAddress: Address,
+  threshold: boolean = true
+): BigDecimal {
 
   let pool = UniswapPair.bind(poolAddress);
   let reserves = pool.getReserves();
@@ -297,7 +321,7 @@ function _getPriceUniV2(address: Address, decimals: BigInt, stableAddress: Addre
     stable = stable.times(eth);
   }
 
-  if (stable.lt(MIN_USD_PRICING)) {
+  if (threshold && stable.lt(MIN_USD_PRICING)) {
     return ZERO_BIG_DECIMAL;
   }
 
@@ -308,7 +332,14 @@ function _getPriceUniV2(address: Address, decimals: BigInt, stableAddress: Addre
 
 
 
-function _getPriceUniV3(address: Address, decimals: BigInt, stableAddress: Address, stableDecimals: BigInt, poolAddress: Address): BigDecimal {
+function _getPriceUniV3(
+  address: Address,
+  decimals: BigInt,
+  stableAddress: Address,
+  stableDecimals: BigInt,
+  poolAddress: Address,
+  threshold: boolean = true
+): BigDecimal {
 
   let stablePrice = BigDecimal.fromString('1.0');
   if (stableAddress == WRAPPED_NATIVE_ADDRESS) {
@@ -319,7 +350,7 @@ function _getPriceUniV3(address: Address, decimals: BigInt, stableAddress: Addre
 
   let stableERC20 = ERC20.bind(stableAddress);
   let stableAmount = integerToDecimal(stableERC20.balanceOf(poolAddress), stableDecimals);
-  if ((stableAmount.times(stablePrice)).lt(MIN_USD_PRICING)) {
+  if (threshold && (stableAmount.times(stablePrice)).lt(MIN_USD_PRICING)) {
     return ZERO_BIG_DECIMAL;
   }
 
