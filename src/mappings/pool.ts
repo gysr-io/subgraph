@@ -9,7 +9,7 @@ import { ZERO_ADDRESS } from '../util/constants'
 
 export function handleControlTransferred(event: ControlTransferred): void {
   let pool = Pool.load(event.address.toHexString())!;
-  let platform = Platform.load(ZERO_ADDRESS)!;
+  let platform = Platform.load(ZERO_ADDRESS.toHexString())!;
 
   let newOwner = User.load(event.params.newController.toHexString());
   if (newOwner == null) {

@@ -62,7 +62,7 @@ export function getBalancerLiquidityTokenPrice(address: Address, hint: String, t
   let stableCoinIdx: i32 = -1;
   for (let i = 0; i < tokenAddresses.length; i++) {
     for (let j = 0; j < STABLECOINS.length; j++) {
-      if (Address.fromString(STABLECOINS[j]).toHexString() == tokenAddresses[i].toHexString()) {
+      if (STABLECOINS[j] == tokenAddresses[i]) {
         stableCoinPoolIdx = i;
         stableCoinIdx = j;
         break;
