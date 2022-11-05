@@ -62,7 +62,7 @@ export function createNewToken(address: Address): Token {
     token.type = 'BalancerLiquidity';
     log.info('created new token: Balancer Weighted LP, {}, {}', [token.id, token.symbol]);
 
-  } else if (STABLECOINS.includes(address.toHexString())) {
+  } else if (STABLECOINS.includes(address)) {
     token.price = BigDecimal.fromString('1.0');
     token.type = 'Stable';
     log.info('created new token: stablecoin, {}, {}', [token.id, token.symbol]);
