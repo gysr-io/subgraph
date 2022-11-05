@@ -5,12 +5,12 @@ import {
   Staked,
   Unstaked,
   Claimed
-} from '../../generated/templates/ERC20StakingModule/ERC20StakingModule'
-import { Pool as PoolContract, } from '../../generated/templates/ERC20StakingModule/Pool'
-import { ERC20CompetitiveRewardModuleV2 } from '../../generated/templates/ERC20StakingModule/ERC20CompetitiveRewardModuleV2'
-import { ERC20CompetitiveRewardModuleV3 } from '../../generated/templates/ERC20StakingModule/ERC20CompetitiveRewardModuleV3'
-import { ERC20FriendlyRewardModuleV2 } from '../../generated/templates/ERC20StakingModule/ERC20FriendlyRewardModuleV2'
-import { ERC20FriendlyRewardModuleV3 } from '../../generated/templates/ERC20StakingModule/ERC20FriendlyRewardModuleV3'
+} from '../../generated/templates/StakingModule/ERC20StakingModule'
+import { Pool as PoolContract, } from '../../generated/templates/StakingModule/Pool'
+import { ERC20CompetitiveRewardModuleV2 } from '../../generated/templates/StakingModule/ERC20CompetitiveRewardModuleV2'
+import { ERC20CompetitiveRewardModuleV3 } from '../../generated/templates/StakingModule/ERC20CompetitiveRewardModuleV3'
+import { ERC20FriendlyRewardModuleV2 } from '../../generated/templates/StakingModule/ERC20FriendlyRewardModuleV2'
+import { ERC20FriendlyRewardModuleV3 } from '../../generated/templates/StakingModule/ERC20FriendlyRewardModuleV3'
 import { Pool, Token, User, Position, Stake, Platform, Transaction } from '../../generated/schema'
 import { integerToDecimal, createNewUser, updatePoolDayData, updatePlatform } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, PRICING_MIN_TVL } from '../util/constants'

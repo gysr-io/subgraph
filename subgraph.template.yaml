@@ -55,9 +55,62 @@ dataSources:
     name: PoolFactory
     network: {{network}}
     source:
-      address: "{{pool_factory}}"
+      address: "{{pool_factory_v2}}"
       abi: PoolFactory
-      startBlock: {{pool_factory_start_block}}
+      startBlock: {{pool_factory_v2_start_block}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Pool
+      abis:
+        - name: PoolFactory
+          file: ./abis/PoolFactory.json
+        - name: Pool
+          file: './abis/Pool.json'
+        - name: ERC20StakingModule
+          file: './abis/ERC20StakingModule.json'
+        - name: ERC20BaseRewardModule
+          file: './abis/ERC20BaseRewardModule.json'
+        - name: ERC20CompetitiveRewardModule
+          file: './abis/ERC20CompetitiveRewardModuleV2.json'
+        - name: ERC20FriendlyRewardModule
+          file: './abis/ERC20FriendlyRewardModuleV2.json'
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: ERC721
+          file: ./abis/ERC721.json
+        - name: UniswapFactory
+          file: ./abis/thirdparty/uniswap/Factory.json
+        - name: UniswapPair
+          file: ./abis/thirdparty/uniswap/Pair.json
+        - name: UniswapFactoryV3
+          file: ./abis/thirdparty/uniswap/FactoryV3.json
+        - name: UniswapPoolV3
+          file: ./abis/thirdparty/uniswap/PoolV3.json
+        - name: BalancerVault
+          file: ./abis/thirdparty/balancer/Vault.json
+        - name: BalancerWeightedPool
+          file: ./abis/thirdparty/balancer/WeightedPool.json
+        - name: UMASyntheticToken
+          file: ./abis/thirdparty/uma/SyntheticToken.json
+        - name: UMALongShortPair
+          file: ./abis/thirdparty/uma/LongShortPair.json
+        - name: GUniPool
+          file: ./abis/thirdparty/gelato/GUniPool.json
+      eventHandlers:
+        - event: PoolCreated(indexed address,address)
+          handler: handlePoolCreated
+      file: ./src/mappings/factoryv2.ts
+
+  - kind: ethereum/contract
+    name: PoolFactoryV3
+    network: {{network}}
+    source:
+      address: "{{pool_factory_v3}}"
+      abi: PoolFactory
+      startBlock: {{pool_factory_v3_start_block}}
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -233,7 +286,7 @@ templates:
       file: ./src/mappings/pool.ts
 
   - kind: ethereum/contract
-    name: ERC20BaseRewardModule
+    name: RewardModule
     network: {{network}}
     source:
       abi: ERC20BaseRewardModule
@@ -287,7 +340,7 @@ templates:
       file: ./src/mappings/rewardmodule.ts
 
   - kind: ethereum/contract
-    name: ERC20StakingModule
+    name: StakingModule
     network: {{network}}
     source:
       abi: ERC20StakingModule

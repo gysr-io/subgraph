@@ -10,8 +10,8 @@ import { ERC20FriendlyRewardModule as ERC20FriendlyRewardModuleContract } from '
 import { Pool, Platform, Token, User } from '../../generated/schema'
 import {
   Pool as PoolTemplate,
-  ERC20BaseRewardModule as ERC20BaseRewardModuleTemplate,
-  ERC20StakingModule as ERC20StakingModuleTemplate
+  RewardModule as RewardModuleTemplate,
+  StakingModule as StakingModuleTemplate
 } from '../../generated/templates'
 import { integerToDecimal, createNewUser, createNewPlatform } from '../util/common'
 import {
@@ -179,6 +179,6 @@ export function handlePoolCreated(event: PoolCreated): void {
 
   // create template event handler
   PoolTemplate.create(event.params.pool);
-  ERC20BaseRewardModuleTemplate.create(rewardModuleContract._address);
-  ERC20StakingModuleTemplate.create(stakingModuleContract._address);
+  RewardModuleTemplate.create(rewardModuleContract._address);
+  StakingModuleTemplate.create(stakingModuleContract._address);
 }
