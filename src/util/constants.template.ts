@@ -29,6 +29,7 @@ export let PRICING_MIN_TVL = BigDecimal.fromString('1000.0');
 export let USD_NATIVE_PAIR = Address.fromString('{{usd_native_address}}');
 export let USD_NATIVE_PAIR_V3 = Address.fromString('{{usd_native_address_v3}}');
 export let USD_WETH_PAIR = Address.fromString('{{usd_weth_address}}');
+export let USD_WETH_PAIR_V3 = Address.fromString('{{usd_weth_address_v3}}');
 export let GYSR_NATIVE_PAIR = Address.fromString('{{gysr_native_address}}');
 export let GYSR_NATIVE_PAIR_V3 = Address.fromString('{{gysr_native_address_v3}}');
 export let GYSR_NATIVE_V3_START_TIME = BigInt.fromI32(parseInt('{{gysr_native_v3_start_time}}') as i32);
