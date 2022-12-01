@@ -7,7 +7,7 @@ import {
   GysrSpent,
   RewardsDistributed,
   RewardsExpired
-} from '../../generated/templates/ERC20BaseRewardModule/ERC20BaseRewardModule'
+} from '../../generated/templates/RewardModule/ERC20BaseRewardModule'
 import { Pool, Token, Platform, Funding, Transaction } from '../../generated/schema'
 import { integerToDecimal } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN, PRICING_MIN_TVL } from '../util/constants'

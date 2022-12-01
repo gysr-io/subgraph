@@ -42,13 +42,19 @@ export let MIN_USD_PRICING = BigDecimal.fromString('2000.0');
 export let INITIAL_SHARES_PER_TOKEN = BigDecimal.fromString('1000000');
 
 // factories
-export let ERC20_COMPETITIVE_REWARD_MODULE_FACTORIES: Address[] = [
+export let ERC20_COMPETITIVE_REWARD_MODULE_FACTORIES_V2: Address[] = [
   Address.fromString('{{erc20_competitive_reward_module_factory_address}}'),
   Address.fromString('{{erc20_competitive_reward_module_factory_address_v211}}')
 ];
-export let ERC20_FRIENDLY_REWARD_MODULE_FACTORIES: Address[] = [
+export let ERC20_COMPETITIVE_REWARD_MODULE_FACTORIES_V3: Address[] = [
+  Address.fromString('{{erc20_competitive_reward_module_factory_address_v3}}')
+];
+export let ERC20_FRIENDLY_REWARD_MODULE_FACTORIES_V2: Address[] = [
   Address.fromString('{{erc20_friendly_reward_module_factory_address}}'),
   Address.fromString('{{erc20_friendly_reward_module_factory_address_v211}}')
+];
+export let ERC20_FRIENDLY_REWARD_MODULE_FACTORIES_V3: Address[] = [
+  Address.fromString('{{erc20_friendly_reward_module_factory_address_v3}}')
 ];
 export let ERC20_STAKING_MODULE_FACTORIES: Address[] = [
   Address.fromString('{{erc20_staking_module_factory_address}}')

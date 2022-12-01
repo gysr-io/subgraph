@@ -1,14 +1,16 @@
 // ERC20 staking module event handling and mapping
-import { Address, BigInt, log, store } from '@graphprotocol/graph-ts'
+import { Address, BigInt, Bytes, log, store } from '@graphprotocol/graph-ts'
 import {
   ERC20StakingModule as ERC20StakingModuleContract,
   Staked,
   Unstaked,
   Claimed
-} from '../../generated/templates/ERC20StakingModule/ERC20StakingModule'
-import { Pool as PoolContract, } from '../../generated/templates/ERC20StakingModule/Pool'
-import { ERC20CompetitiveRewardModule as ERC20CompetitiveRewardModuleContract } from '../../generated/templates/ERC20StakingModule/ERC20CompetitiveRewardModule'
-import { ERC20FriendlyRewardModule as ERC20FriendlyRewardModuleContract } from '../../generated/templates/ERC20StakingModule/ERC20FriendlyRewardModule'
+} from '../../generated/templates/StakingModule/ERC20StakingModule'
+import { Pool as PoolContract, } from '../../generated/templates/StakingModule/Pool'
+import { ERC20CompetitiveRewardModuleV2 } from '../../generated/templates/StakingModule/ERC20CompetitiveRewardModuleV2'
+import { ERC20CompetitiveRewardModuleV3 } from '../../generated/templates/StakingModule/ERC20CompetitiveRewardModuleV3'
+import { ERC20FriendlyRewardModuleV2 } from '../../generated/templates/StakingModule/ERC20FriendlyRewardModuleV2'
+import { ERC20FriendlyRewardModuleV3 } from '../../generated/templates/StakingModule/ERC20FriendlyRewardModuleV3'
 import { Pool, Token, User, Position, Stake, Platform, Transaction } from '../../generated/schema'
 import { integerToDecimal, createNewUser, updatePoolDayData, updatePlatform } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, PRICING_MIN_TVL } from '../util/constants'
@@ -123,9 +125,9 @@ export function handleUnstaked(event: Unstaked): void {
   let shares = ZERO_BIG_DECIMAL;
   let ts = ZERO_BIG_INT;
   let poolContract = PoolContract.bind(Address.fromString(pool.id));
-  if (pool.rewardModuleType == 'ERC20Competitive') {
+  if (pool.rewardModuleType == 'ERC20CompetitiveV2') {
     // competitive
-    let rewardContract = ERC20CompetitiveRewardModuleContract.bind(poolContract.rewardModule());
+    let rewardContract = ERC20CompetitiveRewardModuleV2.bind(poolContract.rewardModule());
     count = rewardContract.stakeCount(event.params.user).toI32();
 
     if (count > 0) {
@@ -135,14 +137,40 @@ export function handleUnstaked(event: Unstaked): void {
       ts = s.value1;
     }
 
-  } else {
+  } else if (pool.rewardModuleType == 'ERC20CompetitiveV3') {
+    // competitive
+    let rewardContract = ERC20CompetitiveRewardModuleV3.bind(poolContract.rewardModule());
+    let account = Bytes.fromHexString(event.params.user.toHexString().padStart(64));
+    count = rewardContract.stakeCount(account).toI32();
+
+    if (count > 0) {
+      // get info for updated last position
+      let s = rewardContract.stakes(account, BigInt.fromI32(count - 1));
+      shares = integerToDecimal(s.value0, stakingToken.decimals);
+      ts = s.value1;
+    }
+
+  } else if (pool.rewardModuleType == 'ERC20FriendlyV2') {
     // friendly
-    let rewardContract = ERC20FriendlyRewardModuleContract.bind(poolContract.rewardModule());
+    let rewardContract = ERC20FriendlyRewardModuleV2.bind(poolContract.rewardModule());
     count = rewardContract.stakeCount(event.params.user).toI32();
 
     if (count > 0) {
       // get info for updated last position
       let s = rewardContract.stakes(event.params.user, BigInt.fromI32(count - 1));
+      shares = integerToDecimal(s.value0, stakingToken.decimals);
+      ts = s.value4;
+    }
+
+  } else {
+    // friendly
+    let rewardContract = ERC20FriendlyRewardModuleV3.bind(poolContract.rewardModule());
+    let account = Bytes.fromHexString(event.params.user.toHexString().padStart(64));
+    count = rewardContract.stakeCount(account).toI32();
+
+    if (count > 0) {
+      // get info for updated last position
+      let s = rewardContract.stakes(account, BigInt.fromI32(count - 1));
       shares = integerToDecimal(s.value0, stakingToken.decimals);
       ts = s.value4;
     }
@@ -249,9 +277,9 @@ export function handleClaimed(event: Claimed): void {
 
   // note: should encapsulate this behind an interface when we have additional module types
   let poolContract = PoolContract.bind(Address.fromString(pool.id));
-  if (pool.rewardModuleType == 'ERC20Competitive') {
+  if (pool.rewardModuleType == 'ERC20CompetitiveV2') {
     // competitive
-    let rewardContract = ERC20CompetitiveRewardModuleContract.bind(poolContract.rewardModule());
+    let rewardContract = ERC20CompetitiveRewardModuleV2.bind(poolContract.rewardModule());
     let count = rewardContract.stakeCount(event.params.user).toI32();
 
     if (count == stakes.length && count > 0) {
@@ -283,9 +311,44 @@ export function handleClaimed(event: Claimed): void {
       }
     }
 
-  } else {
+  } else if (pool.rewardModuleType == 'ERC20CompetitiveV3') {
+    // competitive
+    let rewardContract = ERC20CompetitiveRewardModuleV3.bind(poolContract.rewardModule());
+    let account = Bytes.fromHexString(event.params.user.toHexString().padStart(64));
+    let count = rewardContract.stakeCount(account).toI32();
+
+    if (count == stakes.length && count > 0) {
+      // update timestamp for last position
+      let s = rewardContract.stakes(account, BigInt.fromI32(count - 1));
+      let stake = Stake.load(stakes[count - 1])!;
+      stake.timestamp = s.value1;
+      stake.save();
+    } else {
+      // rebuild stakes list
+      for (let i = 0; i < stakes.length; i++) {
+        store.remove('Stake', stakes[i]);
+      }
+      stakes = [];
+      for (let i = 0; i < count; i++) {
+        let s = rewardContract.stakes(account, BigInt.fromI32(i));
+        let stakeId = positionId + '_' + i.toString();
+
+        let stake = new Stake(stakeId);
+        stake.position = position.id;
+        stake.user = user.id;
+        stake.pool = pool.id;
+        stake.shares = integerToDecimal(s.value0, stakingToken.decimals);
+        stake.timestamp = s.value1;
+
+        stake.save();
+
+        stakes = stakes.concat([stake.id]);
+      }
+    }
+
+  } else if (pool.rewardModuleType == 'ERC20FriendlyV2') {
     // friendly
-    let rewardContract = ERC20FriendlyRewardModuleContract.bind(poolContract.rewardModule());
+    let rewardContract = ERC20FriendlyRewardModuleV2.bind(poolContract.rewardModule());
     let count = rewardContract.stakeCount(event.params.user).toI32();
 
     if (count == stakes.length && count > 0) {
@@ -302,6 +365,41 @@ export function handleClaimed(event: Claimed): void {
       stakes = [];
       for (let i = 0; i < count; i++) {
         let s = rewardContract.stakes(event.params.user, BigInt.fromI32(i));
+        let stakeId = positionId + '_' + i.toString();
+
+        let stake = new Stake(stakeId);
+        stake.position = position.id;
+        stake.user = user.id;
+        stake.pool = pool.id;
+        stake.shares = integerToDecimal(s.value0, stakingToken.decimals);
+        stake.timestamp = s.value4;
+
+        stake.save();
+
+        stakes = stakes.concat([stake.id]);
+      }
+    }
+
+  } else {
+    // friendly
+    let rewardContract = ERC20FriendlyRewardModuleV3.bind(poolContract.rewardModule());
+    let account = Bytes.fromHexString(event.params.user.toHexString().padStart(64));
+    let count = rewardContract.stakeCount(account).toI32();
+
+    if (count == stakes.length && count > 0) {
+      // get info for updated last position
+      let s = rewardContract.stakes(account, BigInt.fromI32(count - 1));
+      let stake = Stake.load(stakes[count - 1])!;
+      stake.timestamp = s.value4;
+      stake.save();
+    } else {
+      // rebuild stakes list
+      for (let i = 0; i < stakes.length; i++) {
+        store.remove('Stake', stakes[i]);
+      }
+      stakes = [];
+      for (let i = 0; i < count; i++) {
+        let s = rewardContract.stakes(account, BigInt.fromI32(i));
         let stakeId = positionId + '_' + i.toString();
 
         let stake = new Stake(stakeId);

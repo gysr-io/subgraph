@@ -53,8 +53,10 @@ enum StakingModuleType {
 
 enum RewardModuleType {
   V1
-  ERC20Competitive
-  ERC20Friendly
+  ERC20CompetitiveV2
+  ERC20CompetitiveV3
+  ERC20FriendlyV2
+  ERC20FriendlyV3
 }
 
 type Pool @entity {
