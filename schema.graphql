@@ -119,15 +119,13 @@ type Pool @entity {
 
 type _Schema_
   @fulltext(
-    name: "poolSearch",
+    name: "poolSearch"
     language: en
-    algorithm: rank,
+    algorithm: rank
     include: [
       {
-        entity: "Pool",
-        fields: [
-          { name: "tags" }
-        ]
+        entity: "Pool"
+        fields: [{ name: "tags" }, { name: "name" }, { name: "description" }]
       }
     ]
   )
