@@ -17,6 +17,7 @@ import {
   USD_NATIVE_PAIR,
   USD_NATIVE_PAIR_V3,
   USD_WETH_PAIR,
+  USD_WETH_PAIR_V3,
   GYSR_NATIVE_PAIR,
   GYSR_NATIVE_PAIR_V3,
   GYSR_NATIVE_V3_START_TIME,
@@ -98,7 +99,7 @@ export function getNativePrice(): BigDecimal {
     let price = (sqrtPriceX96.times(sqrtPriceX96).toBigDecimal()).div(
       BigInt.fromI32(2).pow(96 * 2).toBigDecimal() // effective bit shift >> (96*2)
     );
-    // NOTE: currently assuming both 18 decimals
+    price = price.times(BigInt.fromI32(10).pow(12).toBigDecimal()); // wrapped native 18 decimals, usd 6 decimals
 
     return price;
   }
@@ -113,6 +114,22 @@ export function getNativePrice(): BigDecimal {
 
 
 export function getEthPrice(): BigDecimal {
+  // prefer uniswap v3 if defined
+  if (USD_WETH_PAIR_V3 != ZERO_ADDRESS) {
+    // NOTE: if updating this constant address, we assume that weth is token0
+    let pool = UniswapPoolV3.bind(USD_WETH_PAIR_V3);
+
+    // compute price
+    let slot0 = pool.slot0();
+    let sqrtPriceX96 = slot0.value0;
+    let price = (sqrtPriceX96.times(sqrtPriceX96).toBigDecimal()).div(
+      BigInt.fromI32(2).pow(96 * 2).toBigDecimal() // effective bit shift >> (96*2)
+    );
+    price = price.times(BigInt.fromI32(10).pow(12).toBigDecimal()); // wrapped native 18 decimals, usd 6 decimals
+
+    return price;
+  }
+
   // NOTE: if updating this constant address, we assume that weth is token0
   let pair = UniswapPair.bind(USD_WETH_PAIR);
   let reserves = pair.getReserves();
