@@ -271,16 +271,19 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
   let pool = Pool.load(event.address.toHexString())!;
   let token = Token.load(pool.rewardToken)!;
   let platform = Platform.load(ZERO_ADDRESS.toHexString())!;
+  let user = User.load(event.params.user.toHexString())!;
 
   let amount = integerToDecimal(event.params.amount, token.decimals);
   pool.distributed = pool.distributed.plus(amount);
 
+  // usd volume
   let dollarAmount = amount.times(getPrice(token, event.block.timestamp));
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
   platform.volume = platform.volume.plus(dollarAmount);
   platform.rewardsVolume = platform.rewardsVolume.plus(dollarAmount);
   pool.volume = pool.volume.plus(dollarAmount);
   poolDayData.volume = poolDayData.volume.plus(dollarAmount);
+  user.earned = user.earned.plus(dollarAmount);
 
   // update unstake transaction earnings
   let transaction = new Transaction(event.transaction.hash.toHexString());
@@ -288,6 +291,7 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
 
   pool.save();
   transaction.save();
+  user.save();
   platform.save();
   poolDayData.save();
 }
