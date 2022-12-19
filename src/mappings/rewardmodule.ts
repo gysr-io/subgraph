@@ -5,10 +5,11 @@ import {
   ERC20BaseRewardModule as ERC20BaseRewardModuleContract,
   RewardsFunded,
   GysrSpent,
+  GysrVested,
   RewardsDistributed,
   RewardsExpired
 } from '../../generated/templates/RewardModule/ERC20BaseRewardModule'
-import { Pool, Token, Platform, Funding, Transaction } from '../../generated/schema'
+import { Pool, Token, Platform, Funding, Transaction, User } from '../../generated/schema'
 import { integerToDecimal } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN, PRICING_MIN_TVL } from '../util/constants'
 import { getPrice, createNewToken } from '../pricing/token'
@@ -85,6 +86,7 @@ export function handleGysrSpent(event: GysrSpent): void {
   let contract = ERC20BaseRewardModuleContract.bind(event.address);
   let pool = Pool.load(contract.owner().toHexString())!;
   let platform = Platform.load(ZERO_ADDRESS.toHexString())!;
+  let user = User.load(event.params.user.toHexString())!;
 
   // update gysr spent on unstake transaction
   let transaction = new Transaction(event.transaction.hash.toHexString());
@@ -94,6 +96,7 @@ export function handleGysrSpent(event: GysrSpent): void {
   // update total GYSR spent
   platform.gysrSpent = platform.gysrSpent.plus(amount);
   pool.gysrSpent = pool.gysrSpent.plus(amount);
+  user.gysrSpent = user.gysrSpent.plus(amount);
 
   // pricing for volume
   let gysr = Token.load(GYSR_TOKEN.toHexString());
@@ -111,9 +114,27 @@ export function handleGysrSpent(event: GysrSpent): void {
 
   pool.save();
   transaction.save();
+  user.save();
   platform.save();
   poolDayData.save();
   gysr.save();
+}
+
+
+export function handleGysrVested(event: GysrVested): void {
+  let contract = ERC20BaseRewardModuleContract.bind(event.address);
+  let pool = Pool.load(contract.owner().toHexString())!;
+  let platform = Platform.load(ZERO_ADDRESS.toHexString())!;
+
+  // update total GYSR vested
+  let amount = integerToDecimal(event.params.amount, BigInt.fromI32(18));
+  platform.gysrVested = platform.gysrVested.plus(amount);
+  pool.gysrVested = pool.gysrVested.plus(amount);
+  let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
+
+  platform.save();
+  pool.save();
+  poolDayData.save();
 }
 
 

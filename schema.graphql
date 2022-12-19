@@ -93,6 +93,7 @@ type Pool @entity {
   funded: BigDecimal!
   distributed: BigDecimal!
   gysrSpent: BigDecimal!
+  gysrVested: BigDecimal!
   sharesPerSecond: BigDecimal!
   fundings: [Funding!]!
 
@@ -138,6 +139,7 @@ type User @entity {
   # global stats
   operations: BigInt!
   earned: BigDecimal!
+  gysrSpent: BigDecimal!
 
   # global positions
   positions: [Position!] @derivedFrom(field: "user")
@@ -179,6 +181,7 @@ type Platform @entity {
   operations: BigInt!
   pools: BigInt!
   gysrSpent: BigDecimal!
+  gysrVested: BigDecimal!
   volume: BigDecimal!
   rewardsVolume: BigDecimal!
 
@@ -234,6 +237,7 @@ type PoolDayData @entity {
   date: Int!
   totalStaked: BigDecimal!
   totalGysrSpent: BigDecimal!
+  totalGysrVested: BigDecimal!
   totalUsers: BigInt!
   tvl: BigDecimal!
   apr: BigDecimal!

@@ -72,6 +72,7 @@ export function handleGeyserV1Created(event: GeyserCreated): void {
   pool.funded = ZERO_BIG_DECIMAL;
   pool.distributed = ZERO_BIG_DECIMAL;
   pool.gysrSpent = ZERO_BIG_DECIMAL;
+  pool.gysrVested = ZERO_BIG_DECIMAL;
   pool.sharesPerSecond = ZERO_BIG_DECIMAL;
   pool.fundings = [];
 

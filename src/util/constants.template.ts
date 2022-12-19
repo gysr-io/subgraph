@@ -31,12 +31,13 @@ export let USD_NATIVE_PAIR_V3 = Address.fromString('{{usd_native_address_v3}}');
 export let USD_WETH_PAIR = Address.fromString('{{usd_weth_address}}');
 export let USD_WETH_PAIR_V3 = Address.fromString('{{usd_weth_address_v3}}');
 export let GYSR_NATIVE_PAIR = Address.fromString('{{gysr_native_address}}');
+export let GYSR_NATIVE_START_TIME = BigInt.fromI64(parseInt('{{gysr_native_start_time}}') as i64);
 export let GYSR_NATIVE_PAIR_V3 = Address.fromString('{{gysr_native_address_v3}}');
-export let GYSR_NATIVE_V3_START_TIME = BigInt.fromI32(parseInt('{{gysr_native_v3_start_time}}') as i32);
+export let GYSR_NATIVE_V3_START_TIME = BigInt.fromI64(parseInt('{{gysr_native_v3_start_time}}') as i64);
 export let UNISWAP_FACTORY = Address.fromString('{{uniswap_factory}}');
 export let SUSHI_FACTORY = Address.fromString('{{sushi_factory}}');
 export let UNISWAP_FACTORY_V3 = Address.fromString('{{uniswap_factory_v3}}');
-export let UNISWAP_FACTORY_V3_START_TIME = BigInt.fromI32(parseInt('{{uniswap_factory_v3_start_time}}') as i32);
+export let UNISWAP_FACTORY_V3_START_TIME = BigInt.fromI64(parseInt('{{uniswap_factory_v3_start_time}}') as i64);
 export let MIN_USD_PRICING = BigDecimal.fromString('2000.0');
 
 // contract

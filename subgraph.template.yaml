@@ -337,6 +337,8 @@ templates:
           handler: handleRewardsExpired
         - event: GysrSpent(indexed address,uint256)
           handler: handleGysrSpent
+        - event: GysrVested(indexed address,uint256)
+          handler: handleGysrVested
       file: ./src/mappings/rewardmodule.ts
 
   - kind: ethereum/contract

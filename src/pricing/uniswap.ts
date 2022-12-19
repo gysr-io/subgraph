@@ -19,6 +19,7 @@ import {
   USD_WETH_PAIR,
   USD_WETH_PAIR_V3,
   GYSR_NATIVE_PAIR,
+  GYSR_NATIVE_START_TIME,
   GYSR_NATIVE_PAIR_V3,
   GYSR_NATIVE_V3_START_TIME,
   STABLECOINS,
@@ -142,8 +143,10 @@ export function getEthPrice(): BigDecimal {
 export function getGysrPrice(timestamp: BigInt): BigDecimal {
   if (GYSR_NATIVE_PAIR_V3 != ZERO_ADDRESS && timestamp.gt(GYSR_NATIVE_V3_START_TIME)) {
     return _getPriceUniV3(GYSR_TOKEN, BigInt.fromI32(18), WRAPPED_NATIVE_ADDRESS, BigInt.fromI32(18), GYSR_NATIVE_PAIR_V3, false);
+  } else if (GYSR_NATIVE_PAIR != ZERO_ADDRESS && timestamp.gt(GYSR_NATIVE_START_TIME)) {
+    return _getPriceUniV2(GYSR_TOKEN, BigInt.fromI32(18), WRAPPED_NATIVE_ADDRESS, BigInt.fromI32(18), GYSR_NATIVE_PAIR, false);
   }
-  return _getPriceUniV2(GYSR_TOKEN, BigInt.fromI32(18), WRAPPED_NATIVE_ADDRESS, BigInt.fromI32(18), GYSR_NATIVE_PAIR, false);
+  return ZERO_BIG_DECIMAL;
 }
 
 

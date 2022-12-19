@@ -16,6 +16,7 @@ export function createNewUser(address: Address): User {
   let user = new User(address.toHexString());
   user.operations = ZERO_BIG_INT;
   user.earned = ZERO_BIG_DECIMAL;
+  user.gysrSpent = ZERO_BIG_DECIMAL;
 
   return user;
 }
@@ -27,6 +28,7 @@ export function createNewPlatform(): Platform {
   platform.pools = ZERO_BIG_INT;
   platform.operations = ZERO_BIG_INT;
   platform.gysrSpent = ZERO_BIG_DECIMAL;
+  platform.gysrVested = ZERO_BIG_DECIMAL;
   platform.volume = ZERO_BIG_DECIMAL;
   platform._activePools = [];
   platform._updated = ZERO_BIG_INT;
@@ -49,6 +51,7 @@ export function updatePoolDayData(pool: Pool, timestamp: number): PoolDayData {
 
   poolDayData.totalStaked = pool.staked;
   poolDayData.totalGysrSpent = pool.gysrSpent;
+  poolDayData.totalGysrVested = pool.gysrVested;
   poolDayData.totalUsers = pool.users;
   poolDayData.tvl = pool.tvl;
   poolDayData.apr = pool.apr;
