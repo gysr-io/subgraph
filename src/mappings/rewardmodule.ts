@@ -11,7 +11,7 @@ import {
 } from '../../generated/templates/RewardModule/ERC20BaseRewardModule'
 import { Pool, Token, Platform, Funding, Transaction, User } from '../../generated/schema'
 import { integerToDecimal } from '../util/common'
-import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN, PRICING_MIN_TVL } from '../util/constants'
+import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN, PRICING_MIN_TVL, GYSR_FEE } from '../util/constants'
 import { getPrice, createNewToken } from '../pricing/token'
 import { updatePool } from '../util/pool'
 import { updatePoolDayData, updatePlatform } from '../util/common'
@@ -129,6 +129,7 @@ export function handleGysrVested(event: GysrVested): void {
   // update total GYSR vested
   let amount = integerToDecimal(event.params.amount, BigInt.fromI32(18));
   platform.gysrVested = platform.gysrVested.plus(amount);
+  platform.gysrFees = platform.gysrFees.plus(amount.times(GYSR_FEE)); // note: we assume a constant fee rate here
   pool.gysrVested = pool.gysrVested.plus(amount);
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
 

@@ -13,6 +13,7 @@ export let WETH_ADDRESS = Address.fromString('{{weth_address}}');
 export let ZERO_ADDRESS = Address.fromString('0x0000000000000000000000000000000000000000');
 
 export let GYSR_TOKEN = Address.fromString('{{gysr_address}}');
+export let GYSR_FEE = BigDecimal.fromString('0.20');
 
 export let STABLECOINS: Address[] = [
   Address.fromString('{{usdc_address}}'),

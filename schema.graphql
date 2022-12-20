@@ -180,6 +180,7 @@ type Platform @entity {
   pools: BigInt!
   gysrSpent: BigDecimal!
   gysrVested: BigDecimal!
+  gysrFees: BigDecimal!
   volume: BigDecimal!
   rewardsVolume: BigDecimal!
 

@@ -29,6 +29,7 @@ export function createNewPlatform(): Platform {
   platform.operations = ZERO_BIG_INT;
   platform.gysrSpent = ZERO_BIG_DECIMAL;
   platform.gysrVested = ZERO_BIG_DECIMAL;
+  platform.gysrFees = ZERO_BIG_DECIMAL;
   platform.volume = ZERO_BIG_DECIMAL;
   platform._activePools = [];
   platform._updated = ZERO_BIG_INT;
