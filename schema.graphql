@@ -93,6 +93,7 @@ type Pool @entity {
   funded: BigDecimal!
   distributed: BigDecimal!
   gysrSpent: BigDecimal!
+  gysrVested: BigDecimal!
   sharesPerSecond: BigDecimal!
   fundings: [Funding!]!
 
@@ -118,15 +119,13 @@ type Pool @entity {
 
 type _Schema_
   @fulltext(
-    name: "poolSearch",
+    name: "poolSearch"
     language: en
-    algorithm: rank,
+    algorithm: rank
     include: [
       {
-        entity: "Pool",
-        fields: [
-          { name: "tags" }
-        ]
+        entity: "Pool"
+        fields: [{ name: "tags" }, { name: "name" }, { name: "description" }]
       }
     ]
   )
@@ -138,6 +137,7 @@ type User @entity {
   # global stats
   operations: BigInt!
   earned: BigDecimal!
+  gysrSpent: BigDecimal!
 
   # global positions
   positions: [Position!] @derivedFrom(field: "user")
@@ -179,6 +179,8 @@ type Platform @entity {
   operations: BigInt!
   pools: BigInt!
   gysrSpent: BigDecimal!
+  gysrVested: BigDecimal!
+  gysrFees: BigDecimal!
   volume: BigDecimal!
   rewardsVolume: BigDecimal!
 
@@ -234,6 +236,7 @@ type PoolDayData @entity {
   date: Int!
   totalStaked: BigDecimal!
   totalGysrSpent: BigDecimal!
+  totalGysrVested: BigDecimal!
   totalUsers: BigInt!
   tvl: BigDecimal!
   apr: BigDecimal!

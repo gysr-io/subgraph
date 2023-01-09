@@ -18,6 +18,7 @@
   "usd_weth_address": "0x0000000000000000000000000000000000000000",
   "usd_weth_address_v3": "0x1c3140ab59d6caf9fa7459c6f83d4b52ba881d36",
   "gysr_native_address": "0x0000000000000000000000000000000000000000",
+  "gysr_native_start_time": 0,
   "gysr_native_address_v3": "0x88af67b59c95eda0a9544e5c33679b128517f37a",
   "gysr_native_v3_start_time": 0,
   "uniswap_factory": "0x0000000000000000000000000000000000000000",

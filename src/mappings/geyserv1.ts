@@ -271,16 +271,19 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
   let pool = Pool.load(event.address.toHexString())!;
   let token = Token.load(pool.rewardToken)!;
   let platform = Platform.load(ZERO_ADDRESS.toHexString())!;
+  let user = User.load(event.params.user.toHexString())!;
 
   let amount = integerToDecimal(event.params.amount, token.decimals);
   pool.distributed = pool.distributed.plus(amount);
 
+  // usd volume
   let dollarAmount = amount.times(getPrice(token, event.block.timestamp));
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
   platform.volume = platform.volume.plus(dollarAmount);
   platform.rewardsVolume = platform.rewardsVolume.plus(dollarAmount);
   pool.volume = pool.volume.plus(dollarAmount);
   poolDayData.volume = poolDayData.volume.plus(dollarAmount);
+  user.earned = user.earned.plus(dollarAmount);
 
   // update unstake transaction earnings
   let transaction = new Transaction(event.transaction.hash.toHexString());
@@ -288,6 +291,7 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
 
   pool.save();
   transaction.save();
+  user.save();
   platform.save();
   poolDayData.save();
 }
@@ -338,12 +342,17 @@ export function handleGysrSpent(event: GysrSpent): void {
   let transaction = new Transaction(event.transaction.hash.toHexString());
   transaction.gysrSpent = amount;
 
+  let user = User.load(event.params.user.toHexString())!;
+  user.gysrSpent = user.gysrSpent.plus(amount);
+
   let pool = Pool.load(event.address.toHexString())!;
   pool.gysrSpent = pool.gysrSpent.plus(amount);
+  pool.gysrVested = pool.gysrVested.plus(amount);
 
   // update platform total GYSR spent
   let platform = Platform.load(ZERO_ADDRESS.toHexString())!;
   platform.gysrSpent = platform.gysrSpent.plus(amount);
+  platform.gysrVested = platform.gysrVested.plus(amount);
 
   let gysr = Token.load(GYSR_TOKEN.toHexString());
   if (gysr === null) {
@@ -359,6 +368,7 @@ export function handleGysrSpent(event: GysrSpent): void {
   poolDayData.volume = poolDayData.volume.plus(dollarAmount);
 
   transaction.save();
+  user.save();
   pool.save();
   platform.save();
   poolDayData.save();

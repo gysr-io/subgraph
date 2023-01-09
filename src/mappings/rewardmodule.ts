@@ -5,12 +5,13 @@ import {
   ERC20BaseRewardModule as ERC20BaseRewardModuleContract,
   RewardsFunded,
   GysrSpent,
+  GysrVested,
   RewardsDistributed,
   RewardsExpired
 } from '../../generated/templates/RewardModule/ERC20BaseRewardModule'
-import { Pool, Token, Platform, Funding, Transaction } from '../../generated/schema'
+import { Pool, Token, Platform, Funding, Transaction, User } from '../../generated/schema'
 import { integerToDecimal } from '../util/common'
-import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN, PRICING_MIN_TVL } from '../util/constants'
+import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN, PRICING_MIN_TVL, GYSR_FEE } from '../util/constants'
 import { getPrice, createNewToken } from '../pricing/token'
 import { updatePool } from '../util/pool'
 import { updatePoolDayData, updatePlatform } from '../util/common'
@@ -85,6 +86,7 @@ export function handleGysrSpent(event: GysrSpent): void {
   let contract = ERC20BaseRewardModuleContract.bind(event.address);
   let pool = Pool.load(contract.owner().toHexString())!;
   let platform = Platform.load(ZERO_ADDRESS.toHexString())!;
+  let user = User.load(event.params.user.toHexString())!;
 
   // update gysr spent on unstake transaction
   let transaction = new Transaction(event.transaction.hash.toHexString());
@@ -94,6 +96,7 @@ export function handleGysrSpent(event: GysrSpent): void {
   // update total GYSR spent
   platform.gysrSpent = platform.gysrSpent.plus(amount);
   pool.gysrSpent = pool.gysrSpent.plus(amount);
+  user.gysrSpent = user.gysrSpent.plus(amount);
 
   // pricing for volume
   let gysr = Token.load(GYSR_TOKEN.toHexString());
@@ -111,9 +114,28 @@ export function handleGysrSpent(event: GysrSpent): void {
 
   pool.save();
   transaction.save();
+  user.save();
   platform.save();
   poolDayData.save();
   gysr.save();
+}
+
+
+export function handleGysrVested(event: GysrVested): void {
+  let contract = ERC20BaseRewardModuleContract.bind(event.address);
+  let pool = Pool.load(contract.owner().toHexString())!;
+  let platform = Platform.load(ZERO_ADDRESS.toHexString())!;
+
+  // update total GYSR vested
+  let amount = integerToDecimal(event.params.amount, BigInt.fromI32(18));
+  platform.gysrVested = platform.gysrVested.plus(amount);
+  platform.gysrFees = platform.gysrFees.plus(amount.times(GYSR_FEE)); // note: we assume a constant fee rate here
+  pool.gysrVested = pool.gysrVested.plus(amount);
+  let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
+
+  platform.save();
+  pool.save();
+  poolDayData.save();
 }
 
 
@@ -122,17 +144,19 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
   let pool = Pool.load(contract.owner().toHexString())!;
   let token = Token.load(pool.rewardToken)!;
   let platform = Platform.load(ZERO_ADDRESS.toHexString())!;
+  let user = User.load(event.params.user.toHexString())!;
 
   let amount = integerToDecimal(event.params.amount, token.decimals);
   pool.distributed = pool.distributed.plus(amount);
 
-  // pricing for volume
+  // usd pricing for volume
   let dollarAmount = amount.times(getPrice(token, event.block.timestamp));
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
   platform.volume = platform.volume.plus(dollarAmount);
   platform.rewardsVolume = platform.rewardsVolume.plus(dollarAmount);
   pool.volume = pool.volume.plus(dollarAmount);
   poolDayData.volume = poolDayData.volume.plus(dollarAmount);
+  user.earned = user.earned.plus(dollarAmount);
 
   // update unstake transaction earnings
   let transaction = new Transaction(event.transaction.hash.toHexString());
@@ -140,6 +164,7 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
 
   pool.save();
   transaction.save();
+  user.save();
   platform.save();
   poolDayData.save();
 }
