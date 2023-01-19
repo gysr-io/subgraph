@@ -42,6 +42,7 @@ enum PoolType {
   GeyserV2
   Fountain
   Aquarium
+  Stream # todo
   Unknown
 }
 
@@ -49,6 +50,7 @@ enum StakingModuleType {
   V1
   ERC20
   ERC721
+  Assignment
 }
 
 enum RewardModuleType {
@@ -57,6 +59,7 @@ enum RewardModuleType {
   ERC20CompetitiveV3
   ERC20FriendlyV2
   ERC20FriendlyV3
+  ERC20Linear
 }
 
 type Pool @entity {
@@ -71,7 +74,7 @@ type Pool @entity {
 
   timeMultMin: BigDecimal!
   timeMultMax: BigDecimal!
-  timeMultPeriod: BigInt!
+  timePeriod: BigInt!
 
   createdTimestamp: BigInt!
   createdBlock: BigInt!

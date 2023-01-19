@@ -52,7 +52,7 @@ export function handleGeyserV1Created(event: GeyserCreated): void {
   pool.rewardToken = rewardToken.id;
   pool.timeMultMin = integerToDecimal(contract.bonusMin());
   pool.timeMultMax = integerToDecimal(contract.bonusMax());
-  pool.timeMultPeriod = contract.bonusPeriod();
+  pool.timePeriod = contract.bonusPeriod();
   pool.createdBlock = event.block.number;
   pool.createdTimestamp = event.block.timestamp;
   pool.tags = (
