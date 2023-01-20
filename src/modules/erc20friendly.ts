@@ -1,77 +1,21 @@
-// handler methods for the erc20 competitive reward module
+// handler methods for the erc20 friendly reward module
 
-import { Address, BigInt, Bytes, log, store } from '@graphprotocol/graph-ts'
+import { Address, BigInt, Bytes, store, log } from '@graphprotocol/graph-ts'
 import {
   ERC20BaseRewardModule as ERC20BaseRewardModuleContract,
   RewardsFunded
 } from '../../generated/templates/RewardModule/ERC20BaseRewardModule'
 import { Staked, Unstaked, Claimed } from '../../generated/templates/StakingModule/ERC20StakingModule'
-import { ERC20CompetitiveRewardModuleV2 } from '../../generated/templates/StakingModule/ERC20CompetitiveRewardModuleV2'
-import { ERC20CompetitiveRewardModuleV3 } from '../../generated/templates/StakingModule/ERC20CompetitiveRewardModuleV3'
-import { Pool, Token, Funding, Position, User, Stake } from '../../generated/schema'
+import { ERC20FriendlyRewardModuleV2 } from '../../generated/templates/StakingModule/ERC20FriendlyRewardModuleV2'
+import { ERC20FriendlyRewardModuleV3 } from '../../generated/templates/StakingModule/ERC20FriendlyRewardModuleV3'
+import { Pool, User, Token, Funding, Position, Stake } from '../../generated/schema'
 import { integerToDecimal } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, INITIAL_SHARES_PER_TOKEN } from '../util/constants'
 
 
-export function handleRewardsFundedCompetitive(event: RewardsFunded, pool: Pool, token: Token): void {
-  let contract = ERC20BaseRewardModuleContract.bind(event.address);
-
-  // update timeframe for pool
-  if (event.params.timestamp.lt(pool.start) || pool.start.equals(ZERO_BIG_INT)) {
-    pool.start = event.params.timestamp;
-  }
-  let addr = Address.fromString(token.id);
-  let idx = contract.fundingCount(addr).minus(BigInt.fromI32(1));
-  let fundingStruct = contract.fundings(addr, idx);
-  let duration = fundingStruct.value5;
-
-  let end = event.params.timestamp.plus(duration);
-  if (end.gt(pool.end) || pool.end.equals(ZERO_BIG_INT)) {
-    pool.end = end;
-  }
-
-  // create funding
-  let fundingId = pool.id + '_' + event.block.timestamp.toString();
-  let funding = new Funding(fundingId);
-  funding.pool = pool.id;
-  funding.token = token.id;
-  funding.createdTimestamp = event.block.timestamp;
-  funding.start = event.params.timestamp;
-  funding.end = end;
-  funding.originalAmount = integerToDecimal(event.params.amount, token.decimals);
-  funding.shares = integerToDecimal(event.params.shares, token.decimals);
-  funding.sharesPerSecond = ZERO_BIG_DECIMAL;
-  if (duration.gt(ZERO_BIG_INT)) {
-    funding.sharesPerSecond = funding.shares.div(duration.toBigDecimal());
-  }
-  funding.cleaned = false;
-  funding.save(); // save before pricing
-
-  pool.fundings = pool.fundings.concat([funding.id])
-}
-
-
-export function handleStakedCompetitive(event: Staked, pool: Pool, user: User, position: Position, token: Token): void {
-  // create new stake
-  let stakeId = position.id + '_' + event.transaction.hash.toHexString();
-
-  let stake = new Stake(stakeId);
-  stake.position = position.id;
-  stake.user = user.id;
-  stake.pool = pool.id;
-  stake.shares = integerToDecimal(event.params.shares, token.decimals);
-  stake.timestamp = event.block.timestamp;
-
-  position.shares = position.shares.plus(stake.shares);
-  position.stakes = position.stakes.concat([stake.id]);
-
-  stake.save();
-}
-
-
-export function handleUnstakedCompetitiveV2(event: Unstaked, pool: Pool, user: User, position: Position, token: Token): void {
-  // competitive
-  let rewardContract = ERC20CompetitiveRewardModuleV2.bind(Address.fromString(pool.rewardModule));
+export function handleUnstakedFriendlyV2(event: Unstaked, pool: Pool, user: User, position: Position, token: Token): void {
+  // friendly
+  let rewardContract = ERC20FriendlyRewardModuleV2.bind(Address.fromString(pool.rewardModule));
   let count = rewardContract.stakeCount(event.params.user).toI32();
 
   // get position data from contract
@@ -81,7 +25,7 @@ export function handleUnstakedCompetitiveV2(event: Unstaked, pool: Pool, user: U
     // get info for updated last position
     let s = rewardContract.stakes(event.params.user, BigInt.fromI32(count - 1));
     shares = integerToDecimal(s.value0, token.decimals);
-    ts = s.value1;
+    ts = s.value4;
   }
 
   // update or delete current stakes
@@ -115,9 +59,9 @@ export function handleUnstakedCompetitiveV2(event: Unstaked, pool: Pool, user: U
 }
 
 
-export function handleUnstakedCompetitiveV3(event: Unstaked, pool: Pool, user: User, position: Position, token: Token): void {
-  // competitive
-  let rewardContract = ERC20CompetitiveRewardModuleV3.bind(Address.fromString(pool.rewardModule));
+export function handleUnstakedFriendlyV3(event: Unstaked, pool: Pool, user: User, position: Position, token: Token): void {
+  // friendly
+  let rewardContract = ERC20FriendlyRewardModuleV3.bind(Address.fromString(pool.rewardModule));
   let account = Bytes.fromHexString(event.params.user.toHexString().padStart(64));
   let count = rewardContract.stakeCount(account).toI32();
 
@@ -128,7 +72,7 @@ export function handleUnstakedCompetitiveV3(event: Unstaked, pool: Pool, user: U
     // get info for updated last position
     let s = rewardContract.stakes(account, BigInt.fromI32(count - 1));
     shares = integerToDecimal(s.value0, token.decimals);
-    ts = s.value1;
+    ts = s.value4;
   }
 
   // update or delete current stakes
@@ -162,9 +106,9 @@ export function handleUnstakedCompetitiveV3(event: Unstaked, pool: Pool, user: U
 }
 
 
-export function handleClaimedCompetitiveV2(event: Claimed, pool: Pool, user: User, position: Position, token: Token): void {
-  // competitive
-  let rewardContract = ERC20CompetitiveRewardModuleV2.bind(Address.fromString(pool.rewardModule));
+export function handleClaimedFriendlyV2(event: Claimed, pool: Pool, user: User, position: Position, token: Token): void {
+  // friendly
+  let rewardContract = ERC20FriendlyRewardModuleV2.bind(Address.fromString(pool.rewardModule));
   let count = rewardContract.stakeCount(event.params.user).toI32();
 
   // update current stakes
@@ -172,10 +116,10 @@ export function handleClaimedCompetitiveV2(event: Claimed, pool: Pool, user: Use
   let stakes = position.stakes;
 
   if (count == stakes.length && count > 0) {
-    // update timestamp for last position
+    // get info for updated last position
     let s = rewardContract.stakes(event.params.user, BigInt.fromI32(count - 1));
     let stake = Stake.load(stakes[count - 1])!;
-    stake.timestamp = s.value1;
+    stake.timestamp = s.value4;
     stake.save();
   } else {
     // rebuild stakes list
@@ -192,7 +136,7 @@ export function handleClaimedCompetitiveV2(event: Claimed, pool: Pool, user: Use
       stake.user = user.id;
       stake.pool = pool.id;
       stake.shares = integerToDecimal(s.value0, token.decimals);
-      stake.timestamp = s.value1;
+      stake.timestamp = s.value4;
 
       stake.save();
 
@@ -204,10 +148,9 @@ export function handleClaimedCompetitiveV2(event: Claimed, pool: Pool, user: Use
 }
 
 
-export function handleClaimedCompetitiveV3(event: Claimed, pool: Pool, user: User, position: Position, token: Token): void {
-
-  // competitive
-  let rewardContract = ERC20CompetitiveRewardModuleV3.bind(Address.fromString(pool.rewardModule));
+export function handleClaimedFriendlyV3(event: Claimed, pool: Pool, user: User, position: Position, token: Token): void {
+  // friendly
+  let rewardContract = ERC20FriendlyRewardModuleV3.bind(Address.fromString(pool.rewardModule));
   let account = Bytes.fromHexString(event.params.user.toHexString().padStart(64));
   let count = rewardContract.stakeCount(account).toI32();
 
@@ -216,10 +159,10 @@ export function handleClaimedCompetitiveV3(event: Claimed, pool: Pool, user: Use
   let stakes = position.stakes;
 
   if (count == stakes.length && count > 0) {
-    // update timestamp for last position
+    // get info for updated last position
     let s = rewardContract.stakes(account, BigInt.fromI32(count - 1));
     let stake = Stake.load(stakes[count - 1])!;
-    stake.timestamp = s.value1;
+    stake.timestamp = s.value4;
     stake.save();
   } else {
     // rebuild stakes list
@@ -236,7 +179,7 @@ export function handleClaimedCompetitiveV3(event: Claimed, pool: Pool, user: Use
       stake.user = user.id;
       stake.pool = pool.id;
       stake.shares = integerToDecimal(s.value0, token.decimals);
-      stake.timestamp = s.value1;
+      stake.timestamp = s.value4;
 
       stake.save();
 
@@ -245,17 +188,4 @@ export function handleClaimedCompetitiveV3(event: Claimed, pool: Pool, user: Use
   }
 
   position.stakes = stakes;
-}
-
-
-export function updatePoolCompetitive(pool: Pool, token: Token, timestamp: BigInt): void {
-  let rewardSharesPerToken = INITIAL_SHARES_PER_TOKEN;
-  if (pool.rewards.gt(ZERO_BIG_DECIMAL)) {
-    let contract = ERC20BaseRewardModuleContract.bind(Address.fromString(pool.rewardModule));
-    rewardSharesPerToken = integerToDecimal(
-      contract.lockedShares(Address.fromString(token.id)),
-      token.decimals
-    ).div(pool.rewards);
-  }
-  pool.rewardSharesPerToken = rewardSharesPerToken;
 }

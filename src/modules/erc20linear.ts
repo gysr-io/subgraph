@@ -5,7 +5,8 @@ import {
   ERC20LinearRewardModule as ERC20LinearRewardModuleContract,
 } from '../../generated/templates/StakingModule/ERC20LinearRewardModule'
 import { RewardsFunded } from '../../generated/templates/RewardModule/ERC20BaseRewardModule'
-import { Pool, Token, Funding, } from '../../generated/schema'
+import { Staked, Unstaked, Claimed } from '../../generated/templates/StakingModule/ERC20StakingModule'
+import { Pool, Token, Position, } from '../../generated/schema'
 import { integerToDecimal } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ONE_E_18, INITIAL_SHARES_PER_TOKEN } from '../util/constants'
 
@@ -16,24 +17,13 @@ export function handleRewardsFundedLinear(event: RewardsFunded, pool: Pool, toke
   // update timeframe for pool
   if (pool.start.equals(ZERO_BIG_INT)) pool.start = event.params.timestamp;
 
-  // create funding
-  //   let fundingId = pool.id + '_' + event.block.timestamp.toString();
-  //   let funding = new Funding(fundingId);
-  //   funding.pool = pool.id;
-  //   funding.token = token.id;
-  //   funding.createdTimestamp = event.block.timestamp;
-  //   funding.start = event.params.timestamp;
-  //   funding.end = end;
-  //   funding.originalAmount = integerToDecimal(event.params.amount, token.decimals);
-  //   funding.shares = integerToDecimal(event.params.shares, token.decimals);
-  //   funding.sharesPerSecond = ZERO_BIG_DECIMAL;
-  //   if (duration.gt(ZERO_BIG_INT)) {
-  //     funding.sharesPerSecond = funding.shares.div(duration.toBigDecimal());
-  //   }
-  //   funding.cleaned = false;
-  //   funding.save(); // save before pricing
+  // TODO do we still want to create an object here?
+}
 
-  //   pool.fundings = pool.fundings.concat([funding.id])
+
+export function handleStakedLinear(event: Staked, pool: Pool, position: Position): void {
+  let contract = ERC20LinearRewardModuleContract.bind(event.address);
+  // TODO anything useful here?
 }
 
 
