@@ -306,6 +306,8 @@ templates:
           file: ./abis/ERC20StakingModule.json
         - name: ERC20BaseRewardModule
           file: './abis/ERC20BaseRewardModule.json'
+        - name: ERC20LinearRewardModule
+          file: './abis/ERC20LinearRewardModule.json'
         - name: GeyserV1
           file: ./abis/GeyserV1.json
         - name: ERC20

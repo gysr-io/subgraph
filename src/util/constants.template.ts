@@ -71,3 +71,6 @@ export let ERC20_STAKING_MODULE_FACTORIES: Address[] = [
 export let ERC721_STAKING_MODULE_FACTORIES: Address[] = [
   Address.fromString('{{erc721_staking_module_factory_address}}')
 ];
+
+// types
+export let BASE_REWARD_MODULE_TYPES: string[] = ['ERC20CompetitiveV2', 'ERC20CompetitiveV3', 'ERC20FriendlyV2', 'ERC20FriendlyV3']
