@@ -88,31 +88,31 @@ export function handlePoolCreated(event: PoolCreated): void {
     let competitiveContract = ERC20CompetitiveRewardModuleContract.bind(rewardModule)
     pool.timeMultMin = integerToDecimal(competitiveContract.bonusMin());
     pool.timeMultMax = integerToDecimal(competitiveContract.bonusMax());
-    pool.timePeriod = competitiveContract.bonusPeriod();
+    pool.timeMultPeriod = competitiveContract.bonusPeriod();
     pool.rewardModuleType = 'ERC20CompetitiveV2';
   } else if (ERC20_COMPETITIVE_REWARD_MODULE_FACTORIES_V3.includes(rewardFactory)) {
     let competitiveContract = ERC20CompetitiveRewardModuleContract.bind(rewardModule)
     pool.timeMultMin = integerToDecimal(competitiveContract.bonusMin());
     pool.timeMultMax = integerToDecimal(competitiveContract.bonusMax());
-    pool.timePeriod = competitiveContract.bonusPeriod();
+    pool.timeMultPeriod = competitiveContract.bonusPeriod();
     pool.rewardModuleType = 'ERC20CompetitiveV3';
   } else if (ERC20_FRIENDLY_REWARD_MODULE_FACTORIES_V2.includes(rewardFactory)) {
     let friendlyContract = ERC20FriendlyRewardModuleContract.bind(rewardModule);
     pool.timeMultMin = integerToDecimal(friendlyContract.vestingStart());
     pool.timeMultMax = BigDecimal.fromString('1');
-    pool.timePeriod = friendlyContract.vestingPeriod();
+    pool.timeMultPeriod = friendlyContract.vestingPeriod();
     pool.rewardModuleType = 'ERC20FriendlyV2';
   } else if (ERC20_FRIENDLY_REWARD_MODULE_FACTORIES_V3.includes(rewardFactory)) {
     let friendlyContract = ERC20FriendlyRewardModuleContract.bind(rewardModule);
     pool.timeMultMin = integerToDecimal(friendlyContract.vestingStart());
     pool.timeMultMax = BigDecimal.fromString('1');
-    pool.timePeriod = friendlyContract.vestingPeriod();
+    pool.timeMultPeriod = friendlyContract.vestingPeriod();
     pool.rewardModuleType = 'ERC20FriendlyV3';
   } else if (ERC20_LINEAR_REWARD_MODULE_FACTORIES.includes(rewardFactory)) {
     let linearContract = ERC20LinearRewardModuleContract.bind(rewardModule);
     pool.timeMultMin = BigDecimal.fromString('1');
     pool.timeMultMax = BigDecimal.fromString('1');
-    pool.timePeriod = linearContract.period();
+    pool.timeMultPeriod = linearContract.period();
     pool.rewardModuleType = 'ERC20Linear';
   } else {
     log.info('unknown reward module type: {}', [rewardFactory.toHexString()]);

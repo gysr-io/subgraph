@@ -74,8 +74,7 @@ type Pool @entity {
 
   timeMultMin: BigDecimal!
   timeMultMax: BigDecimal!
-  timePeriod: BigInt!
-
+  timeMultPeriod: BigInt! # timePeriod
   createdTimestamp: BigInt!
   createdBlock: BigInt!
 
@@ -119,6 +118,11 @@ type Pool @entity {
   description: String
   website: String
 }
+
+# TODO for multi
+# type PoolStaking (amount, token, sharesPerToken)
+# type PoolReward (amount, funded, sharesPerToken)
+# type PoolRate (rate, apr, staking, reward)
 
 type _Schema_
   @fulltext(

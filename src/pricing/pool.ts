@@ -73,6 +73,9 @@ export function updatePricing(
   // state
   if (active) {
     pool.state = 'Active';
+  } else if (pool.rewardModuleType == 'ERC20Linear' && pool.end.gt(timestamp)) {
+    // temp case handling
+    pool.state = 'Active';
   } else if (rate.gt(ZERO_BIG_DECIMAL)) {
     pool.state = 'Boiling';
   } else if (pool.funded.gt(ZERO_BIG_DECIMAL)) {
