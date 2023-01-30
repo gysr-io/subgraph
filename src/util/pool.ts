@@ -51,7 +51,7 @@ export function updatePool(
   // module specific pool updates
   if (BASE_REWARD_MODULE_TYPES.includes(pool.rewardModuleType)) {
     updatePoolCompetitive(pool, rewardToken, timestamp);
-  } else if (pool.rewardModule == 'ERC20Linear') {
+  } else if (pool.rewardModuleType == 'ERC20Linear') {
     updatePoolLinear(pool, rewardToken, timestamp);
   }
 

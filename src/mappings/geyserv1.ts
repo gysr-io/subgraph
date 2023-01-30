@@ -70,6 +70,7 @@ export function handleStaked(event: Staked): void {
 
   position.shares = position.shares.plus(shares);
   position.stakes = position.stakes.concat([stake.id]);
+  position.updated = event.block.timestamp;
 
   user.operations = user.operations.plus(BigInt.fromI32(1));
   pool.operations = pool.operations.plus(BigInt.fromI32(1));
@@ -185,6 +186,7 @@ export function handleUnstaked(event: Unstaked): void {
   position.shares = position.shares.minus(shares);
   position.stakes = stakes;
   if (position.shares.gt(ZERO_BIG_DECIMAL)) {
+    position.updated = event.block.timestamp;
     position.save();
   } else {
     store.remove('Position', positionId);

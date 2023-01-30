@@ -62,7 +62,6 @@ export function handleStakedCompetitive(event: Staked, pool: Pool, user: User, p
   stake.shares = integerToDecimal(event.params.shares, token.decimals);
   stake.timestamp = event.block.timestamp;
 
-  position.shares = position.shares.plus(stake.shares);
   position.stakes = position.stakes.concat([stake.id]);
 
   stake.save();

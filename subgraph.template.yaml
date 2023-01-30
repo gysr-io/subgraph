@@ -77,6 +77,8 @@ dataSources:
           file: './abis/ERC20CompetitiveRewardModuleV2.json'
         - name: ERC20FriendlyRewardModule
           file: './abis/ERC20FriendlyRewardModuleV2.json'
+        - name: ERC20LinearRewardModule
+          file: './abis/ERC20LinearRewardModule.json'
         - name: ERC20
           file: ./abis/ERC20.json
         - name: ERC721

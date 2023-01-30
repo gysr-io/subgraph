@@ -3,6 +3,7 @@
 enum TokenType {
   Standard
   Stable
+  Zero
   UniswapLiquidity
   BalancerLiquidity
   UmaKpiOption
@@ -162,6 +163,7 @@ type Position @entity {
 
   shares: BigDecimal!
   stakes: [Stake!]!
+  updated: BigInt!
 }
 
 type Stake @entity {

@@ -51,6 +51,13 @@ export function handleStaked(event: Staked): void {
     handleStakedCompetitive(event, pool, user, position, stakingToken);
   }
 
+  // update position
+  position.shares = position.shares.plus(
+    integerToDecimal(event.params.shares, stakingToken.decimals)
+  );
+  position.updated = event.block.timestamp;
+
+  // increment
   user.operations = user.operations.plus(BigInt.fromI32(1));
   pool.operations = pool.operations.plus(BigInt.fromI32(1));
   platform.operations = platform.operations.plus(BigInt.fromI32(1));
@@ -120,14 +127,12 @@ export function handleUnstaked(event: Unstaked): void {
     handleUnstakedFriendlyV3(event, pool, user, position, stakingToken);
   }
 
-  // format unstake amount
-  let unstakeAmount = integerToDecimal(event.params.amount, stakingToken.decimals);
-
   // update position info
   position.shares = position.shares.minus(
     integerToDecimal(event.params.shares, stakingToken.decimals)
   );
   if (position.shares.gt(ZERO_BIG_DECIMAL)) {
+    position.updated = event.block.timestamp;
     position.save();
   } else {
     store.remove('Position', positionId);
@@ -145,7 +150,7 @@ export function handleUnstaked(event: Unstaked): void {
   transaction.timestamp = event.block.timestamp;
   transaction.pool = pool.id;
   transaction.user = user.id;
-  transaction.amount = unstakeAmount;
+  transaction.amount = integerToDecimal(event.params.amount, stakingToken.decimals);
   transaction.earnings = ZERO_BIG_DECIMAL;
   transaction.gysrSpent = ZERO_BIG_DECIMAL;
 
@@ -199,6 +204,7 @@ export function handleClaimed(event: Claimed): void {
 
   // update position info
   // overall shares cannot change here
+  position.updated = event.block.timestamp;
 
   // update general info
   user.operations = user.operations.plus(BigInt.fromI32(1));
