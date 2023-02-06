@@ -4,11 +4,15 @@ import { Address, BigInt, log, store } from '@graphprotocol/graph-ts'
 import { Pool as PoolContract } from '../../generated/templates/Pool/Pool'
 import { ERC20StakingModule as ERC20StakingModuleContract } from '../../generated/templates/Pool/ERC20StakingModule'
 import { ERC20BaseRewardModule as ERC20BaseRewardModuleContract } from '../../generated/templates/Pool/ERC20BaseRewardModule'
+import { ERC20LinearRewardModule as ERC20LinearRewardModuleContract } from '../../generated/templates/StakingModule/ERC20LinearRewardModule'
 import { Pool, Token, Platform, Transaction, Funding } from '../../generated/schema'
 import { integerToDecimal } from '../util/common'
 import { ZERO_BIG_INT, INITIAL_SHARES_PER_TOKEN, ZERO_BIG_DECIMAL, ONE_E_18 } from '../util/constants'
 import { getPrice } from '../pricing/token'
 import { updatePricing } from '../pricing/pool'
+import { BASE_REWARD_MODULE_TYPES } from './constants'
+import { updatePoolCompetitive } from '../modules/erc20competitive'
+import { updatePoolLinear } from '../modules/erc20linear'
 
 
 export function updatePool(
@@ -19,7 +23,6 @@ export function updatePool(
   timestamp: BigInt
 ): void {
   let contract = PoolContract.bind(Address.fromString(pool.id));
-  let rewardContract = ERC20BaseRewardModuleContract.bind(Address.fromString(pool.rewardModule));
 
   // tokens
   stakingToken.price = getPrice(stakingToken, timestamp);
@@ -45,15 +48,12 @@ export function updatePool(
     pool.stakingSharesPerToken = ONE_E_18;
   }
 
-  // reward shares/amount rate
-  let rewardSharesPerToken = pool.rewards.gt(ZERO_BIG_DECIMAL)
-    ? integerToDecimal(
-      rewardContract.lockedShares(Address.fromString(rewardToken.id)),
-      rewardToken.decimals
-    ).div(pool.rewards)
-    : INITIAL_SHARES_PER_TOKEN;
-
-  pool.rewardSharesPerToken = rewardSharesPerToken;
+  // module specific pool updates
+  if (BASE_REWARD_MODULE_TYPES.includes(pool.rewardModuleType)) {
+    updatePoolCompetitive(pool, rewardToken, timestamp);
+  } else if (pool.rewardModuleType == 'ERC20Linear') {
+    updatePoolLinear(pool, rewardToken, timestamp);
+  }
 
   // usage
   pool.usage = integerToDecimal(contract.usage());

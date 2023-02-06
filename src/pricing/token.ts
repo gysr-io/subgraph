@@ -51,7 +51,16 @@ export function createNewToken(address: Address): Token {
   }
 
   // token type
-  if (isUniswapLiquidityToken(address)) {
+  if (address == ZERO_ADDRESS) {
+    token.price = ZERO_BIG_DECIMAL;
+    token.type = 'Zero';
+
+  } else if (STABLECOINS.includes(address)) {
+    token.price = BigDecimal.fromString('1.0');
+    token.type = 'Stable';
+    log.info('created new token: stablecoin, {}, {}', [token.id, token.symbol]);
+
+  } else if (isUniswapLiquidityToken(address)) {
     token.alias = getUniswapLiquidityTokenAlias(address);
     token.underlying = getUniswapLiquidityTokenUnderlying(address);
     token.type = 'UniswapLiquidity';
@@ -61,11 +70,6 @@ export function createNewToken(address: Address): Token {
     token.underlying = getBalancerLiquidityTokenUnderlying(address);
     token.type = 'BalancerLiquidity';
     log.info('created new token: Balancer Weighted LP, {}, {}', [token.id, token.symbol]);
-
-  } else if (STABLECOINS.includes(address)) {
-    token.price = BigDecimal.fromString('1.0');
-    token.type = 'Stable';
-    log.info('created new token: stablecoin, {}, {}', [token.id, token.symbol]);
 
   } else if (isUmaKpiOption(address)) {
     token.alias = getUmaKpiOptionAlias(address);
@@ -103,6 +107,7 @@ export function createNewToken(address: Address): Token {
 export function getPrice(token: Token, timestamp: BigInt): BigDecimal {
   // skip pricing on testnet
   if (WRAPPED_NATIVE_ADDRESS == ZERO_ADDRESS) {
+    if (token.type == 'Zero') return ZERO_BIG_DECIMAL;
     return BigDecimal.fromString('1.0');
   }
 
@@ -110,6 +115,8 @@ export function getPrice(token: Token, timestamp: BigInt): BigDecimal {
   let price = new Price(ZERO_BIG_DECIMAL, '');
   if (token.type == 'Stable') {
     price = new Price(BigDecimal.fromString('1.0'), 'stable');
+  } else if (token.type == 'Zero') {
+    price = new Price(ZERO_BIG_DECIMAL, 'zero');
   } else if (token.type == 'Standard') {
     price = getTokenPrice(Address.fromString(token.id.toString()), token.decimals, token.hint, timestamp);
   } else if (token.type == 'UniswapLiquidity') {

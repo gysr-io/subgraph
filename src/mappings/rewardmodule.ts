@@ -7,14 +7,17 @@ import {
   GysrSpent,
   GysrVested,
   RewardsDistributed,
-  RewardsExpired
+  RewardsExpired,
+  RewardsWithdrawn
 } from '../../generated/templates/RewardModule/ERC20BaseRewardModule'
 import { Pool, Token, Platform, Funding, Transaction, User } from '../../generated/schema'
 import { integerToDecimal } from '../util/common'
-import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN, PRICING_MIN_TVL, GYSR_FEE } from '../util/constants'
+import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN, PRICING_MIN_TVL, GYSR_FEE, BASE_REWARD_MODULE_TYPES } from '../util/constants'
 import { getPrice, createNewToken } from '../pricing/token'
 import { updatePool } from '../util/pool'
 import { updatePoolDayData, updatePlatform } from '../util/common'
+import { handleRewardsFundedCompetitive } from '../modules/erc20competitive'
+import { handleRewardsFundedLinear } from '../modules/erc20linear'
 
 
 export function handleRewardsFunded(event: RewardsFunded): void {
@@ -29,38 +32,12 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   pool.rewards = pool.rewards.plus(amount);
   pool.funded = pool.funded.plus(amount);
 
-  // update timeframe for pool
-  if (event.params.timestamp.lt(pool.start) || pool.start.equals(ZERO_BIG_INT)) {
-    pool.start = event.params.timestamp;
+  // module specific logic
+  if (BASE_REWARD_MODULE_TYPES.includes(pool.rewardModuleType)) {
+    handleRewardsFundedCompetitive(event, pool, rewardToken);
+  } else if (pool.rewardModuleType == 'ERC20Linear') {
+    handleRewardsFundedLinear(event, pool, rewardToken);
   }
-  let addr = Address.fromString(rewardToken.id);
-  let idx = contract.fundingCount(addr).minus(BigInt.fromI32(1));
-  let fundingStruct = contract.fundings(addr, idx);
-  let duration = fundingStruct.value5;
-
-  let end = event.params.timestamp.plus(duration);
-  if (end.gt(pool.end) || pool.end.equals(ZERO_BIG_INT)) {
-    pool.end = end;
-  }
-
-  // create funding
-  let fundingId = pool.id + '_' + event.block.timestamp.toString();
-  let funding = new Funding(fundingId);
-  funding.pool = pool.id;
-  funding.token = rewardToken.id;
-  funding.createdTimestamp = event.block.timestamp;
-  funding.start = event.params.timestamp;
-  funding.end = end;
-  funding.originalAmount = integerToDecimal(event.params.amount, rewardToken.decimals);
-  funding.shares = integerToDecimal(event.params.shares, rewardToken.decimals);
-  funding.sharesPerSecond = ZERO_BIG_DECIMAL;
-  if (duration.gt(ZERO_BIG_INT)) {
-    funding.sharesPerSecond = funding.shares.div(duration.toBigDecimal());
-  }
-  funding.cleaned = false;
-  funding.save(); // save before pricing
-
-  pool.fundings = pool.fundings.concat([funding.id])
 
   // update pool pricing
   updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp);
@@ -78,7 +55,7 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   rewardToken.save();
   platform.save();
 
-  log.info('rewards funded {} {} {} {}', [pool.id, rewardToken.symbol, funding.originalAmount.toString(), funding.shares.toString()]);
+  log.info('rewards funded {} {} {} {}', [pool.id, rewardToken.symbol, amount.toString(), integerToDecimal(event.params.shares, rewardToken.decimals).toString()]);
 }
 
 
@@ -190,4 +167,31 @@ export function handleRewardsExpired(event: RewardsExpired): void {
       break;
     }
   }
+}
+
+
+export function handleRewardsWithdrawn(event: RewardsWithdrawn): void {
+  let contract = ERC20BaseRewardModuleContract.bind(event.address);
+  let pool = Pool.load(contract.owner().toHexString())!;
+  let stakingToken = Token.load(pool.stakingToken)!;
+  let rewardToken = Token.load(pool.rewardToken)!;
+  let platform = Platform.load(ZERO_ADDRESS.toHexString())!;
+
+  // TODO any extra bookkeeping needed here?
+
+  // update pool pricing
+  updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp);
+
+  // update platform
+  if (pool.tvl.gt(PRICING_MIN_TVL) && !platform._activePools.includes(pool.id)) {
+    log.info('Adding pool to active pricing {}', [pool.id.toString()]);
+    platform._activePools = platform._activePools.concat([pool.id]);
+  }
+  updatePlatform(platform, event.block.timestamp, pool);
+
+  // store
+  pool.save();
+  stakingToken.save();
+  rewardToken.save();
+  platform.save();
 }
