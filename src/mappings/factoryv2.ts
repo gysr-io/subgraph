@@ -1,20 +1,20 @@
 // V2 and V3 Pool Factory event handling and mapping
 
-import { BigDecimal, BigInt, log } from '@graphprotocol/graph-ts'
-import { PoolCreated } from '../../generated/PoolFactory/PoolFactory'
-import { Pool as PoolContract } from '../../generated/PoolFactory/Pool'
-import { ERC20StakingModule as ERC20StakingModuleContract } from '../../generated/PoolFactory/ERC20StakingModule'
-import { ERC20BaseRewardModule as ERC20BaseRewardModuleContract } from '../../generated/PoolFactory/ERC20BaseRewardModule'
-import { ERC20CompetitiveRewardModule as ERC20CompetitiveRewardModuleContract } from '../../generated/PoolFactory/ERC20CompetitiveRewardModule'
-import { ERC20FriendlyRewardModule as ERC20FriendlyRewardModuleContract } from '../../generated/PoolFactory/ERC20FriendlyRewardModule'
-import { ERC20LinearRewardModule as ERC20LinearRewardModuleContract } from '../../generated/PoolFactory/ERC20LinearRewardModule'
-import { Pool, Platform, Token, User } from '../../generated/schema'
+import { BigDecimal, BigInt, log } from '@graphprotocol/graph-ts';
+import { PoolCreated } from '../../generated/PoolFactory/PoolFactory';
+import { Pool as PoolContract } from '../../generated/PoolFactory/Pool';
+import { ERC20StakingModule as ERC20StakingModuleContract } from '../../generated/PoolFactory/ERC20StakingModule';
+import { ERC20BaseRewardModule as ERC20BaseRewardModuleContract } from '../../generated/PoolFactory/ERC20BaseRewardModule';
+import { ERC20CompetitiveRewardModule as ERC20CompetitiveRewardModuleContract } from '../../generated/PoolFactory/ERC20CompetitiveRewardModule';
+import { ERC20FriendlyRewardModule as ERC20FriendlyRewardModuleContract } from '../../generated/PoolFactory/ERC20FriendlyRewardModule';
+import { ERC20LinearRewardModule as ERC20LinearRewardModuleContract } from '../../generated/PoolFactory/ERC20LinearRewardModule';
+import { Pool, Platform, Token, User } from '../../generated/schema';
 import {
   Pool as PoolTemplate,
   RewardModule as RewardModuleTemplate,
   StakingModule as StakingModuleTemplate
-} from '../../generated/templates'
-import { integerToDecimal, createNewUser, createNewPlatform } from '../util/common'
+} from '../../generated/templates';
+import { integerToDecimal, createNewUser, createNewPlatform } from '../util/common';
 import {
   ZERO_BIG_INT,
   ZERO_BIG_DECIMAL,
@@ -29,35 +29,18 @@ import {
   ERC20_STAKING_MODULE_FACTORIES,
   ERC721_STAKING_MODULE_FACTORIES,
   ONE_E_18
-} from '../util/constants'
-import { createNewToken } from '../pricing/token'
+} from '../util/constants';
+import { createNewToken } from '../pricing/token';
 
 export function handlePoolCreated(event: PoolCreated): void {
-
   // interface to actual Pool contract
   let contract = PoolContract.bind(event.params.pool);
 
   // modules
   let stakingModule = contract.stakingModule();
-  let stakingModuleContract = ERC20StakingModuleContract.bind(stakingModule)
+  let stakingModuleContract = ERC20StakingModuleContract.bind(stakingModule);
   let rewardModule = contract.rewardModule();
   let rewardModuleContract = ERC20BaseRewardModuleContract.bind(rewardModule);
-
-  // staking token
-  let stakingToken = Token.load(stakingModuleContract.tokens()[0].toHexString())
-
-  if (stakingToken === null) {
-    stakingToken = createNewToken(stakingModuleContract.tokens()[0]);
-    stakingToken.save();
-  }
-
-  // reward token
-  let rewardToken = Token.load(rewardModuleContract.tokens()[0].toHexString())
-
-  if (rewardToken === null) {
-    rewardToken = createNewToken(rewardModuleContract.tokens()[0]);
-    rewardToken.save();
-  }
 
   // platform
   let platform = Platform.load(ZERO_ADDRESS.toHexString());
@@ -77,21 +60,19 @@ export function handlePoolCreated(event: PoolCreated): void {
   // pool entity
   let pool = new Pool(event.params.pool.toHexString());
   pool.owner = user.id;
-  pool.stakingToken = stakingToken.id;
-  pool.rewardToken = rewardToken.id;
   pool.stakingModule = stakingModule.toHexString();
   pool.rewardModule = rewardModule.toHexString();
 
   // reward type
   let rewardFactory = rewardModuleContract.factory();
   if (ERC20_COMPETITIVE_REWARD_MODULE_FACTORIES_V2.includes(rewardFactory)) {
-    let competitiveContract = ERC20CompetitiveRewardModuleContract.bind(rewardModule)
+    let competitiveContract = ERC20CompetitiveRewardModuleContract.bind(rewardModule);
     pool.timeMultMin = integerToDecimal(competitiveContract.bonusMin());
     pool.timeMultMax = integerToDecimal(competitiveContract.bonusMax());
     pool.timeMultPeriod = competitiveContract.bonusPeriod();
     pool.rewardModuleType = 'ERC20CompetitiveV2';
   } else if (ERC20_COMPETITIVE_REWARD_MODULE_FACTORIES_V3.includes(rewardFactory)) {
-    let competitiveContract = ERC20CompetitiveRewardModuleContract.bind(rewardModule)
+    let competitiveContract = ERC20CompetitiveRewardModuleContract.bind(rewardModule);
     pool.timeMultMin = integerToDecimal(competitiveContract.bonusMin());
     pool.timeMultMax = integerToDecimal(competitiveContract.bonusMax());
     pool.timeMultPeriod = competitiveContract.bonusPeriod();
@@ -138,10 +119,13 @@ export function handlePoolCreated(event: PoolCreated): void {
   // type nickname
   pool.poolType = 'Unknown';
   if (pool.stakingModuleType == 'ERC20') {
-    if (pool.rewardModuleType == 'ERC20CompetitiveV2' || pool.rewardModuleType == 'ERC20CompetitiveV3') {
+    if (
+      pool.rewardModuleType == 'ERC20CompetitiveV2' ||
+      pool.rewardModuleType == 'ERC20CompetitiveV3'
+    ) {
       pool.poolType = 'GeyserV2';
     } else {
-      pool.poolType = 'Fountain'
+      pool.poolType = 'Fountain';
     }
   } else if (pool.stakingModuleType == 'ERC721') {
     if (pool.rewardModuleType == 'ERC20FriendlyV2' || pool.rewardModuleType == 'ERC20FriendlyV3') {
@@ -149,18 +133,40 @@ export function handlePoolCreated(event: PoolCreated): void {
     }
   } else if (pool.stakingModuleType == 'Assignment') {
     if (pool.rewardModuleType == 'ERC20Linear') {
-      pool.poolType = 'Stream'
+      pool.poolType = 'Stream';
     }
   }
 
   pool.createdBlock = event.block.number;
   pool.createdTimestamp = event.block.timestamp;
-  pool.tags = (
-    stakingToken.symbol
-    + " " + stakingToken.name
-    + " " + rewardToken.symbol
-    + " " + rewardToken.name
-  );
+
+  // staking token
+  let stakingToken = Token.load(stakingModuleContract.tokens()[0].toHexString());
+
+  if (stakingToken === null) {
+    stakingToken = createNewToken(stakingModuleContract.tokens()[0]);
+    stakingToken.save();
+  }
+
+  // reward token
+  let rewardToken = Token.load(rewardModuleContract.tokens()[0].toHexString());
+
+  if (rewardToken === null) {
+    rewardToken = createNewToken(rewardModuleContract.tokens()[0]);
+    rewardToken.save();
+  }
+
+  pool.stakingToken = stakingToken.id;
+  pool.rewardToken = rewardToken.id;
+
+  pool.tags =
+    stakingToken.symbol +
+    ' ' +
+    stakingToken.name +
+    ' ' +
+    rewardToken.symbol +
+    ' ' +
+    rewardToken.name;
 
   pool.users = ZERO_BIG_INT;
   pool.operations = ZERO_BIG_INT;
@@ -191,7 +197,12 @@ export function handlePoolCreated(event: PoolCreated): void {
   user.save();
   platform.save();
 
-  log.info('created new v2/v3 pool: {}, {}, {}, {}', [pool.id, pool.poolType, stakingToken.symbol, rewardToken.symbol]);
+  log.info('created new v2/v3 pool: {}, {}, {}, {}', [
+    pool.id,
+    pool.poolType,
+    stakingToken.symbol,
+    rewardToken.symbol
+  ]);
 
   // create template event handler
   PoolTemplate.create(event.params.pool);
