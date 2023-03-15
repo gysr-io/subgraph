@@ -1,15 +1,15 @@
 // ERC20 base reward module event handling and mapping
 
 import { Address, BigInt, log } from '@graphprotocol/graph-ts'
+import { ERC20BaseRewardModule as ERC20BaseRewardModuleContract } from '../../generated/templates/RewardModule/ERC20BaseRewardModule'
 import {
-  ERC20BaseRewardModule as ERC20BaseRewardModuleContract,
   RewardsFunded,
   GysrSpent,
   GysrVested,
   RewardsDistributed,
   RewardsExpired,
   RewardsWithdrawn
-} from '../../generated/templates/RewardModule/ERC20BaseRewardModule'
+} from '../../generated/templates/RewardModule/Events'
 import { Pool, Token, Platform, Funding, Transaction, User } from '../../generated/schema'
 import { integerToDecimal } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN, PRICING_MIN_TVL, GYSR_FEE, BASE_REWARD_MODULE_TYPES } from '../util/constants'

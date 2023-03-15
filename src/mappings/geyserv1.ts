@@ -12,7 +12,7 @@ import {
   OwnershipTransferred
 } from '../../generated/templates/GeyserV1/GeyserV1'
 import { Pool, Token, User, Position, Stake, Platform, Transaction, Funding } from '../../generated/schema'
-import { integerToDecimal, createNewUser, createNewPlatform, updatePoolDayData, updatePlatform } from '../util/common'
+import { integerToDecimal, addressToBytes32, createNewUser, createNewPlatform, updatePoolDayData, updatePlatform } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ZERO_ADDRESS, GYSR_TOKEN, PRICING_MIN_TVL } from '../util/constants'
 import { getPrice, createNewToken } from '../pricing/token'
 import { updateGeyserV1 } from '../util/geyserv1'
@@ -40,6 +40,7 @@ export function handleStaked(event: Staked): void {
 
   if (position === null) {
     position = new Position(positionId);
+    position.account = addressToBytes32(event.params.user).toHexString();
     position.user = user.id;
     position.pool = pool.id;
     position.shares = ZERO_BIG_DECIMAL;
@@ -53,7 +54,6 @@ export function handleStaked(event: Staked): void {
 
   let stake = new Stake(stakeId);
   stake.position = position.id;
-  stake.user = user.id;
   stake.pool = pool.id;
 
   // update pool data

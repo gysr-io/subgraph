@@ -157,6 +157,7 @@ type User @entity {
 type Position @entity {
   # pool address, user address
   id: ID!
+  account: String!
 
   user: User!
   pool: Pool!
@@ -171,7 +172,6 @@ type Stake @entity {
   id: ID!
 
   position: Position!
-  user: User!
   pool: Pool!
 
   shares: BigDecimal!
@@ -211,6 +211,7 @@ type Transaction @entity {
   type: TransactionType
   timestamp: BigInt
   pool: Pool
+  position: Position
   user: User
 
   amount: BigDecimal

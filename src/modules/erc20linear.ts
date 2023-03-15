@@ -4,8 +4,12 @@ import { Address, BigInt, log } from '@graphprotocol/graph-ts'
 import {
   ERC20LinearRewardModule as ERC20LinearRewardModuleContract,
 } from '../../generated/templates/StakingModule/ERC20LinearRewardModule'
-import { RewardsFunded } from '../../generated/templates/RewardModule/ERC20BaseRewardModule'
-import { Staked, Unstaked, Claimed } from '../../generated/templates/StakingModule/ERC20StakingModule'
+import {
+  Staked1 as Staked,
+  Unstaked1 as Unstaked,
+  Claimed1 as Claimed
+} from '../../generated/templates/StakingModule/Events';
+import { RewardsFunded } from '../../generated/templates/RewardModule/Events'
 import { Pool, Token, Position, } from '../../generated/schema'
 import { integerToDecimal } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ONE_E_18, INITIAL_SHARES_PER_TOKEN } from '../util/constants'

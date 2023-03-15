@@ -47,6 +47,7 @@ export let INITIAL_SHARES_PER_TOKEN = BigDecimal.fromString('1000000');
 // factories
 export let ASSIGNMENT_STAKING_MODULE_FACTORIES: Address[] = [
   Address.fromString('{{assignment_staking_module_factory_address}}'),
+  Address.fromString('{{assignment_staking_module_factory_address_v3beta}}'),
 ]
 export let ERC20_COMPETITIVE_REWARD_MODULE_FACTORIES_V2: Address[] = [
   Address.fromString('{{erc20_competitive_reward_module_factory_address}}'),
