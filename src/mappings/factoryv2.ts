@@ -8,13 +8,20 @@ import { ERC20BaseRewardModule as ERC20BaseRewardModuleContract } from '../../ge
 import { ERC20CompetitiveRewardModule as ERC20CompetitiveRewardModuleContract } from '../../generated/PoolFactory/ERC20CompetitiveRewardModule';
 import { ERC20FriendlyRewardModule as ERC20FriendlyRewardModuleContract } from '../../generated/PoolFactory/ERC20FriendlyRewardModule';
 import { ERC20LinearRewardModule as ERC20LinearRewardModuleContract } from '../../generated/PoolFactory/ERC20LinearRewardModule';
+import { ERC20MultiRewardModule as ERC20MultiRewardModuleContract } from '../../generated/PoolFactory/ERC20MultiRewardModule';
 import { Pool, Platform, Token, User } from '../../generated/schema';
 import {
   Pool as PoolTemplate,
   RewardModule as RewardModuleTemplate,
   StakingModule as StakingModuleTemplate
 } from '../../generated/templates';
-import { integerToDecimal, createNewUser, createNewPlatform } from '../util/common';
+import {
+  integerToDecimal,
+  createNewUser,
+  createNewPlatform,
+  createNewStakingToken,
+  createNewRewardToken
+} from '../util/common';
 import {
   ZERO_BIG_INT,
   ZERO_BIG_DECIMAL,
@@ -28,7 +35,8 @@ import {
   ERC20_LINEAR_REWARD_MODULE_FACTORIES,
   ERC20_STAKING_MODULE_FACTORIES,
   ERC721_STAKING_MODULE_FACTORIES,
-  ONE_E_18
+  ONE_E_18,
+  ERC20_MULTI_REWARD_MODULE_FACTORIES
 } from '../util/constants';
 import { createNewToken } from '../pricing/token';
 
@@ -69,32 +77,44 @@ export function handlePoolCreated(event: PoolCreated): void {
     let competitiveContract = ERC20CompetitiveRewardModuleContract.bind(rewardModule);
     pool.timeMultMin = integerToDecimal(competitiveContract.bonusMin());
     pool.timeMultMax = integerToDecimal(competitiveContract.bonusMax());
-    pool.timeMultPeriod = competitiveContract.bonusPeriod();
+    pool.timePeriod = competitiveContract.bonusPeriod();
+    pool.timeMultPeriod = pool.timePeriod;
     pool.rewardModuleType = 'ERC20CompetitiveV2';
   } else if (ERC20_COMPETITIVE_REWARD_MODULE_FACTORIES_V3.includes(rewardFactory)) {
     let competitiveContract = ERC20CompetitiveRewardModuleContract.bind(rewardModule);
     pool.timeMultMin = integerToDecimal(competitiveContract.bonusMin());
     pool.timeMultMax = integerToDecimal(competitiveContract.bonusMax());
-    pool.timeMultPeriod = competitiveContract.bonusPeriod();
+    pool.timePeriod = competitiveContract.bonusPeriod();
+    pool.timeMultPeriod = pool.timePeriod;
     pool.rewardModuleType = 'ERC20CompetitiveV3';
   } else if (ERC20_FRIENDLY_REWARD_MODULE_FACTORIES_V2.includes(rewardFactory)) {
     let friendlyContract = ERC20FriendlyRewardModuleContract.bind(rewardModule);
     pool.timeMultMin = integerToDecimal(friendlyContract.vestingStart());
     pool.timeMultMax = BigDecimal.fromString('1');
-    pool.timeMultPeriod = friendlyContract.vestingPeriod();
+    pool.timePeriod = friendlyContract.vestingPeriod();
+    pool.timeMultPeriod = pool.timePeriod;
     pool.rewardModuleType = 'ERC20FriendlyV2';
   } else if (ERC20_FRIENDLY_REWARD_MODULE_FACTORIES_V3.includes(rewardFactory)) {
     let friendlyContract = ERC20FriendlyRewardModuleContract.bind(rewardModule);
     pool.timeMultMin = integerToDecimal(friendlyContract.vestingStart());
     pool.timeMultMax = BigDecimal.fromString('1');
-    pool.timeMultPeriod = friendlyContract.vestingPeriod();
+    pool.timePeriod = friendlyContract.vestingPeriod();
+    pool.timeMultPeriod = pool.timePeriod;
     pool.rewardModuleType = 'ERC20FriendlyV3';
   } else if (ERC20_LINEAR_REWARD_MODULE_FACTORIES.includes(rewardFactory)) {
     let linearContract = ERC20LinearRewardModuleContract.bind(rewardModule);
     pool.timeMultMin = BigDecimal.fromString('1');
     pool.timeMultMax = BigDecimal.fromString('1');
-    pool.timeMultPeriod = linearContract.period();
+    pool.timePeriod = linearContract.period();
+    pool.timeMultPeriod = pool.timePeriod;
     pool.rewardModuleType = 'ERC20Linear';
+  } else if (ERC20_MULTI_REWARD_MODULE_FACTORIES.includes(rewardFactory)) {
+    let multiContract = ERC20MultiRewardModuleContract.bind(rewardModule);
+    pool.timeMultMin = integerToDecimal(multiContract.vestingStart());
+    pool.timeMultMax = BigDecimal.fromString('1');
+    pool.timePeriod = multiContract.vestingPeriod();
+    pool.timeMultPeriod = pool.timePeriod;
+    pool.rewardModuleType = 'ERC20Multi';
   } else {
     log.info('unknown reward module type: {}', [rewardFactory.toHexString()]);
     return;
@@ -124,12 +144,19 @@ export function handlePoolCreated(event: PoolCreated): void {
       pool.rewardModuleType == 'ERC20CompetitiveV3'
     ) {
       pool.poolType = 'GeyserV2';
-    } else {
+    } else if (
+      pool.rewardModuleType == 'ERC20FriendlyV2' ||
+      pool.rewardModuleType == 'ERC20FriendlyV3'
+    ) {
       pool.poolType = 'Fountain';
+    } else if (pool.rewardModuleType == 'ERC20Multi') {
+      pool.poolType = 'Basin';
     }
   } else if (pool.stakingModuleType == 'ERC721') {
     if (pool.rewardModuleType == 'ERC20FriendlyV2' || pool.rewardModuleType == 'ERC20FriendlyV3') {
       pool.poolType = 'Aquarium';
+    } else if (pool.rewardModuleType == 'ERC20Multi') {
+      pool.poolType = 'Reef';
     }
   } else if (pool.stakingModuleType == 'Assignment') {
     if (pool.rewardModuleType == 'ERC20Linear') {
@@ -140,33 +167,49 @@ export function handlePoolCreated(event: PoolCreated): void {
   pool.createdBlock = event.block.number;
   pool.createdTimestamp = event.block.timestamp;
 
-  // staking token
-  let stakingToken = Token.load(stakingModuleContract.tokens()[0].toHexString());
+  let tags = '';
 
-  if (stakingToken === null) {
-    stakingToken = createNewToken(stakingModuleContract.tokens()[0]);
-    stakingToken.save();
+  // staking tokens
+  let tokens = stakingModuleContract.tokens();
+  let stakingTokens = pool.stakingTokens;
+  for (let i = 0; i < tokens.length; i++) {
+    // token
+    let token = Token.load(tokens[i].toHexString());
+    if (token === null) {
+      token = createNewToken(tokens[i]);
+      token.save();
+    }
+    if (i == 0) pool.stakingToken = token.id; // temporary backwards compatibility
+    tags += token.symbol + ' ' + token.name + ' ' + token.alias + ' ';
+
+    // pool staking token
+    let poolStakingToken = createNewStakingToken(pool, token);
+    poolStakingToken.save();
+    stakingTokens.push(poolStakingToken.id);
   }
+  pool.stakingTokens = stakingTokens;
 
-  // reward token
-  let rewardToken = Token.load(rewardModuleContract.tokens()[0].toHexString());
+  // reward tokens
+  tokens = rewardModuleContract.tokens();
+  let rewardTokens = pool.rewardTokens;
+  for (let i = 0; i < tokens.length; i++) {
+    // token
+    let token = Token.load(tokens[i].toHexString());
+    if (token === null) {
+      token = createNewToken(tokens[i]);
+      token.save();
+    }
+    if (i == 0) pool.rewardToken = token.id; // temporary backwards compatibility
+    tags += token.symbol + ' ' + token.name + ' ' + token.alias + ' ';
 
-  if (rewardToken === null) {
-    rewardToken = createNewToken(rewardModuleContract.tokens()[0]);
-    rewardToken.save();
+    // pool reward token
+    let poolRewardToken = createNewRewardToken(pool, token);
+    poolRewardToken.save();
+    rewardTokens.push(poolRewardToken.id);
   }
+  pool.rewardTokens = rewardTokens;
 
-  pool.stakingToken = stakingToken.id;
-  pool.rewardToken = rewardToken.id;
-
-  pool.tags =
-    stakingToken.symbol +
-    ' ' +
-    stakingToken.name +
-    ' ' +
-    rewardToken.symbol +
-    ' ' +
-    rewardToken.name;
+  pool.tags = tags;
 
   pool.users = ZERO_BIG_INT;
   pool.operations = ZERO_BIG_INT;
@@ -197,12 +240,7 @@ export function handlePoolCreated(event: PoolCreated): void {
   user.save();
   platform.save();
 
-  log.info('created new v2/v3 pool: {}, {}, {}, {}', [
-    pool.id,
-    pool.poolType,
-    stakingToken.symbol,
-    rewardToken.symbol
-  ]);
+  log.info('created new v2/v3 pool: {}, {}, {}', [pool.id, pool.poolType, tags]);
 
   // create template event handler
   PoolTemplate.create(event.params.pool);

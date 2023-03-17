@@ -43,7 +43,9 @@ enum PoolType {
   GeyserV2
   Fountain
   Aquarium
-  Stream # todo
+  Stream
+  Basin # TODO name pending
+  Reef # TODO name pending
   Unknown
 }
 
@@ -61,6 +63,7 @@ enum RewardModuleType {
   ERC20FriendlyV2
   ERC20FriendlyV3
   ERC20Linear
+  ERC20Multi
 }
 
 type Pool @entity {
@@ -70,12 +73,16 @@ type Pool @entity {
   owner: User!
 
   # pool config
-  stakingToken: Token!
-  rewardToken: Token!
+  stakingToken: Token # deprecated
+  rewardToken: Token # deprecated
+  stakingTokens: [Token!]!
+  rewardTokens: [Token!]!
 
   timeMultMin: BigDecimal!
   timeMultMax: BigDecimal!
-  timeMultPeriod: BigInt! # timePeriod
+  timeMultPeriod: BigInt! # deprecated
+  timePeriod: BigInt!
+
   createdTimestamp: BigInt!
   createdBlock: BigInt!
 
@@ -91,13 +98,13 @@ type Pool @entity {
   users: BigInt!
   operations: BigInt!
 
-  staked: BigDecimal!
-  rewards: BigDecimal!
-  funded: BigDecimal!
-  distributed: BigDecimal!
+  staked: BigDecimal! # deprecated
+  rewards: BigDecimal! # deprecated
+  funded: BigDecimal! # deprecated
+  distributed: BigDecimal! # deprecated
   gysrSpent: BigDecimal!
   gysrVested: BigDecimal!
-  sharesPerSecond: BigDecimal!
+  sharesPerSecond: BigDecimal! # deprecated
   fundings: [Funding!]!
 
   start: BigInt!
@@ -109,8 +116,8 @@ type Pool @entity {
   tvl: BigDecimal!
   apr: BigDecimal!
   usage: BigDecimal!
-  stakingSharesPerToken: BigDecimal!
-  rewardSharesPerToken: BigDecimal!
+  stakingSharesPerToken: BigDecimal! # deprecated
+  rewardSharesPerToken: BigDecimal! # deprecated
   updated: BigInt!
   volume: BigDecimal!
 
@@ -118,6 +125,38 @@ type Pool @entity {
   name: String
   description: String
   website: String
+}
+
+type PoolStakingToken @entity {
+  # pool address, token
+  id: ID!
+  token: Token!
+  amount: BigDecimal!
+  sharesPerToken: BigDecimal
+}
+
+type PoolRewardToken @entity {
+  # pool address, token
+  id: ID!
+  token: Token!
+  amount: BigDecimal!
+  sharesPerToken: BigDecimal!
+  sharesPerSecond: BigDecimal!
+  funded: BigDecimal!
+  distributed: BigDecimal!
+  withdrawn: BigDecimal!
+}
+
+type PoolRate @entity {
+  # pool address, staking token, reward token
+  id: ID!
+  token: Token!
+  amount: BigDecimal!
+  sharesPerToken: BigDecimal
+
+  funded: BigDecimal!
+  distributed: BigDecimal!
+  withdrawn: BigDecimal!
 }
 
 # TODO for multi

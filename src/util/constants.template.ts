@@ -69,6 +69,10 @@ export let ERC20_LINEAR_REWARD_MODULE_FACTORIES: Address[] = [
   Address.fromString('{{erc20_linear_reward_module_factory_address}}'),
   Address.fromString('{{erc20_linear_reward_module_factory_address_v3beta}}'),
 ];
+export let ERC20_MULTI_REWARD_MODULE_FACTORIES: Address[] = [
+  Address.fromString('{{erc20_multi_reward_module_factory_address}}'),
+  Address.fromString('{{erc20_multi_reward_module_factory_address_v3beta}}'),
+];
 export let ERC20_STAKING_MODULE_FACTORIES: Address[] = [
   Address.fromString('{{erc20_staking_module_factory_address}}'),
   Address.fromString('{{erc20_staking_module_factory_address_v3beta}}')
