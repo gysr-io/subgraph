@@ -1,21 +1,27 @@
 // handler methods for the erc20 linear reward module
 
-import { Address, BigInt, log } from '@graphprotocol/graph-ts'
-import {
-  ERC20LinearRewardModule as ERC20LinearRewardModuleContract,
-} from '../../generated/templates/StakingModule/ERC20LinearRewardModule'
+import { Address, BigInt, log } from '@graphprotocol/graph-ts';
+import { ERC20LinearRewardModule as ERC20LinearRewardModuleContract } from '../../generated/templates/StakingModule/ERC20LinearRewardModule';
 import {
   Staked1 as Staked,
   Unstaked1 as Unstaked,
   Claimed1 as Claimed
 } from '../../generated/templates/StakingModule/Events';
-import { RewardsFunded } from '../../generated/templates/RewardModule/Events'
-import { Pool, Token, Position, } from '../../generated/schema'
-import { integerToDecimal } from '../util/common'
-import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, ONE_E_18, INITIAL_SHARES_PER_TOKEN } from '../util/constants'
+import { RewardsFunded } from '../../generated/templates/RewardModule/Events';
+import { Pool, Token, Position, PoolRewardToken } from '../../generated/schema';
+import { integerToDecimal } from '../util/common';
+import {
+  ZERO_BIG_INT,
+  ZERO_BIG_DECIMAL,
+  ONE_E_18,
+  INITIAL_SHARES_PER_TOKEN
+} from '../util/constants';
 
-
-export function handleRewardsFundedLinear(event: RewardsFunded, pool: Pool, token: Token): void {
+export function handleRewardsFundedLinear(
+  event: RewardsFunded,
+  pool: Pool,
+  tokens: Map<String, Token>
+): void {
   let contract = ERC20LinearRewardModuleContract.bind(event.address);
 
   // update timeframe for pool
@@ -24,14 +30,18 @@ export function handleRewardsFundedLinear(event: RewardsFunded, pool: Pool, toke
   // TODO do we still want to create an object here?
 }
 
-
 export function handleStakedLinear(event: Staked, pool: Pool, position: Position): void {
   let contract = ERC20LinearRewardModuleContract.bind(event.address);
   // TODO anything useful here?
 }
 
-
-export function updatePoolLinear(pool: Pool, token: Token, timestamp: BigInt): void {
+export function updatePoolLinear(
+  pool: Pool,
+  tokens: Map<String, Token>,
+  rewardTokens: Map<String, PoolRewardToken>,
+  timestamp: BigInt
+): void {
+  let tkn = rewardTokens.keys()[0];
   let contract = ERC20LinearRewardModuleContract.bind(Address.fromString(pool.rewardModule));
 
   // update runway for pool
@@ -51,8 +61,9 @@ export function updatePoolLinear(pool: Pool, token: Token, timestamp: BigInt): v
   if (pool.rewards.gt(ZERO_BIG_DECIMAL)) {
     rewardSharesPerToken = integerToDecimal(
       contract.rewardShares().minus(contract.earned()),
-      token.decimals
-    ).div(pool.rewards)
+      tokens.get(tkn).decimals
+    ).div(pool.rewards);
   }
+  rewardTokens.get(tkn).sharesPerToken = rewardSharesPerToken;
   pool.rewardSharesPerToken = rewardSharesPerToken;
 }

@@ -7,21 +7,34 @@ import {
   Unstaked1 as Unstaked,
   Claimed1 as Claimed
 } from '../../generated/templates/StakingModule/Events';
-import { RewardsFunded } from '../../generated/templates/RewardModule/Events'
+import { RewardsFunded } from '../../generated/templates/RewardModule/Events';
 import { ERC20CompetitiveRewardModuleV2 } from '../../generated/templates/StakingModule/ERC20CompetitiveRewardModuleV2';
 import { ERC20CompetitiveRewardModuleV3 } from '../../generated/templates/StakingModule/ERC20CompetitiveRewardModuleV3';
-import { Pool, Token, Funding, Position, User, Stake } from '../../generated/schema';
+import {
+  Pool,
+  Token,
+  Funding,
+  Position,
+  User,
+  Stake,
+  PoolRewardToken
+} from '../../generated/schema';
 import { integerToDecimal } from '../util/common';
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, INITIAL_SHARES_PER_TOKEN } from '../util/constants';
 
-export function handleRewardsFundedCompetitive(event: RewardsFunded, pool: Pool, token: Token): void {
+export function handleRewardsFundedCompetitive(
+  event: RewardsFunded,
+  pool: Pool,
+  tokens: Map<String, Token>
+): void {
   let contract = ERC20BaseRewardModuleContract.bind(event.address);
 
   // update timeframe for pool
   if (event.params.timestamp.lt(pool.start) || pool.start.equals(ZERO_BIG_INT)) {
     pool.start = event.params.timestamp;
   }
-  let addr = Address.fromString(token.id);
+  let tkn = event.params.token.toHexString();
+  let addr = event.params.token;
   let idx = contract.fundingCount(addr).minus(BigInt.fromI32(1));
   let fundingStruct = contract.fundings(addr, idx);
   let duration = fundingStruct.value5;
@@ -35,12 +48,12 @@ export function handleRewardsFundedCompetitive(event: RewardsFunded, pool: Pool,
   let fundingId = pool.id + '_' + event.block.timestamp.toString();
   let funding = new Funding(fundingId);
   funding.pool = pool.id;
-  funding.token = token.id;
+  funding.token = tkn;
   funding.createdTimestamp = event.block.timestamp;
   funding.start = event.params.timestamp;
   funding.end = end;
-  funding.originalAmount = integerToDecimal(event.params.amount, token.decimals);
-  funding.shares = integerToDecimal(event.params.shares, token.decimals);
+  funding.originalAmount = integerToDecimal(event.params.amount, tokens[tkn].decimals);
+  funding.shares = integerToDecimal(event.params.shares, tokens[tkn].decimals);
   funding.sharesPerSecond = ZERO_BIG_DECIMAL;
   if (duration.gt(ZERO_BIG_INT)) {
     funding.sharesPerSecond = funding.shares.div(duration.toBigDecimal());
@@ -51,8 +64,12 @@ export function handleRewardsFundedCompetitive(event: RewardsFunded, pool: Pool,
   pool.fundings = pool.fundings.concat([funding.id]);
 }
 
-
-export function handleStakedCompetitive(event: Staked, pool: Pool, position: Position, token: Token): void {
+export function handleStakedCompetitive(
+  event: Staked,
+  pool: Pool,
+  position: Position,
+  token: Token
+): void {
   // create new stake
   let stakeId = position.id + '_' + event.transaction.hash.toHexString();
 
@@ -67,8 +84,12 @@ export function handleStakedCompetitive(event: Staked, pool: Pool, position: Pos
   stake.save();
 }
 
-
-export function handleUnstakedCompetitiveV2(event: Unstaked, pool: Pool, position: Position, token: Token): void {
+export function handleUnstakedCompetitiveV2(
+  event: Unstaked,
+  pool: Pool,
+  position: Position,
+  token: Token
+): void {
   // competitive
   let rewardContract = ERC20CompetitiveRewardModuleV2.bind(Address.fromString(pool.rewardModule));
   let count = rewardContract.stakeCount(event.params.user).toI32();
@@ -99,10 +120,10 @@ export function handleUnstakedCompetitiveV2(event: Unstaked, pool: Pool, positio
 
     // verify position timestamps
     if (ts != stake.timestamp) {
-      log.error(
-        'Stake timestamps not equal: {} != {}',
-        [stake.timestamp.toString(), ts.toString()]
-      )
+      log.error('Stake timestamps not equal: {} != {}', [
+        stake.timestamp.toString(),
+        ts.toString()
+      ]);
     }
 
     // set updated share amount
@@ -150,10 +171,10 @@ export function handleUnstakedCompetitiveV3(
 
     // verify position timestamps
     if (ts != stake.timestamp) {
-      log.error(
-        'Stake timestamps not equal: {} != {}',
-        [stake.timestamp.toString(), ts.toString()]
-      )
+      log.error('Stake timestamps not equal: {} != {}', [
+        stake.timestamp.toString(),
+        ts.toString()
+      ]);
     }
 
     // set updated share amount
@@ -164,8 +185,12 @@ export function handleUnstakedCompetitiveV3(
   position.stakes = stakes;
 }
 
-
-export function handleClaimedCompetitiveV2(event: Claimed, pool: Pool, position: Position, token: Token): void {
+export function handleClaimedCompetitiveV2(
+  event: Claimed,
+  pool: Pool,
+  position: Position,
+  token: Token
+): void {
   // competitive
   let rewardContract = ERC20CompetitiveRewardModuleV2.bind(Address.fromString(pool.rewardModule));
   let count = rewardContract.stakeCount(event.params.user).toI32();
@@ -205,9 +230,12 @@ export function handleClaimedCompetitiveV2(event: Claimed, pool: Pool, position:
   position.stakes = stakes;
 }
 
-
-export function handleClaimedCompetitiveV3(event: Claimed, pool: Pool, position: Position, token: Token): void {
-
+export function handleClaimedCompetitiveV3(
+  event: Claimed,
+  pool: Pool,
+  position: Position,
+  token: Token
+): void {
   // competitive
   let rewardContract = ERC20CompetitiveRewardModuleV3.bind(Address.fromString(pool.rewardModule));
   let account = event.params.account;
@@ -248,14 +276,21 @@ export function handleClaimedCompetitiveV3(event: Claimed, pool: Pool, position:
   position.stakes = stakes;
 }
 
-export function updatePoolCompetitive(pool: Pool, token: Token, timestamp: BigInt): void {
+export function updatePoolCompetitive(
+  pool: Pool,
+  tokens: Map<String, Token>,
+  rewardTokens: Map<String, PoolRewardToken>,
+  timestamp: BigInt
+): void {
+  let tkn = rewardTokens.keys()[0];
   let rewardSharesPerToken = INITIAL_SHARES_PER_TOKEN;
   if (pool.rewards.gt(ZERO_BIG_DECIMAL)) {
     let contract = ERC20BaseRewardModuleContract.bind(Address.fromString(pool.rewardModule));
     rewardSharesPerToken = integerToDecimal(
-      contract.lockedShares(Address.fromString(token.id)),
-      token.decimals
+      contract.lockedShares(Address.fromString(tkn)),
+      tokens.get(tkn).decimals
     ).div(pool.rewards);
   }
+  rewardTokens.get(tkn).sharesPerToken = rewardSharesPerToken;
   pool.rewardSharesPerToken = rewardSharesPerToken;
 }

@@ -10,14 +10,26 @@ import {
   Claimed1 as ClaimedV3
 } from '../../generated/templates/StakingModule/Events';
 import { Pool as PoolContract } from '../../generated/templates/StakingModule/Pool';
-import { Pool, Token, User, Position, Stake, Platform, Transaction } from '../../generated/schema';
+import {
+  Pool,
+  Token,
+  User,
+  Position,
+  Stake,
+  Platform,
+  Transaction,
+  PoolStakingToken,
+  PoolRewardToken
+} from '../../generated/schema';
 import {
   integerToDecimal,
   addressToBytes32,
   bytes32ToAddress,
   createNewUser,
   updatePoolDayData,
-  updatePlatform
+  updatePlatform,
+  loadPoolTokens,
+  savePoolTokens
 } from '../util/common';
 import {
   ZERO_BIG_INT,
@@ -45,9 +57,11 @@ export function handleStaked(event: StakedV3): void {
   // load pool and tokens
   let contract = ERC20StakingModuleContract.bind(event.address);
   let pool = Pool.load(contract.owner().toHexString())!;
-  let stakingToken = Token.load(pool.stakingToken)!;
-  let rewardToken = Token.load(pool.rewardToken)!;
   let platform = Platform.load(ZERO_ADDRESS.toHexString())!;
+  let tokens = new Map<String, Token>();
+  let stakingTokens = new Map<String, PoolStakingToken>();
+  let rewardTokens = new Map<String, PoolRewardToken>();
+  loadPoolTokens(pool, tokens, stakingTokens, rewardTokens);
 
   // get user from position
   // TODO handle tokenized positions
@@ -77,6 +91,14 @@ export function handleStaked(event: StakedV3): void {
     pool.users = pool.users.plus(BigInt.fromI32(1));
   }
 
+  // get staking token
+  let stakingToken: Token;
+  if (pool.stakingModuleType == 'ERC20Bond') {
+    stakingToken = tokens.values()[0]; // TODO
+  } else {
+    stakingToken = tokens.values()[0];
+  }
+
   // module specific logic
   if (BASE_REWARD_MODULE_TYPES.includes(pool.rewardModuleType)) {
     handleStakedCompetitive(event, pool, position, stakingToken);
@@ -94,7 +116,7 @@ export function handleStaked(event: StakedV3): void {
   platform.operations = platform.operations.plus(BigInt.fromI32(1));
 
   // create new stake transaction
-  let transaction = new Transaction(event.transaction.hash.toHexString());
+  let transaction = new Transaction(event.transaction.hash.toHexString()); // TODO unique id
   transaction.type = 'Stake';
   transaction.timestamp = event.block.timestamp;
   transaction.pool = pool.id;
@@ -104,7 +126,7 @@ export function handleStaked(event: StakedV3): void {
   transaction.gysrSpent = ZERO_BIG_DECIMAL;
 
   // update pool data
-  updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp);
+  updatePool(pool, platform, tokens, stakingTokens, rewardTokens, event.block.timestamp);
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
 
   // update volume
@@ -124,20 +146,22 @@ export function handleStaked(event: StakedV3): void {
   position.save();
   user.save();
   pool.save();
-  stakingToken.save();
-  rewardToken.save();
+  savePoolTokens(tokens, stakingTokens, rewardTokens);
   transaction.save();
   platform.save();
   poolDayData.save();
 }
 
 export function handleUnstaked(event: UnstakedV3): void {
-  // load pool and token
+  // load pool and tokens
   let contract = ERC20StakingModuleContract.bind(event.address);
   let pool = Pool.load(contract.owner().toHexString())!;
-  let stakingToken = Token.load(pool.stakingToken)!;
-  let rewardToken = Token.load(pool.rewardToken)!;
   let platform = Platform.load(ZERO_ADDRESS.toHexString())!;
+
+  let tokens = new Map<String, Token>();
+  let stakingTokens = new Map<String, PoolStakingToken>();
+  let rewardTokens = new Map<String, PoolRewardToken>();
+  loadPoolTokens(pool, tokens, stakingTokens, rewardTokens);
 
   // load position
   let positionId = pool.id + '_' + event.params.account.toHexString();
@@ -149,6 +173,14 @@ export function handleUnstaked(event: UnstakedV3): void {
 
   // load user
   let user = User.load(userAddress.toHexString())!;
+
+  // get staking token
+  let stakingToken: Token;
+  if (pool.stakingModuleType == 'ERC20Bond') {
+    stakingToken = tokens.values()[0]; // TODO
+  } else {
+    stakingToken = tokens.values()[0];
+  }
 
   // module specific handling
   if (pool.rewardModuleType == 'ERC20CompetitiveV2') {
@@ -189,7 +221,7 @@ export function handleUnstaked(event: UnstakedV3): void {
   transaction.gysrSpent = ZERO_BIG_DECIMAL;
 
   // update pool data
-  updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp);
+  updatePool(pool, platform, tokens, stakingTokens, rewardTokens, event.block.timestamp);
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
 
   // update platform pricing
@@ -202,20 +234,22 @@ export function handleUnstaked(event: UnstakedV3): void {
   // store
   user.save();
   pool.save();
-  stakingToken.save();
-  rewardToken.save();
+  savePoolTokens(tokens, stakingTokens, rewardTokens);
   transaction.save();
   platform.save();
   poolDayData.save();
 }
 
 export function handleClaimed(event: ClaimedV3): void {
-  // load pool and token
+  // load pool and tokens
   let contract = ERC20StakingModuleContract.bind(event.address);
   let pool = Pool.load(contract.owner().toHexString())!;
-  let stakingToken = Token.load(pool.stakingToken)!;
-  let rewardToken = Token.load(pool.rewardToken)!;
   let platform = Platform.load(ZERO_ADDRESS.toHexString())!;
+
+  let tokens = new Map<String, Token>();
+  let stakingTokens = new Map<String, PoolStakingToken>();
+  let rewardTokens = new Map<String, PoolRewardToken>();
+  loadPoolTokens(pool, tokens, stakingTokens, rewardTokens);
 
   // load position
   let positionId = pool.id + '_' + event.params.account.toHexString();
@@ -227,6 +261,14 @@ export function handleClaimed(event: ClaimedV3): void {
 
   // load user
   let user = User.load(userAddress.toHexString())!;
+
+  // get staking token
+  let stakingToken: Token;
+  if (pool.stakingModuleType == 'ERC20Bond') {
+    stakingToken = tokens.values()[0]; // TODO
+  } else {
+    stakingToken = tokens.values()[0];
+  }
 
   // note: should encapsulate this behind an interface when we have additional module types
   if (pool.rewardModuleType == 'ERC20CompetitiveV2') {
@@ -259,7 +301,7 @@ export function handleClaimed(event: ClaimedV3): void {
   transaction.gysrSpent = ZERO_BIG_DECIMAL;
 
   // update pricing info
-  updatePool(pool, platform, stakingToken, rewardToken, event.block.timestamp);
+  updatePool(pool, platform, tokens, stakingTokens, rewardTokens, event.block.timestamp);
 
   // not considering claim amount in volume
 
@@ -276,8 +318,7 @@ export function handleClaimed(event: ClaimedV3): void {
   user.save();
   position.save();
   pool.save();
-  stakingToken.save();
-  rewardToken.save();
+  savePoolTokens(tokens, stakingTokens, rewardTokens);
   transaction.save();
   platform.save();
   poolDayData.save();

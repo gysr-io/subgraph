@@ -127,15 +127,17 @@ export function updatePlatform(platform: Platform, timestamp: BigInt, skip: Pool
 
     // load
     let pool = Pool.load(pools[i])!;
-    let stakingToken = Token.load(pool.stakingToken)!;
-    let rewardToken = Token.load(pool.rewardToken)!;
+    let tokens = new Map<String, Token>();
+    let stakingTokens = new Map<String, PoolStakingToken>();
+    let rewardTokens = new Map<String, PoolRewardToken>();
+    loadPoolTokens(pool, tokens, stakingTokens, rewardTokens);
 
     // update pool
     if (pool.stakingModuleType == 'V1') {
       let contract = GeyserContractV1.bind(Address.fromString(pool.id));
-      updateGeyserV1(pool, platform, contract, stakingToken, rewardToken, timestamp);
+      updateGeyserV1(pool, platform, contract, tokens, stakingTokens, rewardTokens, timestamp);
     } else {
-      updatePool(pool, platform, stakingToken, rewardToken, timestamp);
+      updatePool(pool, platform, tokens, stakingTokens, rewardTokens, timestamp);
     }
 
     // update pool day snapshot
@@ -143,8 +145,7 @@ export function updatePlatform(platform: Platform, timestamp: BigInt, skip: Pool
 
     // store
     pool.save();
-    stakingToken.save();
-    rewardToken.save();
+    savePoolTokens(tokens, stakingTokens, rewardTokens);
     poolDayData.save();
 
     // remove low TVL pools from priced list
@@ -168,4 +169,35 @@ export function updatePlatform(platform: Platform, timestamp: BigInt, skip: Pool
   }
   platform._updated = timestamp;
   return true;
+}
+
+export function loadPoolTokens(
+  pool: Pool,
+  tokens: Map<String, Token>,
+  staking: Map<String, PoolStakingToken>,
+  rewards: Map<String, PoolRewardToken>
+): void {
+  for (let i = 0; i < pool.stakingTokens.length; i++) {
+    let stakingToken = PoolStakingToken.load(pool.stakingTokens[i])!;
+    staking.set(stakingToken.token, PoolStakingToken.load(pool.stakingTokens[i])!);
+    tokens.set(stakingToken.token, Token.load(stakingToken.token)!);
+  }
+  for (let i = 0; i < pool.rewardTokens.length; i++) {
+    let rewardToken = PoolRewardToken.load(pool.rewardTokens[i])!;
+    rewards.set(rewardToken.token, PoolRewardToken.load(pool.rewardTokens[i])!);
+    tokens.set(rewardToken.token, Token.load(rewardToken.token)!);
+  }
+}
+
+export function savePoolTokens(
+  tokens: Map<String, Token>,
+  staking: Map<String, PoolStakingToken>,
+  rewards: Map<String, PoolRewardToken>
+): void {
+  let keys = tokens.keys();
+  for (let i = 0; i < keys.length; i++) tokens.get(keys[i]).save();
+  keys = staking.keys();
+  for (let i = 0; i < keys.length; i++) staking.get(keys[i]).save();
+  keys = rewards.keys();
+  for (let i = 0; i < keys.length; i++) rewards.get(keys[i]).save();
 }
