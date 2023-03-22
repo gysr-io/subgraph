@@ -288,9 +288,9 @@ export function updatePoolCompetitive(
     let contract = ERC20BaseRewardModuleContract.bind(Address.fromString(pool.rewardModule));
     rewardSharesPerToken = integerToDecimal(
       contract.lockedShares(Address.fromString(tkn)),
-      tokens.get(tkn).decimals
+      tokens[tkn].decimals
     ).div(pool.rewards);
   }
-  rewardTokens.get(tkn).sharesPerToken = rewardSharesPerToken;
+  rewardTokens[tkn].sharesPerToken = rewardSharesPerToken;
   pool.rewardSharesPerToken = rewardSharesPerToken;
 }

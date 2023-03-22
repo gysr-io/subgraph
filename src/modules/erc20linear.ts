@@ -61,9 +61,9 @@ export function updatePoolLinear(
   if (pool.rewards.gt(ZERO_BIG_DECIMAL)) {
     rewardSharesPerToken = integerToDecimal(
       contract.rewardShares().minus(contract.earned()),
-      tokens.get(tkn).decimals
+      tokens[tkn].decimals
     ).div(pool.rewards);
   }
-  rewardTokens.get(tkn).sharesPerToken = rewardSharesPerToken;
+  rewardTokens[tkn].sharesPerToken = rewardSharesPerToken;
   pool.rewardSharesPerToken = rewardSharesPerToken;
 }

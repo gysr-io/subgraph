@@ -35,9 +35,8 @@ export function updatePricing(
     let tkn = rewardTokens.keys()[i];
     pool.rewardsUSD = pool.rewardsUSD.plus(rewardTokens[tkn].amount.times(tokens[tkn].price));
     rewardTokens[tkn].sharesPerSecond = ZERO_BIG_DECIMAL;
+    rewardTokens[tkn].state = rewardTokens[tkn].funded.gt(ZERO_BIG_DECIMAL) ? 'Stale' : 'Unfunded'; // init options
   }
-  // pool.stakedUSD = pool.staked.times(stakingToken.price);
-  // pool.rewardsUSD = pool.rewards.times(rewardToken.price);
   pool.tvl = pool.stakedUSD.plus(pool.rewardsUSD);
 
   platform.tvl = platform.tvl.plus(pool.tvl);
@@ -46,36 +45,61 @@ export function updatePricing(
 
   // fundings
   let fundings = pool.fundings;
-  let active = false;
+  pool.state = fundings.length > 0 ? 'Stale' : 'Unfunded';
   let next = BigInt.fromI32(10).times(timestamp);
+  let nextTokens = new Map<String, BigInt>();
   let rate = ZERO_BIG_DECIMAL;
   for (let i = 0; i < fundings.length; i++) {
     let funding = Funding.load(fundings[i])!;
+    let tkn = funding.token;
+
     // active
-    if (funding.start.le(timestamp) && funding.end.gt(timestamp) && !active) {
-      active = true;
-      rate = ZERO_BIG_DECIMAL;
+    if (funding.start.le(timestamp) && funding.end.gt(timestamp) && pool.state != 'Active') {
+      if (pool.state != 'Active') {
+        pool.state = 'Active';
+        rate = ZERO_BIG_DECIMAL;
+      }
+      if (rewardTokens[tkn].state != 'Active') {
+        rewardTokens[tkn].state = 'Active';
+        rewardTokens[tkn].sharesPerSecond = ZERO_BIG_DECIMAL;
+      }
     }
     // boiling
-    else if (funding.start.gt(timestamp) && funding.start.lt(next) && !active) {
-      next = funding.start;
-      rate = ZERO_BIG_DECIMAL;
+    else if (funding.start.gt(timestamp)) {
+      if (funding.start.lt(next) && pool.state != 'Active') {
+        pool.state = 'Boiling';
+        rate = ZERO_BIG_DECIMAL;
+        next = funding.start;
+      }
+      if (
+        (!nextTokens.has(tkn) || funding.start.lt(nextTokens[tkn])) &&
+        rewardTokens[tkn].state != 'Active'
+      ) {
+        rewardTokens[tkn].state = 'Boiling';
+        rewardTokens[tkn].sharesPerSecond = ZERO_BIG_DECIMAL;
+        nextTokens.set(tkn, funding.start);
+      }
     }
 
     // rate
     if (
-      (active && funding.start.lt(timestamp) && funding.end.gt(timestamp)) ||
-      (!active && funding.start == next)
+      (pool.state == 'Active' && funding.start.lt(timestamp) && funding.end.gt(timestamp)) ||
+      (pool.state == 'Boiling' && funding.start == next)
     ) {
-      // token shares per second
-      let tkn = funding.token;
-      rewardTokens[tkn].sharesPerSecond = rewardTokens[tkn].sharesPerSecond.plus(
-        funding.sharesPerSecond
-      );
-
       // total usd per second
       rate = rate.plus(
         funding.sharesPerSecond.times(tokens[tkn].price).div(rewardTokens[tkn].sharesPerToken)
+      );
+    }
+    if (
+      (rewardTokens[tkn].state == 'Active' &&
+        funding.start.lt(timestamp) &&
+        funding.end.gt(timestamp)) ||
+      (rewardTokens[tkn].state == 'Boiling' && funding.start == nextTokens[tkn])
+    ) {
+      // token shares per second
+      rewardTokens[tkn].sharesPerSecond = rewardTokens[tkn].sharesPerSecond.plus(
+        funding.sharesPerSecond
       );
     }
   }
@@ -89,15 +113,9 @@ export function updatePricing(
     pool.apr = ZERO_BIG_DECIMAL;
   }
 
-  // state
-  if (active) {
+  // pool state -- temp case handling
+  if (pool.rewardModuleType == 'ERC20Linear' && pool.end.gt(timestamp)) {
     pool.state = 'Active';
-  } else if (pool.rewardModuleType == 'ERC20Linear' && pool.end.gt(timestamp)) {
-    // temp case handling
-    pool.state = 'Active';
-  } else if (rate.gt(ZERO_BIG_DECIMAL)) {
-    pool.state = 'Boiling';
-  } else if (pool.funded.gt(ZERO_BIG_DECIMAL)) {
-    pool.state = 'Stale';
+    rewardTokens.values()[0].state = 'Active';
   }
 }

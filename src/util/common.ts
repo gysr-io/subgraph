@@ -66,6 +66,7 @@ export function createNewStakingToken(pool: Pool, token: Token): PoolStakingToke
   staking.token = token.id;
   staking.amount = ZERO_BIG_DECIMAL;
   staking.sharesPerToken = INITIAL_SHARES_PER_TOKEN;
+
   return staking;
 }
 
@@ -78,6 +79,8 @@ export function createNewRewardToken(pool: Pool, token: Token): PoolRewardToken 
   reward.funded = ZERO_BIG_DECIMAL;
   reward.distributed = ZERO_BIG_DECIMAL;
   reward.withdrawn = ZERO_BIG_DECIMAL;
+  reward.state = 'Unfunded';
+
   return reward;
 }
 

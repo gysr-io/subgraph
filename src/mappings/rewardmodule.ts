@@ -50,9 +50,16 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   // check if token is new
   let tkn = event.params.token.toHexString();
   if (!tokens.has(tkn)) {
-    let token = createNewToken(event.params.token);
-    let rewardToken = createNewRewardToken(pool, token);
+    let token = Token.load(tkn);
+    if (token == null) {
+      token = createNewToken(event.params.token);
+    }
+    tokens.set(tkn, token);
+  }
+  if (!rewardTokens.has(tkn)) {
+    let rewardToken = createNewRewardToken(pool, tokens[tkn]);
     pool.rewardTokens = pool.rewardTokens.concat([rewardToken.id]);
+    rewardTokens.set(tkn, rewardToken);
   }
 
   let amount = integerToDecimal(event.params.amount, tokens[tkn].decimals);

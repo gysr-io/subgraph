@@ -31,7 +31,7 @@ type Token @entity {
   updated: BigInt!
 }
 
-enum PoolState {
+enum FundingState {
   Unfunded
   Boiling
   Active
@@ -44,7 +44,7 @@ enum PoolType {
   Fountain
   Aquarium
   Stream
-  Basin # TODO name pending
+  Waterfall # TODO name pending
   Reef # TODO name pending
   Unknown
 }
@@ -75,8 +75,8 @@ type Pool @entity {
   # pool config
   stakingToken: Token # deprecated
   rewardToken: Token # deprecated
-  stakingTokens: [Token!]!
-  rewardTokens: [Token!]!
+  stakingTokens: [PoolStakingToken!]!
+  rewardTokens: [PoolRewardToken!]!
 
   timeMultMin: BigDecimal!
   timeMultMax: BigDecimal!
@@ -109,7 +109,7 @@ type Pool @entity {
 
   start: BigInt!
   end: BigInt!
-  state: PoolState!
+  state: FundingState!
 
   stakedUSD: BigDecimal!
   rewardsUSD: BigDecimal!
@@ -145,6 +145,7 @@ type PoolRewardToken @entity {
   funded: BigDecimal!
   distributed: BigDecimal!
   withdrawn: BigDecimal!
+  state: FundingState!
 }
 
 type PoolRate @entity {
