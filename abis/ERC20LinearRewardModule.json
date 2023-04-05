@@ -18,6 +18,11 @@
       },
       {
         "internalType": "address",
+        "name": "config_",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
         "name": "factory_",
         "type": "address"
       }
@@ -28,6 +33,12 @@
   {
     "anonymous": false,
     "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "account",
+        "type": "bytes32"
+      },
       {
         "indexed": true,
         "internalType": "address",
@@ -243,18 +254,12 @@
     "inputs": [
       {
         "indexed": true,
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "shares",
-        "type": "uint256"
+        "internalType": "bytes32",
+        "name": "account",
+        "type": "bytes32"
       }
     ],
-    "name": "RewardsUnlocked",
+    "name": "RewardsUpdated",
     "type": "event"
   },
   {
@@ -293,6 +298,12 @@
     "inputs": [
       {
         "indexed": true,
+        "internalType": "bytes32",
+        "name": "account",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
         "internalType": "address",
         "name": "user",
         "type": "address"
@@ -324,6 +335,12 @@
     "inputs": [
       {
         "indexed": true,
+        "internalType": "bytes32",
+        "name": "account",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
         "internalType": "address",
         "name": "user",
         "type": "address"
@@ -351,30 +368,23 @@
     "type": "event"
   },
   {
-    "inputs": [],
-    "name": "DECIMALS",
-    "outputs": [
+    "anonymous": false,
+    "inputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "account",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
       }
     ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "INITIAL_SHARES_PER_TOKEN",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
+    "name": "Updated",
+    "type": "event"
   },
   {
     "inputs": [],
@@ -434,7 +444,13 @@
     "type": "function"
   },
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      }
+    ],
     "name": "clean",
     "outputs": [],
     "stateMutability": "nonpayable",

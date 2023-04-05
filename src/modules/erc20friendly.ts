@@ -2,10 +2,10 @@
 
 import { Address, BigInt, Bytes, store, log } from '@graphprotocol/graph-ts'
 import {
-  ERC20BaseRewardModule as ERC20BaseRewardModuleContract,
-  RewardsFunded
-} from '../../generated/templates/RewardModule/ERC20BaseRewardModule'
-import { Staked, Unstaked, Claimed } from '../../generated/templates/StakingModule/ERC20StakingModule'
+  Staked1 as Staked,
+  Unstaked1 as Unstaked,
+  Claimed1 as Claimed
+} from '../../generated/templates/StakingModule/Events';
 import { ERC20FriendlyRewardModuleV2 } from '../../generated/templates/StakingModule/ERC20FriendlyRewardModuleV2'
 import { ERC20FriendlyRewardModuleV3 } from '../../generated/templates/StakingModule/ERC20FriendlyRewardModuleV3'
 import { Pool, User, Token, Funding, Position, Stake } from '../../generated/schema'
@@ -13,7 +13,7 @@ import { integerToDecimal } from '../util/common'
 import { ZERO_BIG_INT, ZERO_BIG_DECIMAL, INITIAL_SHARES_PER_TOKEN } from '../util/constants'
 
 
-export function handleUnstakedFriendlyV2(event: Unstaked, pool: Pool, user: User, position: Position, token: Token): void {
+export function handleUnstakedFriendlyV2(event: Unstaked, pool: Pool, position: Position, token: Token): void {
   // friendly
   let rewardContract = ERC20FriendlyRewardModuleV2.bind(Address.fromString(pool.rewardModule));
   let count = rewardContract.stakeCount(event.params.user).toI32();
@@ -59,10 +59,10 @@ export function handleUnstakedFriendlyV2(event: Unstaked, pool: Pool, user: User
 }
 
 
-export function handleUnstakedFriendlyV3(event: Unstaked, pool: Pool, user: User, position: Position, token: Token): void {
+export function handleUnstakedFriendlyV3(event: Unstaked, pool: Pool, position: Position, token: Token): void {
   // friendly
   let rewardContract = ERC20FriendlyRewardModuleV3.bind(Address.fromString(pool.rewardModule));
-  let account = Bytes.fromHexString(event.params.user.toHexString().padStart(64));
+  let account = event.params.account;
   let count = rewardContract.stakeCount(account).toI32();
 
   // get position data from contract
@@ -106,7 +106,7 @@ export function handleUnstakedFriendlyV3(event: Unstaked, pool: Pool, user: User
 }
 
 
-export function handleClaimedFriendlyV2(event: Claimed, pool: Pool, user: User, position: Position, token: Token): void {
+export function handleClaimedFriendlyV2(event: Claimed, pool: Pool, position: Position, token: Token): void {
   // friendly
   let rewardContract = ERC20FriendlyRewardModuleV2.bind(Address.fromString(pool.rewardModule));
   let count = rewardContract.stakeCount(event.params.user).toI32();
@@ -133,7 +133,6 @@ export function handleClaimedFriendlyV2(event: Claimed, pool: Pool, user: User, 
 
       let stake = new Stake(stakeId);
       stake.position = position.id;
-      stake.user = user.id;
       stake.pool = pool.id;
       stake.shares = integerToDecimal(s.value0, token.decimals);
       stake.timestamp = s.value4;
@@ -148,10 +147,10 @@ export function handleClaimedFriendlyV2(event: Claimed, pool: Pool, user: User, 
 }
 
 
-export function handleClaimedFriendlyV3(event: Claimed, pool: Pool, user: User, position: Position, token: Token): void {
+export function handleClaimedFriendlyV3(event: Claimed, pool: Pool, position: Position, token: Token): void {
   // friendly
   let rewardContract = ERC20FriendlyRewardModuleV3.bind(Address.fromString(pool.rewardModule));
-  let account = Bytes.fromHexString(event.params.user.toHexString().padStart(64));
+  let account = event.params.account;
   let count = rewardContract.stakeCount(account).toI32();
 
   // update current stakes
@@ -176,7 +175,6 @@ export function handleClaimedFriendlyV3(event: Claimed, pool: Pool, user: User, 
 
       let stake = new Stake(stakeId);
       stake.position = position.id;
-      stake.user = user.id;
       stake.pool = pool.id;
       stake.shares = integerToDecimal(s.value0, token.decimals);
       stake.timestamp = s.value4;

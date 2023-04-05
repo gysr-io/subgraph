@@ -2,23 +2,13 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "token_",
-        "type": "address"
-      },
-      {
         "internalType": "uint256",
-        "name": "bonusMin_",
+        "name": "vestingStart_",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "bonusMax_",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "bonusPeriod_",
+        "name": "vestingPeriod_",
         "type": "uint256"
       },
       {
@@ -393,6 +383,19 @@
   },
   {
     "inputs": [],
+    "name": "FULL_VESTING",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "MAX_ACTIVE_FUNDINGS",
     "outputs": [
       {
@@ -418,45 +421,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "bonusMax",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "bonusMin",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "bonusPeriod",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "bytes32",
@@ -465,7 +429,7 @@
       },
       {
         "internalType": "address",
-        "name": "sender",
+        "name": "",
         "type": "address"
       },
       {
@@ -475,7 +439,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "shares",
+        "name": "",
         "type": "uint256"
       },
       {
@@ -488,12 +452,12 @@
     "outputs": [
       {
         "internalType": "uint256",
-        "name": "spent",
+        "name": "",
         "type": "uint256"
       },
       {
         "internalType": "uint256",
-        "name": "vested",
+        "name": "",
         "type": "uint256"
       }
     ],
@@ -504,7 +468,7 @@
     "inputs": [
       {
         "internalType": "bytes",
-        "name": "",
+        "name": "data",
         "type": "bytes"
       }
     ],
@@ -542,6 +506,11 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
@@ -564,6 +533,11 @@
   },
   {
     "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
       {
         "internalType": "uint256",
         "name": "amount",
@@ -649,19 +623,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "lastUpdated",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -696,6 +657,35 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "rewards",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "stakingShares",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "accumulator",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "dust",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes32",
         "name": "account",
         "type": "bytes32"
@@ -712,7 +702,7 @@
       },
       {
         "internalType": "bytes",
-        "name": "",
+        "name": "data",
         "type": "bytes"
       }
     ],
@@ -755,6 +745,35 @@
     "inputs": [
       {
         "internalType": "bytes32",
+        "name": "account",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "stakeRegistered",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
       },
@@ -772,23 +791,22 @@
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
+        "internalType": "uint128",
         "name": "timestamp",
-        "type": "uint256"
+        "type": "uint128"
+      },
+      {
+        "internalType": "uint128",
+        "name": "count",
+        "type": "uint128"
       }
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "time",
-        "type": "uint256"
-      }
-    ],
-    "name": "timeBonus",
+    "inputs": [],
+    "name": "tokenCount",
     "outputs": [
       {
         "internalType": "uint256",
@@ -813,19 +831,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "totalLocked",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -834,45 +839,6 @@
       }
     ],
     "name": "totalShares",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "totalStakingShareSeconds",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "totalStakingShares",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "totalUnlocked",
     "outputs": [
       {
         "internalType": "uint256",
@@ -942,7 +908,7 @@
       },
       {
         "internalType": "address",
-        "name": "sender",
+        "name": "",
         "type": "address"
       },
       {
@@ -981,7 +947,7 @@
     "inputs": [
       {
         "internalType": "bytes32",
-        "name": "",
+        "name": "account",
         "type": "bytes32"
       },
       {
@@ -991,7 +957,7 @@
       },
       {
         "internalType": "bytes",
-        "name": "",
+        "name": "data",
         "type": "bytes"
       }
     ],
@@ -1003,6 +969,32 @@
   {
     "inputs": [],
     "name": "usage",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "vestingPeriod",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "vestingStart",
     "outputs": [
       {
         "internalType": "uint256",

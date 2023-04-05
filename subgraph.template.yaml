@@ -79,6 +79,8 @@ dataSources:
           file: './abis/ERC20FriendlyRewardModuleV2.json'
         - name: ERC20LinearRewardModule
           file: './abis/ERC20LinearRewardModule.json'
+        - name: ERC20MultiRewardModule
+          file: './abis/ERC20MultiRewardModule.json'
         - name: ERC20
           file: ./abis/ERC20.json
         - name: ERC721
@@ -134,6 +136,8 @@ dataSources:
           file: './abis/ERC20FriendlyRewardModuleV2.json'
         - name: ERC20LinearRewardModule
           file: './abis/ERC20LinearRewardModule.json'
+        - name: ERC20MultiRewardModule
+          file: './abis/ERC20MultiRewardModule.json'
         - name: ERC20
           file: ./abis/ERC20.json
         - name: ERC721
@@ -293,7 +297,7 @@ templates:
     name: RewardModule
     network: {{network}}
     source:
-      abi: ERC20BaseRewardModule
+      abi: Events
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -302,6 +306,8 @@ templates:
         - Pool
         - Platform
       abis:
+        - name: Events
+          file: ./abis/Events.json
         - name: Pool
           file: ./abis/Pool.json
         - name: ERC20StakingModule
@@ -310,6 +316,8 @@ templates:
           file: './abis/ERC20BaseRewardModule.json'
         - name: ERC20LinearRewardModule
           file: './abis/ERC20LinearRewardModule.json'
+        - name: ERC20MultiRewardModule
+          file: './abis/ERC20MultiRewardModule.json'
         - name: GeyserV1
           file: ./abis/GeyserV1.json
         - name: ERC20
@@ -351,7 +359,7 @@ templates:
     name: StakingModule
     network: {{network}}
     source:
-      abi: ERC20StakingModule
+      abi: Events
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -360,6 +368,8 @@ templates:
         - Pool
         - Platform
       abis:
+        - name: Events
+          file: ./abis/Events.json
         - name: Pool
           file: ./abis/Pool.json
         - name: ERC20StakingModule
@@ -376,6 +386,8 @@ templates:
           file: './abis/ERC20FriendlyRewardModuleV3.json'
         - name: ERC20LinearRewardModule
           file: './abis/ERC20LinearRewardModule.json'
+        - name: ERC20MultiRewardModule
+          file: './abis/ERC20MultiRewardModule.json'
         - name: GeyserV1
           file: ./abis/GeyserV1.json
         - name: ERC20
@@ -402,9 +414,15 @@ templates:
           file: ./abis/thirdparty/gelato/GUniPool.json
       eventHandlers:
         - event: Staked(indexed address,indexed address,uint256,uint256)
-          handler: handleStaked
+          handler: handleStakedV2
         - event: Unstaked(indexed address,indexed address,uint256,uint256)
-          handler: handleUnstaked
+          handler: handleUnstakedV2
         - event: Claimed(indexed address,indexed address,uint256,uint256)
+          handler: handleClaimedV2
+        - event: Staked(indexed bytes32,indexed address,indexed address,uint256,uint256)
+          handler: handleStaked
+        - event: Unstaked(indexed bytes32,indexed address,indexed address,uint256,uint256)
+          handler: handleUnstaked
+        - event: Claimed(indexed bytes32,indexed address,indexed address,uint256,uint256)
           handler: handleClaimed
       file: ./src/mappings/stakingmodule.ts
