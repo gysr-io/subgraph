@@ -29,7 +29,7 @@ Make sure to specify the flag `--network development` while following the deploy
 
 Follow the [quickstart](https://thegraph.com/docs/quick-start#local-development) to setup a local graph node.
 
-Copy the `config/mainnet.json` file to `config/local.json`. Replace the `geyser_factory_v1` parameter with the address of the locally deployed factory conract and replace the `geyser_factory_v1_start_block` with `0`. You can leave `network` as mainnet.
+Copy the `config/mainnet.json` file to `config/local.json`. Replace the `geyser_factory_v1` parameter with the address of the locally deployed factory contract and replace the `geyser_factory_v1_start_block` with `0`. You can leave `network` as mainnet.
 
 
 
