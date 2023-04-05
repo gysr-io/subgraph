@@ -142,6 +142,7 @@ type PoolRewardToken @entity {
   amount: BigDecimal!
   sharesPerToken: BigDecimal!
   sharesPerSecond: BigDecimal!
+  apr: BigDecimal!
   funded: BigDecimal!
   distributed: BigDecimal!
   withdrawn: BigDecimal!

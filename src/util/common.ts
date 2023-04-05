@@ -76,6 +76,7 @@ export function createNewRewardToken(pool: Pool, token: Token): PoolRewardToken 
   reward.amount = ZERO_BIG_DECIMAL;
   reward.sharesPerToken = INITIAL_SHARES_PER_TOKEN;
   reward.sharesPerSecond = ZERO_BIG_DECIMAL;
+  reward.apr = ZERO_BIG_DECIMAL;
   reward.funded = ZERO_BIG_DECIMAL;
   reward.distributed = ZERO_BIG_DECIMAL;
   reward.withdrawn = ZERO_BIG_DECIMAL;

@@ -35,6 +35,7 @@ export function updatePricing(
     let tkn = rewardTokens.keys()[i];
     pool.rewardsUSD = pool.rewardsUSD.plus(rewardTokens[tkn].amount.times(tokens[tkn].price));
     rewardTokens[tkn].sharesPerSecond = ZERO_BIG_DECIMAL;
+    rewardTokens[tkn].apr = ZERO_BIG_DECIMAL;
     rewardTokens[tkn].state = rewardTokens[tkn].funded.gt(ZERO_BIG_DECIMAL) ? 'Stale' : 'Unfunded'; // init options
   }
   pool.tvl = pool.stakedUSD.plus(pool.rewardsUSD);
@@ -54,7 +55,7 @@ export function updatePricing(
     let tkn = funding.token;
 
     // active
-    if (funding.start.le(timestamp) && funding.end.gt(timestamp) && pool.state != 'Active') {
+    if (funding.start.le(timestamp) && funding.end.gt(timestamp)) {
       if (pool.state != 'Active') {
         pool.state = 'Active';
         rate = ZERO_BIG_DECIMAL;
@@ -109,6 +110,16 @@ export function updatePricing(
   if (rate.gt(ZERO_BIG_DECIMAL) && pool.stakedUSD.gt(ZERO_BIG_DECIMAL)) {
     let yearly = BigDecimal.fromString('31536000').times(rate);
     pool.apr = yearly.div(pool.stakedUSD).times(BigDecimal.fromString('100'));
+    // token aprs
+    for (let i = 0; i < rewardTokens.keys().length; i++) {
+      let tkn = rewardTokens.keys()[i];
+      rewardTokens[tkn].apr = BigDecimal.fromString('31536000')
+        .times(rewardTokens[tkn].sharesPerSecond)
+        .times(tokens[tkn].price)
+        .div(rewardTokens[tkn].sharesPerToken)
+        .div(pool.stakedUSD)
+        .times(BigDecimal.fromString('100'));
+    }
   } else {
     pool.apr = ZERO_BIG_DECIMAL;
   }
