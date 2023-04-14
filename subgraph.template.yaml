@@ -186,6 +186,27 @@ dataSources:
           handler: handleMetadata
       file: ./src/mappings/metadata.ts
 
+  - kind: ethereum/contract
+    name: PoolMetadataV3
+    network: {{network}}
+    source:
+      address: "{{pool_metadata_v3}}"
+      abi: PoolMetadata
+      startBlock: {{pool_metadata_v3_start_block}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Pool
+      abis:
+        - name: PoolMetadata
+          file: ./abis/PoolMetadata.json
+      eventHandlers:
+        - event: Metadata(indexed address,string)
+          handler: handleMetadata
+      file: ./src/mappings/metadata.ts
+
 templates:
   - kind: ethereum/contract
     name: GeyserV1
