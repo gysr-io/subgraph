@@ -41,5 +41,7 @@
   "erc721_staking_module_factory_address": "0x3D821C829070C23099159B714A3d950319F67447",
   "erc721_staking_module_factory_address_v3": "0x88fb2e8951534200411a4D6eBd7d000c225B76F0",
   "pool_metadata": "0xc0f7d321fa4fcd08633f9e8879d6f242185a12f4",
-  "pool_metadata_start_block": 7666012
+  "pool_metadata_start_block": 7666012,
+  "pool_metadata_v3": "0xd27d66c4225bbc03ca6376fcb8c70fb74cdecf07",
+  "pool_metadata_v3_start_block": 8828767
 }
