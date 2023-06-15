@@ -135,6 +135,8 @@ type PoolStakingToken @entity {
   sharesPerToken: BigDecimal
 }
 
+# TODO support for multiple staking token rates
+
 type PoolRewardToken @entity {
   # pool address, token
   id: ID!
@@ -148,23 +150,6 @@ type PoolRewardToken @entity {
   withdrawn: BigDecimal!
   state: FundingState!
 }
-
-type PoolRate @entity {
-  # pool address, staking token, reward token
-  id: ID!
-  token: Token!
-  amount: BigDecimal!
-  sharesPerToken: BigDecimal
-
-  funded: BigDecimal!
-  distributed: BigDecimal!
-  withdrawn: BigDecimal!
-}
-
-# TODO for multi
-# type PoolStaking (amount, token, sharesPerToken)
-# type PoolReward (amount, funded, sharesPerToken)
-# type PoolRate (rate, apr, staking, reward)
 
 type _Schema_
   @fulltext(
@@ -293,4 +278,19 @@ type PoolDayData @entity {
   apr: BigDecimal!
   usage: BigDecimal!
   volume: BigDecimal!
+}
+
+enum ParamType {
+  Uint256
+  Address
+  AddressUint96
+}
+
+type ConfigurationParameter @entity {
+  id: ID!
+  type: ParamType!
+  name: String
+  key: String!
+  number: BigDecimal
+  address: String
 }

@@ -43,5 +43,7 @@
   "pool_metadata": "0xc0f7d321fa4fcd08633f9e8879d6f242185a12f4",
   "pool_metadata_start_block": 7666012,
   "pool_metadata_v3": "0xd27d66c4225bbc03ca6376fcb8c70fb74cdecf07",
-  "pool_metadata_v3_start_block": 8828767
+  "pool_metadata_v3_start_block": 8828767,
+  "configuration": "0x84dFAf07d8fe42a95198a1b8B9c66aB955F06226",
+  "configuration_start_block": 9161869
 }
