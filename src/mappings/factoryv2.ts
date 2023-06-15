@@ -156,7 +156,7 @@ export function handlePoolCreated(event: PoolCreated): void {
     if (pool.rewardModuleType == 'ERC20FriendlyV2' || pool.rewardModuleType == 'ERC20FriendlyV3') {
       pool.poolType = 'Aquarium';
     } else if (pool.rewardModuleType == 'ERC20Multi') {
-      pool.poolType = 'Reef';
+      pool.poolType = 'WaterfallERC721';
     }
   } else if (pool.stakingModuleType == 'Assignment') {
     if (pool.rewardModuleType == 'ERC20Linear') {

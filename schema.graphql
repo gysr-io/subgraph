@@ -44,8 +44,8 @@ enum PoolType {
   Fountain
   Aquarium
   Stream
-  Waterfall # TODO name pending
-  Reef # TODO name pending
+  Waterfall
+  WaterfallERC721
   Unknown
 }
 
@@ -136,6 +136,7 @@ type PoolStakingToken @entity {
 }
 
 # TODO support for multiple staking token rates
+# TODO index fees at pool level
 
 type PoolRewardToken @entity {
   # pool address, token
@@ -293,4 +294,12 @@ type ConfigurationParameter @entity {
   key: String!
   number: BigDecimal
   address: String
+}
+
+type Fee @entity {
+  id: ID!
+  token: Token!
+  receiver: String!
+  amount: BigDecimal!
+  volume: BigDecimal!
 }
