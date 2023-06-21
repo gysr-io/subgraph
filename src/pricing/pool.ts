@@ -84,7 +84,7 @@ export function updatePricing(
 
     // rate
     if (
-      (pool.state == 'Active' && funding.start.lt(timestamp) && funding.end.gt(timestamp)) ||
+      (pool.state == 'Active' && funding.start.le(timestamp) && funding.end.gt(timestamp)) ||
       (pool.state == 'Boiling' && funding.start == next)
     ) {
       // total usd per second
@@ -94,7 +94,7 @@ export function updatePricing(
     }
     if (
       (rewardTokens[tkn].state == 'Active' &&
-        funding.start.lt(timestamp) &&
+        funding.start.le(timestamp) &&
         funding.end.gt(timestamp)) ||
       (rewardTokens[tkn].state == 'Boiling' && funding.start == nextTokens[tkn])
     ) {

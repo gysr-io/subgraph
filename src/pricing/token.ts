@@ -108,6 +108,10 @@ export function getPrice(token: Token, timestamp: BigInt): BigDecimal {
   // skip pricing on testnet
   if (WRAPPED_NATIVE_ADDRESS == ZERO_ADDRESS) {
     if (token.type == 'Zero') return ZERO_BIG_DECIMAL;
+    else if (token.type == 'Standard') return BigDecimal.fromString('0.50');
+    else if (token.type == 'ERC721') return BigDecimal.fromString('1000.0');
+    else if (token.type == 'UniswapLiquidity') return BigDecimal.fromString('20.0');
+    else if (token.type == 'GUniLiquidity') return BigDecimal.fromString('20.0');
     return BigDecimal.fromString('1.0');
   }
 
