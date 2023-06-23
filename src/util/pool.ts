@@ -62,6 +62,12 @@ export function updatePool(
     stakingTokens[token.id].sharesPerToken = stakingSharesPerToken;
   } else if (pool.stakingModuleType == 'ERC20Bond') {
     // TODO
+  } else if (
+    pool.rewardModuleType == 'ERC20CompetitiveV2' ||
+    pool.rewardModuleType == 'ERC20FriendlyV2'
+  ) {
+    // erc721 legacy
+    pool.stakingSharesPerToken = ONE_E_18;
   } else {
     // assignment, erc721
     pool.stakingSharesPerToken = INITIAL_SHARES_PER_TOKEN;
