@@ -35,7 +35,7 @@
   "erc20_friendly_reward_module_factory_address_v3a": "0x0000000000000000000000000000000000000000",
   "erc20_friendly_reward_module_factory_address_v3": "0xb59D5E435927816B40A9300D16c95dE9796f538D",
   "erc20_linear_reward_module_factory_address": "0xeD3ca5149175AD65D6eE249EffC6b9EcE9a77B2c",
-  "erc20_multi_reward_module_factory_address": "0xee1Bb3304028D222D7bBF1411067b6757A9a2641",
+  "erc20_multi_reward_module_factory_address": "0x35B0e00E0d6aBe19D8eD24a6a3389c347B2230F2",
   "erc20_staking_module_factory_address": "0xaef2a7E4CbEB875475cFb1924867B9374569D894",
   "erc20_staking_module_factory_address_v3": "0x2f8152bbA263Cb1bCF73b0Cb1E6CB4cA40b9F6d7",
   "erc721_staking_module_factory_address": "0xa13edbc1ea1751c338e2528f7defd082357e2d1e",

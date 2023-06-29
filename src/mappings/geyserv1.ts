@@ -262,12 +262,13 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   let rewardTokens = new Map<String, PoolRewardToken>();
   loadPoolTokens(pool, tokens, stakingTokens, rewardTokens);
 
-  let rewardToken = tokens.get(rewardTokens.keys()[0])!;
+  let token = tokens.get(rewardTokens.keys()[0])!;
 
   let contract = GeyserContractV1.bind(event.address);
 
-  let amount = integerToDecimal(event.params.amount, rewardToken.decimals);
+  let amount = integerToDecimal(event.params.amount, token.decimals);
   pool.funded = pool.funded.plus(amount);
+  rewardTokens.values()[0].funded = pool.funded;
 
   // update timeframe for pool
   if (event.params.start.lt(pool.start) || pool.start.equals(ZERO_BIG_INT)) {
@@ -282,7 +283,7 @@ export function handleRewardsFunded(event: RewardsFunded): void {
   let fundingId = pool.id + '_' + event.block.timestamp.toString();
   let funding = new Funding(fundingId);
   funding.pool = pool.id;
-  funding.token = rewardToken.id;
+  funding.token = token.id;
   funding.createdTimestamp = event.block.timestamp;
   funding.start = event.params.start;
   funding.end = event.params.start.plus(event.params.duration);
@@ -328,6 +329,7 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
 
   let amount = integerToDecimal(event.params.amount, token.decimals);
   pool.distributed = pool.distributed.plus(amount);
+  rewardToken.distributed = pool.distributed;
 
   // usd volume
   let dollarAmount = amount.times(getPrice(token, event.block.timestamp));
@@ -343,6 +345,7 @@ export function handleRewardsDistributed(event: RewardsDistributed): void {
   transaction.earnings = amount;
 
   pool.save();
+  rewardToken.save();
   transaction.save();
   user.save();
   platform.save();
