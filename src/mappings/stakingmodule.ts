@@ -7,8 +7,10 @@ import {
   Claimed as ClaimedV2,
   Staked1 as StakedV3,
   Unstaked1 as UnstakedV3,
-  Claimed1 as ClaimedV3
+  Claimed1 as ClaimedV3,
+  Fee as FeeEvent
 } from '../../generated/templates/StakingModule/Events';
+import { Fee as RewardModuleFeeEvent } from '../../generated/templates/RewardModule/Events';
 import { Pool as PoolContract } from '../../generated/templates/StakingModule/Pool';
 import {
   Pool,
@@ -52,6 +54,7 @@ import {
   handleUnstakedFriendlyV2,
   handleUnstakedFriendlyV3
 } from '../modules/erc20friendly';
+import { handleFee as rewardModuleHandleFee } from './rewardmodule';
 
 export function handleStaked(event: StakedV3): void {
   // load pool and tokens
@@ -322,6 +325,19 @@ export function handleClaimed(event: ClaimedV3): void {
   transaction.save();
   platform.save();
   poolDayData.save();
+}
+
+export function handleFee(event: FeeEvent): void {
+  const e = new RewardModuleFeeEvent(
+    event.address,
+    event.logIndex,
+    event.transactionLogIndex,
+    event.logType,
+    event.block,
+    event.transaction,
+    event.parameters
+  );
+  rewardModuleHandleFee(e);
 }
 
 // v2 legacy compatibility

@@ -207,6 +207,31 @@ dataSources:
           handler: handleMetadata
       file: ./src/mappings/metadata.ts
 
+  - kind: ethereum/contract
+    name: Configuration
+    network: {{network}}
+    source:
+      address: "{{configuration}}"
+      abi: Configuration
+      startBlock: {{configuration_start_block}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - ConfigurationParameter
+      abis:
+        - name: Configuration
+          file: ./abis/Configuration.json
+      eventHandlers:
+        - event: ParameterUpdated(indexed bytes32,uint256)
+          handler: handleParameterUpdatedUint256
+        - event: ParameterUpdated(indexed bytes32,address)
+          handler: handleParameterUpdatedAddress
+        - event: ParameterUpdated(indexed bytes32,address,uint96)
+          handler: handleParameterUpdatedAddressUint96
+      file: ./src/mappings/configuration.ts
+
 templates:
   - kind: ethereum/contract
     name: GeyserV1
@@ -374,6 +399,8 @@ templates:
           handler: handleGysrSpent
         - event: GysrVested(indexed address,uint256)
           handler: handleGysrVested
+        - event: Fee(indexed address,indexed address,uint256)
+          handler: handleFee
       file: ./src/mappings/rewardmodule.ts
 
   - kind: ethereum/contract
@@ -446,4 +473,6 @@ templates:
           handler: handleUnstaked
         - event: Claimed(indexed bytes32,indexed address,indexed address,uint256,uint256)
           handler: handleClaimed
+        - event: Fee(indexed address,indexed address,uint256)
+          handler: handleFee
       file: ./src/mappings/stakingmodule.ts

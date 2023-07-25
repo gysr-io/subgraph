@@ -8,7 +8,8 @@ import {
   GysrVested,
   RewardsDistributed,
   RewardsExpired,
-  RewardsWithdrawn
+  RewardsWithdrawn,
+  Fee as FeeEvent
 } from '../../generated/templates/RewardModule/Events';
 import {
   Pool,
@@ -18,7 +19,8 @@ import {
   Transaction,
   User,
   PoolStakingToken,
-  PoolRewardToken
+  PoolRewardToken,
+  Fee
 } from '../../generated/schema';
 import { createNewRewardToken, integerToDecimal, savePoolTokens } from '../util/common';
 import {
@@ -143,10 +145,40 @@ export function handleGysrVested(event: GysrVested): void {
 
   // update total GYSR vested
   let amount = integerToDecimal(event.params.amount, BigInt.fromI32(18));
+  let amountFee = amount.times(GYSR_FEE); // note: we assume a constant fee rate here
   platform.gysrVested = platform.gysrVested.plus(amount);
-  platform.gysrFees = platform.gysrFees.plus(amount.times(GYSR_FEE)); // note: we assume a constant fee rate here
+  platform.gysrFees = platform.gysrFees.plus(amountFee);
   pool.gysrVested = pool.gysrVested.plus(amount);
   let poolDayData = updatePoolDayData(pool, event.block.timestamp.toI32());
+
+  // v2 fees
+  if (pool.rewardModuleType == 'ERC20CompetitiveV2' || pool.rewardModuleType == 'ERC20FriendlyV2') {
+    // fee entity
+    let feeId = GYSR_TOKEN.toHexString();
+    let fee = Fee.load(feeId);
+    if (fee == null) {
+      fee = new Fee(feeId);
+      fee.token = feeId;
+      fee.receiver = ''; // will be defined by v3 events
+      fee.amount = ZERO_BIG_DECIMAL;
+      fee.volume = ZERO_BIG_DECIMAL;
+    }
+    // token entity
+    let gysr = Token.load(feeId);
+    if (gysr === null) {
+      gysr = createNewToken(GYSR_TOKEN);
+    }
+    gysr.price = getPrice(gysr, event.block.timestamp);
+    gysr.updated = event.block.timestamp;
+
+    // update
+    fee.amount = fee.amount.plus(amountFee);
+    fee.volume = fee.volume.plus(amountFee.times(gysr.price));
+
+    // write
+    gysr.save();
+    fee.save();
+  }
 
   platform.save();
   pool.save();
@@ -236,4 +268,34 @@ export function handleRewardsWithdrawn(event: RewardsWithdrawn): void {
   pool.save();
   savePoolTokens(tokens, stakingTokens, rewardTokens);
   platform.save();
+}
+
+export function handleFee(event: FeeEvent): void {
+  // fee entity
+  const feeId = event.params.token.toHexString();
+  let fee = Fee.load(feeId);
+  if (fee == null) {
+    fee = new Fee(feeId);
+    fee.token = feeId;
+    fee.amount = ZERO_BIG_DECIMAL;
+    fee.volume = ZERO_BIG_DECIMAL;
+  }
+
+  // token entity
+  let token = Token.load(feeId);
+  if (token == null) {
+    token = createNewToken(event.params.token);
+  }
+  token.price = getPrice(token, event.block.timestamp);
+  token.updated = event.block.timestamp;
+
+  // update
+  let amount = integerToDecimal(event.params.amount, token.decimals);
+  fee.receiver = event.params.receiver.toHexString();
+  fee.amount = fee.amount.plus(amount);
+  fee.volume = fee.volume.plus(amount.times(token.price));
+
+  // write
+  token.save();
+  fee.save();
 }
