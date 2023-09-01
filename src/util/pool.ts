@@ -18,6 +18,7 @@ import { updatePricing } from '../pricing/pool';
 import { BASE_REWARD_MODULE_TYPES } from './constants';
 import { updatePoolCompetitive } from '../modules/erc20competitive';
 import { updatePoolLinear } from '../modules/erc20linear';
+import { updatePoolMulti } from '../modules/erc20multi';
 
 export function updatePool(
   pool: Pool,
@@ -74,7 +75,9 @@ export function updatePool(
   }
 
   // module specific pool updates
-  if (BASE_REWARD_MODULE_TYPES.includes(pool.rewardModuleType)) {
+  if (pool.rewardModuleType == 'ERC20Multi') {
+    updatePoolMulti(pool, tokens, rewardTokens, timestamp);
+  } else if (BASE_REWARD_MODULE_TYPES.includes(pool.rewardModuleType)) {
     updatePoolCompetitive(pool, tokens, rewardTokens, timestamp);
   } else if (pool.rewardModuleType == 'ERC20Linear') {
     updatePoolLinear(pool, tokens, rewardTokens, timestamp);
