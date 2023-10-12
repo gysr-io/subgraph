@@ -104,7 +104,12 @@ export function updatePricing(
       );
     }
   }
-  pool.sharesPerSecond = rate;
+
+  // set pool shares per second to first reward token (backward compat)
+  if (fundings.length) {
+    let tkn = rewardTokens.keys()[0];
+    pool.sharesPerSecond = rewardTokens[tkn].sharesPerSecond;
+  }
 
   // apr
   if (rate.gt(ZERO_BIG_DECIMAL) && pool.stakedUSD.gt(ZERO_BIG_DECIMAL)) {
