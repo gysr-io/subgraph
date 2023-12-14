@@ -254,6 +254,10 @@ templates:
           file: './abis/ERC20StakingModule.json'
         - name: ERC20BaseRewardModule
           file: './abis/ERC20BaseRewardModule.json'
+        - name: ERC20LinearRewardModule
+          file: './abis/ERC20LinearRewardModule.json'
+        - name: ERC20MultiRewardModule
+          file: './abis/ERC20MultiRewardModule.json'
         - name: ERC20
           file: ./abis/ERC20.json
         - name: ERC721
