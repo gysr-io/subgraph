@@ -9,10 +9,10 @@
     "prepare:polygon": "mustache config/polygon.json subgraph.template.yaml > subgraph.yaml && mustache config/polygon.json src/util/constants.template.ts > src/util/constants.ts",
     "prepare:optimism": "mustache config/optimism.json subgraph.template.yaml > subgraph.yaml && mustache config/optimism.json src/util/constants.template.ts > src/util/constants.ts",
     "prepare:local": "mustache config/local.json subgraph.template.yaml > subgraph.yaml && mustache config/local.json src/util/constants.template.ts > src/util/constants.ts",
-    "_deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ gysr-io/gysr",
-    "_deploy-sepolia": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ gysr-io/gysr-sepolia",
-    "_deploy-polygon": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ gysr-io/gysr-polygon",
-    "_deploy-optimism": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ gysr-io/gysr-optimism",
+    "_deploy": "graph deploy --studio gysr",
+    "_deploy-sepolia": "graph deploy --studio gysr-sepolia",
+    "_deploy-polygon": "graph deploy --studio gysr-polygon",
+    "_deploy-optimism": "graph deploy --studio gysr-optimism",
     "_deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 gysr-io/gysr",
     "deploy:mainnet": "npm run prepare:mainnet && npm run _deploy",
     "deploy:sepolia": "npm run prepare:sepolia && npm run _deploy-sepolia",
@@ -23,7 +23,7 @@
     "remove-local": "graph remove --node http://localhost:8020/ gysr-io/gysr"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "^0.29.0",
+    "@graphprotocol/graph-cli": "^0.75.0",
     "@graphprotocol/graph-ts": "^0.26.0"
   },
   "devDependencies": {

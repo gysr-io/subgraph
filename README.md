@@ -1,10 +1,13 @@
 # gysr-subgraph
 
 This repository implements a subgraph to index data and events
-for Geysers, tokens, and users on the [GYSR](https://www.gysr.io/) platform.
+for pools, tokens, and users on the [GYSR](https://www.gysr.io/) platform.
 
 It is deployed here:
 https://thegraph.com/explorer/subgraph/gysr-io/gysr
+
+Documentation can be found here:
+https://docs.gysr.io/developers/subgraph
 
 
 ## Setup
@@ -13,34 +16,74 @@ https://thegraph.com/explorer/subgraph/gysr-io/gysr
 
 Both **Node.js** and **npm** are required for package management and deployment. See instructions
 for installation [here](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm). This
-codebase has been tested with `nvm: v0.37.x`, `Node.js: v14.x`, and `npm: v6.x`.
+codebase has been tested with `nvm: v0.37.x`, `Node.js: v18.x`, and `npm: v10.x`.
 
 To install node packages and other dependencies:
 ```
 npm install
 ```
 
-### Local development
+### Protocol deployment
 
-Run a local development blockchain using the [Ganache](https://www.trufflesuite.com/docs/ganache/overview) desktop app or CLI.
+Deploy GYSR [core contracts](https://github.com/gysr-io/core) to a public EVM network or look up
+existing [deployment information](https://docs.gysr.io/developers/addresses).
 
-Deploy GYSR [core contracts](https://github.com/gysr-io/core) to that Ganache local blockchain.
-Make sure to specify the flag `--network development` while following the deployment instructions.
-
-Follow the [quickstart](https://thegraph.com/docs/quick-start#local-development) to setup a local graph node.
-
-Copy the `config/mainnet.json` file to `config/local.json`. Replace the `geyser_factory_v1` parameter with the address of the locally deployed factory conract and replace the `geyser_factory_v1_start_block` with `0`. You can leave `network` as mainnet.
+Define configuration variables as needed in `config/<network>.json`.
 
 
+### Subgraph
 
-## Deploy
+Register or login at the [Graph studio dashboard](https://thegraph.com/studio/).
+
+Create a new subgraph if needed and retrieve your access token.
+
+Authenticate locally (one time)
+```
+npx graph auth --studio <ACCESS_TOKEN>
+```
+
+
+## Build
+
+Generate `subgraph.yaml` from network config
+```
+npm run prepare:sepolia
+```
 
 Run subgraph code generation
 ```
 npm run codegen
 ```
 
-### Local
+Build subgraph (without deploying)
+```
+npm run build
+```
+
+
+## Deploy
+
+
+Build and deploy subgraph to the Graph studio
+```
+npm run deploy:sepolia
+```
+
+Publish the subgraph to the Graph network using the studio interface.
+
+
+
+## Local testing
+
+It is also possible to run a local blockchain and graph node for testing and development.
+
+Run a local development blockchain using the [Ganache](https://www.trufflesuite.com/docs/ganache/overview) desktop app or CLI.
+(warning: now deprecated)
+
+Deploy the GYSR core protocol to your local blockchain instance.
+
+Follow the [quickstart](https://thegraph.com/docs/quick-start#local-development) to setup a local graph node.
+
 
 Register subgraph with local graph node (one time)
 ```
@@ -51,28 +94,6 @@ Build and deploy subgraph to local graph node
 ```
 npm run deploy:local
 ```
-
-### Mainnet
-
-Register or login at the [Graph explorer dashboard](https://thegraph.com/explorer/dashboard) and retrieve your access token.
-
-Create a new subgraph if needed.
-
-Authenticate locally (one time)
-```
-npx graph auth https://api.thegraph.com/deploy/ <ACCESS_TOKEN>
-```
-
-Make sure to reset `subgraph.yaml` to the original values for mainnet factory address and start block.
-
-Build and deploy subgraph to hosted service
-```
-npm run deploy:mainnet
-```
-
-## Test
-
-### Local
 
 Launch the truffle console and start [interacting with the deployed core contracts](https://www.trufflesuite.com/docs/truffle/getting-started/interacting-with-your-contracts)
 to generate some events and activity.
