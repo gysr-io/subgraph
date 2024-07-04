@@ -5,17 +5,17 @@
     "codegen": "graph codegen",
     "build": "graph build",
     "prepare:mainnet": "mustache config/mainnet.json subgraph.template.yaml > subgraph.yaml && mustache config/mainnet.json src/util/constants.template.ts > src/util/constants.ts",
-    "prepare:goerli": "mustache config/goerli.json subgraph.template.yaml > subgraph.yaml && mustache config/goerli.json src/util/constants.template.ts > src/util/constants.ts",
+    "prepare:sepolia": "mustache config/sepolia.json subgraph.template.yaml > subgraph.yaml && mustache config/sepolia.json src/util/constants.template.ts > src/util/constants.ts",
     "prepare:polygon": "mustache config/polygon.json subgraph.template.yaml > subgraph.yaml && mustache config/polygon.json src/util/constants.template.ts > src/util/constants.ts",
     "prepare:optimism": "mustache config/optimism.json subgraph.template.yaml > subgraph.yaml && mustache config/optimism.json src/util/constants.template.ts > src/util/constants.ts",
     "prepare:local": "mustache config/local.json subgraph.template.yaml > subgraph.yaml && mustache config/local.json src/util/constants.template.ts > src/util/constants.ts",
-    "_deploy": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ gysr-io/gysr",
-    "_deploy-goerli": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ gysr-io/gysr-goerli",
-    "_deploy-polygon": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ gysr-io/gysr-polygon",
-    "_deploy-optimism": "graph deploy --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ gysr-io/gysr-optimism",
+    "_deploy": "graph deploy --studio gysr",
+    "_deploy-sepolia": "graph deploy --studio gysr-sepolia",
+    "_deploy-polygon": "graph deploy --studio gysr-polygon",
+    "_deploy-optimism": "graph deploy --studio gysr-optimism",
     "_deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 gysr-io/gysr",
     "deploy:mainnet": "npm run prepare:mainnet && npm run _deploy",
-    "deploy:goerli": "npm run prepare:goerli && npm run _deploy-goerli",
+    "deploy:sepolia": "npm run prepare:sepolia && npm run _deploy-sepolia",
     "deploy:polygon": "npm run prepare:polygon && npm run _deploy-polygon",
     "deploy:optimism": "npm run prepare:optimism && npm run _deploy-optimism",
     "deploy:local": "npm run prepare:local && npm run _deploy-local",
@@ -23,7 +23,7 @@
     "remove-local": "graph remove --node http://localhost:8020/ gysr-io/gysr"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "^0.29.0",
+    "@graphprotocol/graph-cli": "^0.75.0",
     "@graphprotocol/graph-ts": "^0.26.0"
   },
   "devDependencies": {
